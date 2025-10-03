@@ -39,3 +39,9 @@
 
 # debug information files
 *.dwo
+
+# Directories
+/x64
+/.vs
+/x64/Debug
+/*.log
