@@ -10,6 +10,9 @@
 #ifndef H_CInvGame
 #define H_CInvGame
 
+#include <d3d9.h>
+#include <d3dx9.h>
+
 #include <InvGlobals.h>
 #include <CInvSettings.h>
 
@@ -38,7 +41,42 @@ namespace Inv
 
   private:
 
+    // A structure for our custom vertex type
+    struct CUSTOMVERTEX
+    {
+      FLOAT x, y, z, rhw; // The transformed position for the vertex
+      DWORD color;        // The vertex color
+      float u, v;
+    };
+
+    // Our custom FVF, which describes our custom vertex structure
+#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1)
+
+    HRESULT InitD3D();
+
+    HRESULT InitVB();
+
+    bool IsKeyDown( int key );
+
     const CInvSettings & mSettings;
+
+    WNDCLASSEX mWindowClass;
+
+    HWND mHWnd;
+
+    LARGE_INTEGER mStartTime;
+    LARGE_INTEGER mFreq;
+
+    LPDIRECT3D9             mPD3D; 
+    LPDIRECT3DDEVICE9       mPd3dDevice; 
+    LPDIRECT3DVERTEXBUFFER9 mPVB; 
+
+    DWORD mClearColor;
+
+    static const std::wstring mWindiwClassId;
+
+    static const std::wstring mWindiwName;
+
 
   };
 

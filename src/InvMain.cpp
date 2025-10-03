@@ -33,7 +33,7 @@ void PrintCommandlineHelp()
   std::cout << "Command line expected values: " << std::endl << std::endl;
 
   HlpLine() << "--help" << "Print this help" << std::endl;
-  HlpLine() << "--setup <File name>" << "Path to INI file containing setup" << std::endl;
+  HlpLine() << "--setup <File name>" << "Path to INI file containing setup, default invaders.ini" << std::endl;
 
   std::cout << std::endl << std::endl;
   std::cout << "INI file expected values: " << std::endl << std::endl;
