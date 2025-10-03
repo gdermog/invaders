@@ -16,6 +16,9 @@
 #include <InvGlobals.h>
 #include <CInvSettings.h>
 
+#include <graphics/CInvSprite.h>
+#include <graphics/CInvText.h>
+
 namespace Inv
 {
 
@@ -41,22 +44,14 @@ namespace Inv
 
   private:
 
-    // A structure for our custom vertex type
-    struct CUSTOMVERTEX
-    {
-      FLOAT x, y, z, rhw; // The transformed position for the vertex
-      DWORD color;        // The vertex color
-      float u, v;
-    };
-
-    // Our custom FVF, which describes our custom vertex structure
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1)
 
     HRESULT InitD3D();
 
     HRESULT InitVB();
 
     bool IsKeyDown( int key );
+
+    std::unique_ptr<CInvText> mTextCreator;
 
     const CInvSettings & mSettings;
 

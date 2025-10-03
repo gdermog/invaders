@@ -76,6 +76,18 @@ namespace Inv
   constexpr double_t gPI = 3.141592653589793;
   //!< Value of pi constant - 3.1415926535897932384626433832795 ...
 
+  // A structure for our custom vertex type
+  struct CUSTOMVERTEX
+  {
+    FLOAT x, y, z, rhw; // The transformed position for the vertex
+    DWORD color;        // The vertex color
+    float u, v;
+  };
+
+  // Our custom FVF, which describes our custom vertex structure
+#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1)
+
+
 } // namespace Inv
 
 #endif

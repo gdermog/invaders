@@ -61,6 +61,8 @@ namespace Inv
 		bool GetFullScreen() const { return mFullScreen; }
 		//!< \brief Returns true if the game should run in fullscreen mode
 
+    const std::string & GetImagePath() const { return mImagePath; }
+    //!< \brief Returns path to image files
 
   protected:
 
@@ -73,6 +75,8 @@ namespace Inv
 
     bool mFullScreen;   //!< If true, game runs in fullscreen mode
    
+    std::string mImagePath;
+                        //!< Path to image files
 
     std::ostream & PrpLine();
 		/*!< \brief Helper for formatting output in Preprint method */

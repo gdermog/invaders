@@ -100,6 +100,7 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 namespace Inv
 {
   CInvGame::CInvGame( const CInvSettings & settings ):
+    mTextCreator( nullptr ),
     mSettings( settings ),
     mWindowClass{},
     mHWnd{},
@@ -163,7 +164,10 @@ namespace Inv
     ShowWindow( mHWnd, SW_SHOWDEFAULT );
     UpdateWindow( mHWnd );
 
-    //InitDirectInput( hWnd );		
+    mTextCreator = std::make_unique<CInvText>(
+      mSettings,
+      mPd3dDevice,
+      "/letters" );
 
     return true;
 
@@ -178,6 +182,17 @@ namespace Inv
       LOG << "DirectX is not initialized properly.";
       return false;
     }
+
+    if( nullptr == mTextCreator )
+    {
+      LOG << "Text creator is not initialized properly.";
+      return false;
+    }
+
+//     CInvSprite sprite( mSettings, mPd3dDevice );
+//     sprite.AddSpriteImage( "/letters/alet.png" );
+
+float shift = 0;
 
     bool stillInLoop = true;
     while( stillInLoop )
@@ -197,20 +212,53 @@ namespace Inv
       // Clear the backbuffer to a blue color
       mPd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, mClearColor, 1.0f, 0 );
 
+      mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, true );
+      mPd3dDevice->SetRenderState( D3DRS_ZENABLE, false );
+
+      mPd3dDevice->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+      mPd3dDevice->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+      mPd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_DIFFUSE );
+      mPd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_TEXTURE );
+      mPd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE );
+
+      mPd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
+      mPd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE );
+      mPd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE );
+
+      mPd3dDevice->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+      mPd3dDevice->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+      mPd3dDevice->SetRenderState( D3DRS_LIGHTING, false );
+      //mPd3dDevice->SetTexture(0,NULL);
+      mPd3dDevice->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
+
+      D3DVIEWPORT9 vp = { 0,0, 800, 600, 0, 1 };
+      //mPd3dDevice->SetViewport(&vp);
+
+      mPd3dDevice->SetFVF( D3DFVF_CUSTOMVERTEX );
+
       // Begin the scene
       if( SUCCEEDED( mPd3dDevice->BeginScene() ) )
       {
 
         // Rendering of scene objects can happen here
 
+//sprite.Draw( 0, 400, 300, 100, 100 );
+
+mTextCreator->Draw( "Space invaders", 0, 0, 40 + shift );
+++shift;
+if( shift > 200 )
+  shift = 0;
 
         // End the scene
         mPd3dDevice->EndScene();
+
+
       } // if
 
       // Present the backbuffer contents to the display
       mPd3dDevice->Present( NULL, NULL, NULL, NULL );
 
+      Sleep( 10 );
 
     } // while
 

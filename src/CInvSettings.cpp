@@ -23,7 +23,8 @@ namespace Inv
 
    CInvSettings::CInvSettings():
      mGameIdentifier( "Invaders"),
-     mFullScreen( true )
+     mFullScreen( true ),
+     mImagePath()
    {
 
    } // CInvSettings::CInvSettings 
@@ -59,6 +60,7 @@ namespace Inv
        } // else
 
        mFullScreen = inCfg.GetValueBool( "graphics", "fullscreen", false );
+       mImagePath = inCfg.GetValueStr( "graphics", "images", "./images" );
       
      }
      catch( std::exception& e )
@@ -88,6 +90,7 @@ namespace Inv
      LOG;
 
      PrpLine() << "FullScreen:" << ( mFullScreen ? gTrueName : gFalseName );
+     PrpLine() << "ImagePath:" << mImagePath;
      LOG;
 
    } // CInvSettings::Preprint
