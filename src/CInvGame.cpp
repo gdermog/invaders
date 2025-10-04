@@ -101,6 +101,7 @@ namespace Inv
 {
   CInvGame::CInvGame( const CInvSettings & settings ):
     mTextCreator( nullptr ),
+    mHiscoreKeeper( nullptr ),
     mSettings( settings ),
     mWindowClass{},
     mHWnd{},
@@ -132,6 +133,8 @@ namespace Inv
 
   bool CInvGame::Initialize()
   {
+
+    mHiscoreKeeper = std::make_unique<CInvHiscoreList>( mSettings.GetHiscorePath() );
 
     mWindowClass = { sizeof( WNDCLASSEX ), CS_CLASSDC, MsgProc, 0L, 0L,
                       GetModuleHandle( NULL ), NULL, NULL, NULL, NULL,

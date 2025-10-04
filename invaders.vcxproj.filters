@@ -19,6 +19,12 @@
     <Filter Include="Source Files\graphics">
       <UniqueIdentifier>{266279f7-a936-4d87-b601-cf21bbf62759}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\engine">
+      <UniqueIdentifier>{9039b765-69e0-4008-9bf3-160067cfb2cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\engine">
+      <UniqueIdentifier>{1ded913e-9ca0-4a04-a85b-537d39e74e45}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\InvMain.cpp">
@@ -45,6 +51,9 @@
     <ClCompile Include="src\graphics\CInvText.cpp">
       <Filter>Source Files\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\CInvHiscoreList.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InvGlobals.h">
@@ -70,6 +79,9 @@
     </ClInclude>
     <ClInclude Include="src\graphics\CInvText.h">
       <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\CInvHiscoreList.h">
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

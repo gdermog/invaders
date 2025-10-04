@@ -19,6 +19,8 @@
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvText.h>
 
+#include <engine/CInvHiscoreList.h>
+
 namespace Inv
 {
 
@@ -52,6 +54,8 @@ namespace Inv
     bool IsKeyDown( int key );
 
     std::unique_ptr<CInvText> mTextCreator;
+
+    std::unique_ptr<CInvHiscoreList> mHiscoreKeeper;
 
     const CInvSettings & mSettings;
 

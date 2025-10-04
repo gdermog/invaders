@@ -64,6 +64,9 @@ namespace Inv
     const std::string & GetImagePath() const { return mImagePath; }
     //!< \brief Returns path to image files
 
+    const std::string & GetHiscorePath() const { return mHiscorePath; }
+    //!< \brief Returns path to hiscore file
+
   protected:
 
     //@}----------------------------------------------------------------------------------------------
@@ -75,8 +78,16 @@ namespace Inv
 
     bool mFullScreen;   //!< If true, game runs in fullscreen mode
    
+    uint32_t mScreenWidth;   
+                        //!< Screen width in pixels
+    uint32_t mScreenHeight;  
+                        //!< Screen height in pixels
+    
     std::string mImagePath;
                         //!< Path to image files
+
+    std::string mHiscorePath;
+                        //!< Path to hiscore file
 
     std::ostream & PrpLine();
 		/*!< \brief Helper for formatting output in Preprint method */

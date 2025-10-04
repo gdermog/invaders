@@ -14,6 +14,7 @@
     <ClCompile Include="src\CInvConfig.cpp" />
     <ClCompile Include="src\CInvGame.cpp" />
     <ClCompile Include="src\CInvLogger.cpp" />
+    <ClCompile Include="src\engine\CInvHiscoreList.cpp" />
     <ClCompile Include="src\graphics\CInvSprite.cpp" />
     <ClCompile Include="src\graphics\CInvText.cpp" />
     <ClCompile Include="src\InvMain.cpp" />
@@ -24,6 +25,7 @@
     <ClInclude Include="src\CInvConfig.h" />
     <ClInclude Include="src\CInvGame.h" />
     <ClInclude Include="src\CInvLogger.h" />
+    <ClInclude Include="src\engine\CInvHiscoreList.h" />
     <ClInclude Include="src\graphics\CInvSprite.h" />
     <ClInclude Include="src\graphics\CInvText.h" />
     <ClInclude Include="src\InvGlobals.h" />
