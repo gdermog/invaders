@@ -60,7 +60,7 @@ namespace Inv
     float xTopLeft,
     float yTopLeft,
     float letterSize,
-    DWORD color )
+    DWORD color ) const
   {
     
     float x = xTopLeft + letterSize * 0.5;

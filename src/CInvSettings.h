@@ -61,6 +61,12 @@ namespace Inv
 		bool GetFullScreen() const { return mFullScreen; }
 		//!< \brief Returns true if the game should run in fullscreen mode
 
+    uint32_t GetWindowWidth() const { return mScreenWidth; }
+    //!< \brief Returns screen width in pixels
+
+    uint32_t GetWindowHeight() const { return mScreenHeight; }
+    //!< \brief Returns screen height in pixels
+
     const std::string & GetImagePath() const { return mImagePath; }
     //!< \brief Returns path to image files
 

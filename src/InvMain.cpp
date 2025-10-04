@@ -93,7 +93,7 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR cmd, INT )
   size_t lastLineRead = 0;
   if( !cfg.ParseINIFile( inFile, lastLineRead ) )
   {
-    LOG << "Error reading setup file '" << inFileName << "', problem on line ." << lastLineRead;
+    LOG << "Error reading setup file '" << inFileName << "', problem on line " << lastLineRead;
     return -1;
   } // if
 

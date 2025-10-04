@@ -20,6 +20,7 @@
 #include <graphics/CInvText.h>
 
 #include <engine/CInvHiscoreList.h>
+#include <engine/CInvInsertCoinScreen.h>
 
 namespace Inv
 {
@@ -56,6 +57,8 @@ namespace Inv
     std::unique_ptr<CInvText> mTextCreator;
 
     std::unique_ptr<CInvHiscoreList> mHiscoreKeeper;
+
+    std::unique_ptr<CInvInsertCoinScreen> mInsertCoinScreen;
 
     const CInvSettings & mSettings;
 

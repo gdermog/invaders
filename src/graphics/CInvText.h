@@ -40,7 +40,7 @@ namespace Inv
       float xTopLeft,
       float yTopLeft,
       float letterSize,
-      DWORD color = 0xffffffff );
+      DWORD color = 0xffffffff ) const;
 
   private:
 

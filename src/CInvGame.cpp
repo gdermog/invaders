@@ -167,10 +167,15 @@ namespace Inv
     ShowWindow( mHWnd, SW_SHOWDEFAULT );
     UpdateWindow( mHWnd );
 
-    mTextCreator = std::make_unique<CInvText>(
+    mTextCreator = std::make_unique<CInvText>( mSettings, mPd3dDevice, "/letters" );
+
+    mInsertCoinScreen = std::make_unique<CInvInsertCoinScreen>(
       mSettings,
+      *mTextCreator,
+      *mHiscoreKeeper,
+      mPD3D,
       mPd3dDevice,
-      "/letters" );
+      mPVB );
 
     return true;
 
@@ -192,12 +197,21 @@ namespace Inv
       return false;
     }
 
+    if( nullptr == mInsertCoinScreen )
+    {
+      LOG << "Insert coin screen is not initialized properly.";
+      return false;
+    }
+
 //     CInvSprite sprite( mSettings, mPd3dDevice );
 //     sprite.AddSpriteImage( "/letters/alet.png" );
 
-float shift = 0;
+//float shift = 0;
 
     bool stillInLoop = true;
+    uint32_t newScoreToEnter = 0;
+    bool gameStart = false;
+
     while( stillInLoop )
     {
       MSG msg;
@@ -245,12 +259,18 @@ float shift = 0;
 
         // Rendering of scene objects can happen here
 
+        if( !mInsertCoinScreen->MainLoop( newScoreToEnter, gameStart ) )
+        {
+          LOG << "Insert coin screen loop failed, quitting";
+          stillInLoop = false;
+        } // if
+
 //sprite.Draw( 0, 400, 300, 100, 100 );
 
-mTextCreator->Draw( "Space invaders", 0, 0, 40 + shift );
-++shift;
-if( shift > 200 )
-  shift = 0;
+// mTextCreator->Draw( "Space invaders", 0, 0, 40 + shift );
+// ++shift;
+// if( shift > 200 )
+//   shift = 0;
 
         // End the scene
         mPd3dDevice->EndScene();
