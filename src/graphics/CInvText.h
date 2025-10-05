@@ -42,6 +42,14 @@ namespace Inv
       float letterSize,
       DWORD color = 0xffffffff ) const;
 
+    void DrawFromRight(
+      const std::string & txt,
+      float xTopLeft,
+      float yTopLeft,
+      float width,
+      float letterSize,
+      DWORD color = 0xffffffff ) const;
+
   private:
 
     const CInvSettings & mSettings;

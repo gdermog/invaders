@@ -26,25 +26,33 @@ namespace Inv
   class CInvInsertCoinScreen
   {
     public:
-
-      
+    
       CInvInsertCoinScreen(
         const CInvSettings & settings,
         const CInvText & textCreator,
         CInvHiscoreList & hiscoreKeeper,
         LPDIRECT3D9 pD3D,
         LPDIRECT3DDEVICE9 pd3dDevice,
-        LPDIRECT3DVERTEXBUFFER9 pVB );
+        LPDIRECT3DVERTEXBUFFER9 pVB,
+        LARGE_INTEGER timeReferncePoint );
 
     CInvInsertCoinScreen( const CInvInsertCoinScreen & ) = delete;
     CInvInsertCoinScreen & operator=( const CInvInsertCoinScreen & ) = delete;
     ~CInvInsertCoinScreen();
    
+    bool MainLoop( 
+      uint32_t & newScoreToEnter, 
+      bool &gameStart, 
+      LARGE_INTEGER actualTimePoint );
 
-    bool MainLoop( uint32_t & newScoreToEnter, bool &gameStart );
-
+    void UpdateTimeReferencePoint( LARGE_INTEGER newTimeRefPoint )
+    { mTimeReferncePoint = newTimeRefPoint; }
 
   private:
+
+    void FormatHighScore( uint32_t inScore, const std::string & inName );
+
+    LARGE_INTEGER mTimeReferncePoint;
 
     static const std::string mWelcomeHeader;
 
@@ -52,9 +60,25 @@ namespace Inv
 
     static const std::string mEnterCallsign;
 
+    static const uint32_t mHighScoreAreaVisibleLines;
+    static const float mHighScoreAreaFontRelativeSize;
+
     float mLetterSize;
     float mHeaderXPos;
     float mHeaderYPos;
+
+
+    float mHighScoreLetterSize;
+    float mHighScoreTopLeftX;
+    float mHighScoreTopLeftY;
+    float mHighScoreBottomRightX;
+    float mHighScoreBottomRightY;
+    float mHighScoreWidth;
+    float mHighScoreHeight;
+    std::string mHighScoreLineContent;
+
+    uint64_t mRollState;
+    uint64_t mRollMax;
 
     const CInvSettings & mSettings;
     const CInvText & mTextCreator;

@@ -39,13 +39,27 @@ namespace Inv
          \param[in] inScore New hiscore value
          \param[in] inName  Name of player achieving the score */
 
-  private:
-
     constexpr static size_t mMaxHiscoreCount = 100;
     constexpr static size_t mMaxHiscoreNameLen = 6;
+    constexpr static size_t mMaxHiscoreLineLen = 9 + 3 + mMaxHiscoreNameLen;
+    /*!< Max score digits (up to 999 999 999) + spaces + max name length. Typically line is much 
+         shorter, but this is upper limit. Score and name are separated by three spaces, thousands 
+         in score by space. Example:
+
+              900 100 500   BIGBOS
+               50 000 000   SENIOR
+                1 250 000   MEDIOR
+                    5 200   JUNIOR
+                      500   NEWBIE
+    */
+
+  private:
 
     std::vector<std::pair<uint32_t, std::string>> mHiscoreList;
+    /*!< \brief Sorted vector of score pairs (score, name) */
+
     std::string  mFileName;
+    /*!< \brief Name of the hiscore file */
   };
 
 } // namespace Inv

@@ -13,9 +13,6 @@
 #include <InvStringTools.h>
 #include <graphics/CInvText.h>
 
-
-
-
 static const std::string lModLogId( "Text" );
 
 namespace Inv
@@ -64,7 +61,8 @@ namespace Inv
   {
     
     float x = xTopLeft + letterSize * 0.5;
-    float y = xTopLeft + letterSize * 0.5;
+    float y = yTopLeft + letterSize * 0.5;
+                        // Sprites are drawn from center, one letter - one sprite
 
     for( auto ltr : txt )
     {
@@ -72,14 +70,46 @@ namespace Inv
       if( it != mLetterMap.end() )
       {
         auto & sprite = it->second;
-        sprite->Draw(
-          0, x, y, 0.5*letterSize, 0.5*letterSize, 0, color );
+        sprite->Draw( 0, x, y, letterSize, letterSize, 0, color );
       } // if
 
       x += letterSize;
-    }
+    } // for
 
 
   } // CInvText::Draw
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvText::DrawFromRight(
+    const std::string & txt, 
+    float xTopLeft, 
+    float yTopLeft,
+    float width,
+    float letterSize, 
+    DWORD color ) const
+  {
+
+    float x = xTopLeft + width - letterSize * 0.5;
+    float y = yTopLeft + letterSize * 0.5;
+                        // Sprites are drawn from center, one letter - one sprite
+
+    for( auto rit = txt.rbegin(); rit != txt.rend(); ++rit )
+    {
+      auto ltr = *rit;
+      auto it = mLetterMap.find( std::tolower( ltr ) );
+      if( it != mLetterMap.end() )
+      {
+        auto & sprite = it->second;
+        sprite->Draw( 0, x, y, letterSize, letterSize, 0, color );
+      } // if
+
+      x -= letterSize;
+      if( x < xTopLeft )
+        break;
+
+    } // for
+
+  } // CInvText::DrawFromRight
 
 } // namespace Inv

@@ -113,16 +113,26 @@ namespace Inv
     if( true == autogenerate )
     {
       mHiscoreList.clear();
-      mHiscoreList.emplace_back( 1000000 , "gemini" );
-      mHiscoreList.emplace_back(  900000 , "fomosa" );
-      mHiscoreList.emplace_back(  800000 , "pizzax" );
-      mHiscoreList.emplace_back(  700000 , "grudge" );
-      mHiscoreList.emplace_back(  600000 , "letaxo" );
-      mHiscoreList.emplace_back(  500000 , "buffon" );
-      mHiscoreList.emplace_back(  400000 , "stupid" );
-      mHiscoreList.emplace_back(  300000 , "blurry" );
-      mHiscoreList.emplace_back(  200000 , "randal" );
-      mHiscoreList.emplace_back(  100000 , "wasabi" );
+      mHiscoreList.emplace_back( 1000000, "gemini" );
+      mHiscoreList.emplace_back(  900000, "fomosa" );
+      mHiscoreList.emplace_back(  800000, "pizzax" );
+      mHiscoreList.emplace_back(  700000, "grudge" );
+      mHiscoreList.emplace_back(  600000, "letaxo" );
+      mHiscoreList.emplace_back(  500000, "buffon" );
+      mHiscoreList.emplace_back(  400000, "rubens" );
+      mHiscoreList.emplace_back(  300000, "blurry" );
+      mHiscoreList.emplace_back(  200000, "randal" );
+      mHiscoreList.emplace_back(  100000, "wasabi" );
+      mHiscoreList.emplace_back(   90000, "scooby" );
+      mHiscoreList.emplace_back(   80000, "parley" );
+      mHiscoreList.emplace_back(   70000, "greens" );
+      mHiscoreList.emplace_back(   60000, "stupid" );
+      mHiscoreList.emplace_back(   50000, "putrid" );
+      mHiscoreList.emplace_back(   40000, "boogey" );
+      mHiscoreList.emplace_back(   30000, "maroon" );
+      mHiscoreList.emplace_back(   20000, "purple" );
+      mHiscoreList.emplace_back(   10000, "unholy" );
+      mHiscoreList.emplace_back(    9000, "plague" );
     } // if
 
     std::sort( mHiscoreList.begin(), mHiscoreList.end(), []( auto & left, auto & right ) 

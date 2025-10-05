@@ -134,14 +134,18 @@ namespace Inv
   bool CInvGame::Initialize()
   {
 
+    //------ Non-graphics initialization -------------------------------------------------------------
+
     mHiscoreKeeper = std::make_unique<CInvHiscoreList>( mSettings.GetHiscorePath() );
+
+    //------ Graphics initialization - system --------------------------------------------------------
 
     mWindowClass = { sizeof( WNDCLASSEX ), CS_CLASSDC, MsgProc, 0L, 0L,
                       GetModuleHandle( NULL ), NULL, NULL, NULL, NULL,
                       mWindiwClassId.c_str(), NULL };
     RegisterClassEx( &mWindowClass );
 
-    RECT r = { 0,0,800,600 };
+    RECT r = { 0, 0, mSettings.GetWindowWidth(), mSettings.GetWindowHeight() };
     int style = mSettings.GetFullScreen() ? WS_POPUP : WS_OVERLAPPEDWINDOW;
     style |= WS_VISIBLE;
     AdjustWindowRect( &r, style, false );
@@ -167,6 +171,8 @@ namespace Inv
     ShowWindow( mHWnd, SW_SHOWDEFAULT );
     UpdateWindow( mHWnd );
 
+    //------ Graphics initialization - custom --------------------------------------------------------
+
     mTextCreator = std::make_unique<CInvText>( mSettings, mPd3dDevice, "/letters" );
 
     mInsertCoinScreen = std::make_unique<CInvInsertCoinScreen>(
@@ -175,7 +181,10 @@ namespace Inv
       *mHiscoreKeeper,
       mPD3D,
       mPd3dDevice,
-      mPVB );
+      mPVB,
+      mStartTime );
+
+    mPrimitives = std::make_unique<CInvPrimitive>( mSettings, mPd3dDevice );
 
     return true;
 
@@ -197,20 +206,26 @@ namespace Inv
       return false;
     }
 
+    if( nullptr == mPrimitives )
+    {
+      LOG << "Primitives drawing device is not initialized properly.";
+      return false;
+    }
+
     if( nullptr == mInsertCoinScreen )
     {
       LOG << "Insert coin screen is not initialized properly.";
       return false;
     }
 
-//     CInvSprite sprite( mSettings, mPd3dDevice );
-//     sprite.AddSpriteImage( "/letters/alet.png" );
-
-//float shift = 0;
-
     bool stillInLoop = true;
     uint32_t newScoreToEnter = 0;
     bool gameStart = false;
+
+/**//**//**//**/
+    LARGE_INTEGER timeReferncePoint;
+    timeReferncePoint.QuadPart = mStartTime.QuadPart;
+/**//**//**//**/
 
     while( stillInLoop )
     {
@@ -226,7 +241,7 @@ namespace Inv
       if( IsKeyDown( VK_ESCAPE ) ) 
         stillInLoop = false;
 
-      // Clear the backbuffer to a blue color
+      // Clear the backbuffer to a background color
       mPd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, mClearColor, 1.0f, 0 );
 
       mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, true );
@@ -248,7 +263,7 @@ namespace Inv
       //mPd3dDevice->SetTexture(0,NULL);
       mPd3dDevice->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
 
-      D3DVIEWPORT9 vp = { 0,0, 800, 600, 0, 1 };
+      D3DVIEWPORT9 vp = { 0,0, mSettings.GetWindowWidth(), mSettings.GetWindowHeight(), 0, 1 };
       //mPd3dDevice->SetViewport(&vp);
 
       mPd3dDevice->SetFVF( D3DFVF_CUSTOMVERTEX );
@@ -257,20 +272,19 @@ namespace Inv
       if( SUCCEEDED( mPd3dDevice->BeginScene() ) )
       {
 
-        // Rendering of scene objects can happen here
+#if _DEBUG
+        mPrimitives->DrawSquare(
+          1, 1,         // Viewport border for debugging purposes
+          mSettings.GetWindowWidth() - 1,
+          mSettings.GetWindowHeight() - 1,
+          D3DCOLOR_ARGB( 255, 0, 255, 0 ), true );
+#endif
 
-        if( !mInsertCoinScreen->MainLoop( newScoreToEnter, gameStart ) )
+        if( !mInsertCoinScreen->MainLoop( newScoreToEnter, gameStart, timeReferncePoint ) )
         {
           LOG << "Insert coin screen loop failed, quitting";
           stillInLoop = false;
         } // if
-
-//sprite.Draw( 0, 400, 300, 100, 100 );
-
-// mTextCreator->Draw( "Space invaders", 0, 0, 40 + shift );
-// ++shift;
-// if( shift > 200 )
-//   shift = 0;
 
         // End the scene
         mPd3dDevice->EndScene();

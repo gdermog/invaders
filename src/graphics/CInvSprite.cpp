@@ -92,19 +92,38 @@ namespace Inv
     IDirect3DTexture9 * t = (IDirect3DTexture9 *)tex;
     mPd3dDevice->SetTexture( 0, t );
 
-    float c = cosf( rotateRad );
-    float s = sinf( rotateRad );
+    xSize *= 0.5f;
+    ySize *= 0.5f;
 
-#define ROTATE(xx,yy) (xCentre + (xx)*c + (yy)*s), (yCentre + (yy)*c - (xx)*s) 
-    CUSTOMVERTEX tea2[] =
+    if( !IsZero( rotateRad ) )
     {
-      { ROTATE( -xSize,-ySize ), 0.5f, 1.0f, color, 0.0f, 0.0f, }, // x, y, z, rhw, color
-      { ROTATE(  xSize,-ySize ), 0.5f, 1.0f, color, 1.0f, 0.0f, },
-      { ROTATE( -xSize, ySize ), 0.5f, 1.0f, color, 0.0f, 1.0f, },
-      { ROTATE(  xSize, ySize ), 0.5f, 1.0f, color, 1.0f, 1.0f, },
-    };
+      float c = cosf( rotateRad );
+      float s = sinf( rotateRad );
 
-    mPd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, tea2, sizeof( CUSTOMVERTEX ) );
+#define ROTATE(xx,yy) ( xCentre + (xx)*c + (yy)*s ), ( yCentre + (yy)*c - (xx)*s ) 
+      CUSTOMVERTEX tea2[] =
+      {
+        { ROTATE( -xSize, -ySize ), 0.5f, 1.0f, color, 0.0f, 0.0f, }, // x, y, z, rhw, color
+        { ROTATE(  xSize, -ySize ), 0.5f, 1.0f, color, 1.0f, 0.0f, },
+        { ROTATE( -xSize,  ySize ), 0.5f, 1.0f, color, 0.0f, 1.0f, },
+        { ROTATE(  xSize,  ySize ), 0.5f, 1.0f, color, 1.0f, 1.0f, },
+      };
+
+      mPd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, tea2, sizeof( CUSTOMVERTEX ) );
+    } // if
+    else
+    {
+      CUSTOMVERTEX tea2[] =
+      {
+        { xCentre - xSize, yCentre - ySize, 0.5f, 1.0f, color, 0.0f, 0.0f, }, // x, y, z, rhw, color
+        { xCentre + xSize, yCentre - ySize, 0.5f, 1.0f, color, 1.0f, 0.0f, },
+        { xCentre - xSize, yCentre + ySize, 0.5f, 1.0f, color, 0.0f, 1.0f, },
+        { xCentre + xSize, yCentre + ySize, 0.5f, 1.0f, color, 1.0f, 1.0f, },
+      };
+
+      mPd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, tea2, sizeof( CUSTOMVERTEX ) );
+    } // else
+
 
   } // CInvSprite::Draw
 

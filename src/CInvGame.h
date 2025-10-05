@@ -18,6 +18,7 @@
 
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvText.h>
+#include <graphics/CInvPrimitive.h>
 
 #include <engine/CInvHiscoreList.h>
 #include <engine/CInvInsertCoinScreen.h>
@@ -58,6 +59,8 @@ namespace Inv
 
     std::unique_ptr<CInvHiscoreList> mHiscoreKeeper;
 
+    std::unique_ptr <CInvPrimitive> mPrimitives;
+
     std::unique_ptr<CInvInsertCoinScreen> mInsertCoinScreen;
 
     const CInvSettings & mSettings;
@@ -78,7 +81,6 @@ namespace Inv
     static const std::wstring mWindiwClassId;
 
     static const std::wstring mWindiwName;
-
 
   };
 
