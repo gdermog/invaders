@@ -87,6 +87,52 @@ namespace Inv
   // Our custom FVF, which describes our custom vertex structure
 #define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1)
 
+  enum class ControlState_t: uint16_t
+  {
+    kNone               = 0x00,
+    kLeft               = 0x01,
+    kRight              = 0x02,
+    kUp                 = 0x04,
+    kDown               = 0x08,
+    kFire               = 0x10,
+    kSpecial            = 0x20,
+    kStart              = 0x40,
+  };
+
+  using ControlStateFlags_t = std::underlying_type<ControlState_t>::type;
+
+  inline ControlStateFlags_t operator|( ControlState_t a, ControlState_t b )
+  {
+    return static_cast<ControlStateFlags_t>(
+      static_cast<ControlStateFlags_t>( a ) | static_cast<ControlStateFlags_t>( b ) );
+  } // operator|
+
+  inline ControlStateFlags_t operator|=( ControlStateFlags_t & a, ControlState_t b )
+  {
+    a = static_cast<ControlStateFlags_t>(
+      a | static_cast<ControlStateFlags_t>( b ) );
+    return a;
+  } // operator|=
+
+  inline bool ControlStateHave( ControlStateFlags_t val, ControlState_t testingFor )
+  {
+    return ( static_cast<ControlStateFlags_t>( testingFor ) == 
+      ( val & static_cast<ControlStateFlags_t>( testingFor ) ) );
+  } // ControlStateHave
+
+  inline void ControlStateSet( ControlStateFlags_t & val, ControlState_t setting )
+  {
+    val = static_cast<ControlStateFlags_t>( 
+      val | static_cast<ControlStateFlags_t>( setting ) );
+  } // ControlStateSet
+
+  inline void ControlStateClear( ControlStateFlags_t & val, ControlState_t clearing )
+  {
+    val = static_cast<ControlStateFlags_t>(
+      val & ~static_cast<ControlStateFlags_t>( clearing ) );
+  } // ControlStateClear
+
+  using ControlValue_t = char;
 
 } // namespace Inv
 

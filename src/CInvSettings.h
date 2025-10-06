@@ -58,6 +58,9 @@ namespace Inv
     const std::string & GetGameIdentifier() const { return mGameIdentifier; }
     //!< \brief Returns game identifier
 
+    int32_t GetSeed() const { return mSeed; }
+    //!< \brief Returns seed for random number generator, if -1, current time is used
+
 		bool GetFullScreen() const { return mFullScreen; }
 		//!< \brief Returns true if the game should run in fullscreen mode
 
@@ -81,6 +84,8 @@ namespace Inv
 
     std::string mGameIdentifier;
                         //!< Game identifier
+
+    int32_t mSeed;      //!< Seed for random number generator, if -1, current time is used
 
     bool mFullScreen;   //!< If true, game runs in fullscreen mode
    

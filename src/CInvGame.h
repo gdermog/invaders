@@ -22,6 +22,7 @@
 
 #include <engine/CInvHiscoreList.h>
 #include <engine/CInvInsertCoinScreen.h>
+#include <engine/CInvPlayItScreen.h>
 
 namespace Inv
 {
@@ -55,6 +56,8 @@ namespace Inv
 
     bool IsKeyDown( int key );
 
+    void ProcessInput( ControlStateFlags_t & controlState, ControlValue_t & controlValue );
+
     std::unique_ptr<CInvText> mTextCreator;
 
     std::unique_ptr<CInvHiscoreList> mHiscoreKeeper;
@@ -62,6 +65,7 @@ namespace Inv
     std::unique_ptr <CInvPrimitive> mPrimitives;
 
     std::unique_ptr<CInvInsertCoinScreen> mInsertCoinScreen;
+    std::unique_ptr<CInvPlayItScreen> mPlayItScreen;
 
     const CInvSettings & mSettings;
 

@@ -16,6 +16,7 @@
     <ClCompile Include="src\CInvLogger.cpp" />
     <ClCompile Include="src\engine\CInvHiscoreList.cpp" />
     <ClCompile Include="src\engine\CInvInsertCoinScreen.cpp" />
+    <ClCompile Include="src\engine\CInvPlayItScreen.cpp" />
     <ClCompile Include="src\graphics\CInvPrimitive.cpp" />
     <ClCompile Include="src\graphics\CInvScissorGuard.cpp" />
     <ClCompile Include="src\graphics\CInvSprite.cpp" />
@@ -30,6 +31,7 @@
     <ClInclude Include="src\CInvLogger.h" />
     <ClInclude Include="src\engine\CInvHiscoreList.h" />
     <ClInclude Include="src\engine\CInvInsertCoinScreen.h" />
+    <ClInclude Include="src\engine\CInvPlayItScreen.h" />
     <ClInclude Include="src\graphics\CInvPrimitive.h" />
     <ClInclude Include="src\graphics\CInvScissorGuard.h" />
     <ClInclude Include="src\graphics\CInvSprite.h" />

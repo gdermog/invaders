@@ -17,6 +17,7 @@
 
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvText.h>
+#include <graphics/CInvPrimitive.h>
 
 #include <engine/CInvHiscoreList.h>
 
@@ -31,6 +32,7 @@ namespace Inv
         const CInvSettings & settings,
         const CInvText & textCreator,
         CInvHiscoreList & hiscoreKeeper,
+        CInvPrimitive & primitives,
         LPDIRECT3D9 pD3D,
         LPDIRECT3DDEVICE9 pd3dDevice,
         LPDIRECT3DVERTEXBUFFER9 pVB,
@@ -43,30 +45,35 @@ namespace Inv
     bool MainLoop( 
       uint32_t & newScoreToEnter, 
       bool &gameStart, 
+      ControlStateFlags_t controlState,
+      ControlValue_t controlValue,
       LARGE_INTEGER actualTimePoint );
 
-    void UpdateTimeReferencePoint( LARGE_INTEGER newTimeRefPoint )
-    { mTimeReferncePoint = newTimeRefPoint; }
+    void Reset( LARGE_INTEGER newTimeRefPoint );
 
   private:
 
     void FormatHighScore( uint32_t inScore, const std::string & inName );
 
-    LARGE_INTEGER mTimeReferncePoint;
+    bool DrawHighScores();
+
+    bool DrawEnterCallsign( ControlValue_t controlValue, bool &isDone );
 
     static const std::string mWelcomeHeader;
-
     static const std::string mPressToStart;
-
+    static const std::string mYouQualified;
     static const std::string mEnterCallsign;
 
     static const uint32_t mHighScoreAreaVisibleLines;
+    static const uint32_t mHighScoreRollingStepPerLine;
     static const float mHighScoreAreaFontRelativeSize;
+    static const float mPressEnterFontRelativeSize;
+
+    LARGE_INTEGER mTimeReferencePoint;
 
     float mLetterSize;
     float mHeaderXPos;
     float mHeaderYPos;
-
 
     float mHighScoreLetterSize;
     float mHighScoreTopLeftX;
@@ -77,12 +84,30 @@ namespace Inv
     float mHighScoreHeight;
     std::string mHighScoreLineContent;
 
+    float mPressEnterLetterSize;
+    float mPressEnterTopLeftX;
+    float mPressEnterTopLeftY;
+
+    float mQualifiedLetterSize;
+    float mQualifiedTopLeftX;
+    float mQualifiedTopLeftY;
+    float mEnterCallsignTopLeftX;
+    float mEnterCallsignTopLeftY;
+
+    float mCallsignLetterSize;
+    float mCallsignTopLeftX;
+    float mCallsignTopLeftY;
+
     uint64_t mRollState;
     uint64_t mRollMax;
 
     const CInvSettings & mSettings;
     const CInvText & mTextCreator;
     CInvHiscoreList & mHiscoreKeeper;
+    CInvPrimitive & mPrimitives;
+
+    std::string mCurrentCallsign;
+    ControlValue_t mLastControlValue;
 
     LPDIRECT3D9             mPD3D;
     LPDIRECT3DDEVICE9       mPd3dDevice;

@@ -18,7 +18,7 @@ static const std::string lModLogId( "GAMELOOP" );
 //-----------------------------------------------------------------------------
 
 static bool lKeyDown[256];
-static int lKeyHit[256];
+//static int lKeyHit[256];
 static int lMouseButton;
 
 LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
@@ -29,13 +29,13 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
     SetCapture( hWnd );
     lMouseButton |= 1;
     lKeyDown[VK_LBUTTON] = true;
-    lKeyHit[VK_LBUTTON]++;
+ //   lKeyHit[VK_LBUTTON]++;
     break;
 
   case WM_RBUTTONDOWN:
     SetCapture( hWnd );
     lKeyDown[VK_RBUTTON] = true;
-    lKeyHit[VK_RBUTTON]++;
+ //   lKeyHit[VK_RBUTTON]++;
     lMouseButton |= 2;
     break;
 
@@ -43,7 +43,7 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
     SetCapture( hWnd );
     lMouseButton |= 4;
     lKeyDown[VK_MBUTTON] = true;
-    lKeyHit[VK_MBUTTON]++;
+ //   lKeyHit[VK_MBUTTON]++;
     break;
 
   case WM_LBUTTONUP:
@@ -67,12 +67,12 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
   case WM_KEYDOWN:
   case WM_SYSKEYDOWN:
     lKeyDown[wParam & 255] = true;
-    lKeyHit[wParam & 255]++;
+//    lKeyHit[wParam & 255]++;
     return 0;
 
   case WM_KEYUP:
   case WM_SYSKEYUP:
-    lKeyDown[wParam & 127] = false;
+    lKeyDown[wParam & 255] = false;
     break;
 
   case WM_DESTROY:
@@ -102,6 +102,9 @@ namespace Inv
   CInvGame::CInvGame( const CInvSettings & settings ):
     mTextCreator( nullptr ),
     mHiscoreKeeper( nullptr ),
+    mPrimitives( nullptr ),
+    mInsertCoinScreen( nullptr ),
+    mPlayItScreen( nullptr ),
     mSettings( settings ),
     mWindowClass{},
     mHWnd{},
@@ -135,6 +138,11 @@ namespace Inv
   {
 
     //------ Non-graphics initialization -------------------------------------------------------------
+
+    auto randSeed = mSettings.GetSeed();
+    if( randSeed < 0 )
+      randSeed = (int32_t)time( NULL );
+    srand( randSeed );
 
     mHiscoreKeeper = std::make_unique<CInvHiscoreList>( mSettings.GetHiscorePath() );
 
@@ -175,16 +183,26 @@ namespace Inv
 
     mTextCreator = std::make_unique<CInvText>( mSettings, mPd3dDevice, "/letters" );
 
+    mPrimitives = std::make_unique<CInvPrimitive>( mSettings, mPd3dDevice );
+
     mInsertCoinScreen = std::make_unique<CInvInsertCoinScreen>(
       mSettings,
       *mTextCreator,
       *mHiscoreKeeper,
+      *mPrimitives,
       mPD3D,
       mPd3dDevice,
       mPVB,
       mStartTime );
 
-    mPrimitives = std::make_unique<CInvPrimitive>( mSettings, mPd3dDevice );
+    mPlayItScreen = std::make_unique<CInvPlayItScreen>(
+      mSettings,
+      *mTextCreator,
+      *mPrimitives,
+      mPD3D,
+      mPd3dDevice,
+      mPVB,
+      mStartTime );
 
     return true;
 
@@ -198,34 +216,47 @@ namespace Inv
     {
       LOG << "DirectX is not initialized properly.";
       return false;
-    }
+    } // if
 
     if( nullptr == mTextCreator )
     {
       LOG << "Text creator is not initialized properly.";
       return false;
-    }
+    } // if
 
     if( nullptr == mPrimitives )
     {
       LOG << "Primitives drawing device is not initialized properly.";
       return false;
-    }
+    } // if
 
     if( nullptr == mInsertCoinScreen )
     {
       LOG << "Insert coin screen is not initialized properly.";
       return false;
-    }
+    } // if
+
+    if( nullptr == mPlayItScreen )
+    {
+      LOG << "Plqy screen is not initialized properly.";
+      return false;
+    } // if
 
     bool stillInLoop = true;
     uint32_t newScoreToEnter = 0;
-    bool gameStart = false;
+    bool gameStartRequest = false;
+    bool gameEndRequest = false;
+    bool gameInProgress = false;
+
+    ControlStateFlags_t controlState = 0;
+    ControlValue_t controlValue = 0;
 
 /**//**//**//**/
     LARGE_INTEGER timeReferncePoint;
     timeReferncePoint.QuadPart = mStartTime.QuadPart;
 /**//**//**//**/
+
+    mInsertCoinScreen->Reset( timeReferncePoint );
 
     while( stillInLoop )
     {
@@ -240,6 +271,8 @@ namespace Inv
 
       if( IsKeyDown( VK_ESCAPE ) ) 
         stillInLoop = false;
+
+      ProcessInput( controlState, controlValue );
 
       // Clear the backbuffer to a background color
       mPd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, mClearColor, 1.0f, 0 );
@@ -272,23 +305,52 @@ namespace Inv
       if( SUCCEEDED( mPd3dDevice->BeginScene() ) )
       {
 
-#if _DEBUG
-        mPrimitives->DrawSquare(
-          1, 1,         // Viewport border for debugging purposes
-          mSettings.GetWindowWidth() - 1,
-          mSettings.GetWindowHeight() - 1,
-          D3DCOLOR_ARGB( 255, 0, 255, 0 ), true );
-#endif
+        gameStartRequest = false;
+        gameEndRequest = false;
 
-        if( !mInsertCoinScreen->MainLoop( newScoreToEnter, gameStart, timeReferncePoint ) )
+        if( ! gameInProgress )
+        {               // If no game is in progress, shows "insert coin" screen. It may either print
+                        // high scores list or enter callsign for new high score, if there is a highscore
+                        // value pending from previous game.
+          if( !mInsertCoinScreen->MainLoop(
+            newScoreToEnter, gameStartRequest, controlState, controlValue, timeReferncePoint ) )
+          {
+            LOG << "Insert coin screen loop failed, quitting";
+            stillInLoop = false;
+          } // if
+        } // if
+
+        if( gameStartRequest && ! gameInProgress )
+        {               // New game requested, initialization of hte game engine is necessary
+          LOG << "Game start requested";
+
+          QueryPerformanceCounter( &timeReferncePoint );
+          mPlayItScreen->Reset( timeReferncePoint );
+          gameInProgress = true;
+          gameStartRequest = false;
+        } // if
+
+        if( gameInProgress )
+        {               // Game is in progress, engine is invoked here
+          if( !mPlayItScreen->MainLoop(
+            newScoreToEnter, gameEndRequest, controlState, controlValue, timeReferncePoint ) )
+          {
+            LOG << "Insert coin screen loop failed, quitting";
+            stillInLoop = false;
+          } // if
+        } // if
+
+        if( gameEndRequest && gameInProgress )
         {
-          LOG << "Insert coin screen loop failed, quitting";
-          stillInLoop = false;
+          LOG << "Game ended";
+          QueryPerformanceCounter( &timeReferncePoint );
+          mInsertCoinScreen->Reset( timeReferncePoint );
+          gameInProgress = false;
+          gameEndRequest = false;
         } // if
 
         // End the scene
         mPd3dDevice->EndScene();
-
 
       } // if
 
@@ -359,6 +421,38 @@ namespace Inv
   {
     return lKeyDown[key & 255];
   } // CInvGame::IsKeyDown
+
+  //-------------------------------------------------------------------------------------------------
+
+  void CInvGame::ProcessInput( ControlStateFlags_t & controlState, ControlValue_t & controlValue )
+  {
+    controlState = 0;
+    if( IsKeyDown( 'A' ) || IsKeyDown( 'a' ) || IsKeyDown( VK_LEFT ) )
+      controlState |= ControlState_t::kLeft;
+    if( IsKeyDown( 'D' ) || IsKeyDown( 'd' ) || IsKeyDown( VK_RIGHT ) )
+      controlState |= ControlState_t::kRight;
+    if( IsKeyDown( 'W' ) || IsKeyDown( 'a' ) || IsKeyDown( VK_UP ) )
+      controlState |= ControlState_t::kUp;
+    if( IsKeyDown( 'S' ) || IsKeyDown( 'a' ) || IsKeyDown( VK_DOWN ) )
+      controlState |= ControlState_t::kDown;
+    if( IsKeyDown( 'C' ) || IsKeyDown( 'c' ) )
+      controlState |= ControlState_t::kSpecial;
+    if( IsKeyDown( VK_SPACE ) )
+      controlState |= ControlState_t::kFire;
+    if( IsKeyDown( VK_RETURN ) )
+      controlState |= ControlState_t::kStart;
+
+    controlValue = 0;
+    for( int i = 0; i < 256; ++i )
+    {
+      if( lKeyDown[i] )
+      {
+        controlValue = i;
+        break;
+      } // if
+    } // for
+
+  } // CInvGame::ProcessInput
 
 
 } // namespace Inv
