@@ -120,6 +120,19 @@ namespace Inv
       ( (float)mSettings.GetWindowWidth() - CInvHiscoreList::mMaxHiscoreNameLen * mCallsignLetterSize ) * 0.5f;
     mCallsignTopLeftY = mEnterCallsignTopLeftY + mQualifiedLetterSize * 4.5f;
 
+    mTestingSprite = std::make_unique<CInvSprite>( mSettings, mPd3dDevice );
+    mTestingSprite->AddMultipleSpriteImages( "sprites/invader_pink/%03u.png" );
+    mTestingSpriteImageSequenceNr = (uint32_t)mTestingSprite->GetNumberOfImages();
+    mNrOfTestingSprites = 5;
+    mTestSpriteWidth = 80.0;
+    float testSpritesDistance = (float)mSettings.GetWindowWidth() / (float)( mNrOfTestingSprites + 1 );
+    mTestSpriteX.reserve( mNrOfTestingSprites );
+    for( uint32_t i = 0; i < mNrOfTestingSprites; ++i )
+      mTestSpriteX.push_back( testSpritesDistance * (float)( i + 1 ) );
+    mTestSpriteY = 0.5 * ( mPressEnterTopLeftY + mHighScoreBottomRightY );
+    mTestSpriteState = 0;
+    mTestSpriteStateCoef = 6;
+
   } // CInvInsertCoinScreen::CInvInsertCoinScreen
 
   //-------------------------------------------------------------------------------------------------
@@ -175,6 +188,9 @@ namespace Inv
     mLastControlValue = 0;
     mRollState = 0;
     mRollMax = mHiscoreKeeper.GetHiscoreList().size() * mHighScoreRollingStepPerLine;
+
+    mTestSpriteState = 0;
+
   } // CInvInsertCoinScreen::Reset
 
   //-------------------------------------------------------------------------------------------------
@@ -263,6 +279,21 @@ namespace Inv
 
       } // for
 
+    } // if
+    
+    if( 0 < mTestingSpriteImageSequenceNr )
+    {
+      for( uint32_t i = 0; i < mNrOfTestingSprites; ++i )
+      {
+         mTestingSprite->Draw(
+           ( mTestSpriteState % ( mTestSpriteStateCoef * mTestingSpriteImageSequenceNr ) ) 
+            / mTestSpriteStateCoef,
+           mTestSpriteX[i],
+           mTestSpriteY,
+           mTestSpriteWidth,
+           mTestSpriteWidth );
+      } // for
+      ++mTestSpriteState;
     } // if
 
     mTextCreator.Draw( mPressToStart.c_str(), mPressEnterTopLeftX, mPressEnterTopLeftY, mPressEnterLetterSize );

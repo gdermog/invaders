@@ -1,0 +1,1 @@
+ffmpeg -i input_video.mp4 -vf "fps=8,format=rgba,colorkey=0xFFFFFF:0.1:0.1" -frames:v 24 _%03d.png

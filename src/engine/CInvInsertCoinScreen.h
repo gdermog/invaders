@@ -11,7 +11,7 @@
 #define H_CInvInsertCoinScreen
 
 #include <d3d9.h>
-#include <d3dx9.h>
+//#include <d3dx9.h>
 
 #include <InvGlobals.h>
 
@@ -113,6 +113,14 @@ namespace Inv
     LPDIRECT3DDEVICE9       mPd3dDevice;
     LPDIRECT3DVERTEXBUFFER9 mPVB;
 
+    std::unique_ptr<CInvSprite> mTestingSprite;
+    uint32_t mNrOfTestingSprites;
+    uint32_t mTestingSpriteImageSequenceNr;
+    float mTestSpriteWidth;
+    std::vector<float> mTestSpriteX;
+    float mTestSpriteY;
+    uint64_t mTestSpriteState;
+    uint64_t mTestSpriteStateCoef;
   };
 
 } // namespace Inv

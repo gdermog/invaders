@@ -9,10 +9,12 @@
 
 #include <filesystem>
 
+#include <d3dx9.h>
 
 #include <graphics/CInvSprite.h>
 
 #include <CInvLogger.h>
+#include <InvStringTools.h>
 
 
 static const std::string lModLogId( "SPRITE" );
@@ -70,6 +72,38 @@ namespace Inv
     mTextureSizes.push_back( texSize );
 
   } // CInvSprite::AddSpriteImage
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvSprite::AddMultipleSpriteImages( const std::string & imageNameTemplate )
+  {
+    if( nullptr == mPd3dDevice )
+    {
+      LOG << "Direct3D device is null, cannot load images.";
+      return;
+    } // if
+
+    std::filesystem::path imagePath;
+    std::string imageTemplateFilled;
+
+    uint32_t index = 0;
+    while( index < 1000 )
+    {
+      imageTemplateFilled = FormatStr( imageNameTemplate, index + 1 );
+      imagePath = mSettings.GetImagePath() + "/" + imageTemplateFilled;
+
+      if( !std::filesystem::exists( imagePath ) )
+        break;
+
+      AddSpriteImage( imageTemplateFilled );
+
+      ++index;
+
+    } // while
+
+    LOG << index << " images was loaded according to template '" << imageNameTemplate << "'.";
+
+  } // CInvSprite::AddMultipleSpriteImages
 
   //----------------------------------------------------------------------------------------------
 

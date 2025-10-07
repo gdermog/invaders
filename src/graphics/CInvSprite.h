@@ -11,7 +11,7 @@
 #define H_CInvSprite
 
 #include <d3d9.h>
-#include <d3dx9.h>
+//#include <d3dx9.h>
 
 #include <InvGlobals.h>
 #include <CInvSettings.h>
@@ -29,7 +29,11 @@ namespace Inv
     CInvSprite & operator=( const CInvSprite & ) = delete;
     ~CInvSprite();
 
-    void AddSpriteImage( const std::string & imagePath );
+    void AddSpriteImage( const std::string & imageName );
+
+    void AddMultipleSpriteImages( const std::string & imageNameTemplate );
+
+    size_t GetNumberOfImages() const { return mTextures.size(); }
 
     void Draw(
       size_t imageIndex,

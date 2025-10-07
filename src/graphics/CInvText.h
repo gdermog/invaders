@@ -11,7 +11,7 @@
 #define H_CInvText
 
 #include <d3d9.h>
-#include <d3dx9.h>
+//#include <d3dx9.h>
 
 #include <InvGlobals.h>
 #include <CInvSettings.h>
