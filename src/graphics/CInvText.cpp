@@ -57,6 +57,9 @@ namespace Inv
     float xTopLeft,
     float yTopLeft,
     float letterSize,
+    LARGE_INTEGER referenceTick,
+    LARGE_INTEGER actualTick,
+    LARGE_INTEGER diffTick,
     DWORD color ) const
   {
     
@@ -70,7 +73,10 @@ namespace Inv
       if( it != mLetterMap.end() )
       {
         auto & sprite = it->second;
-        sprite->Draw( 0, x, y, letterSize, letterSize, 0, color );
+        sprite->Draw( 
+          x, y, letterSize, letterSize, 
+          referenceTick, actualTick, diffTick,
+          color );
       } // if
 
       x += letterSize;
@@ -86,7 +92,10 @@ namespace Inv
     float xTopLeft, 
     float yTopLeft,
     float width,
-    float letterSize, 
+    float letterSize,
+    LARGE_INTEGER referenceTick,
+    LARGE_INTEGER actualTick,
+    LARGE_INTEGER diffTick,
     DWORD color ) const
   {
 
@@ -101,7 +110,10 @@ namespace Inv
       if( it != mLetterMap.end() )
       {
         auto & sprite = it->second;
-        sprite->Draw( 0, x, y, letterSize, letterSize, 0, color );
+        sprite->Draw( 
+          x, y, letterSize, letterSize, 
+          referenceTick, actualTick, diffTick, 
+          color );
       } // if
 
       x -= letterSize;

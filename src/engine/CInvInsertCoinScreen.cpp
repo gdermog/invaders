@@ -13,7 +13,8 @@
 #include <InvStringTools.h>
 
 #include <graphics/CInvScissorGuard.h>
-
+#include <graphics/CInvEffectSpriteAnimation.h>
+#include <graphics/CInvEffectSpriteShiftRotate.h>
 
 namespace Inv
 {
@@ -44,7 +45,7 @@ namespace Inv
     LPDIRECT3D9 pD3D,
     LPDIRECT3DDEVICE9 pd3dDevice,
     LPDIRECT3DVERTEXBUFFER9 pVB,
-    LARGE_INTEGER timeReferncePoint ):
+    LARGE_INTEGER tickReferncePoint ):
 
     mPrimitives( primitives ),
     mLetterSize( 20.0f ),
@@ -78,7 +79,16 @@ namespace Inv
     mPD3D( pD3D ),
     mPd3dDevice( pd3dDevice ),
     mPVB( pVB ),
-    mTimeReferencePoint( timeReferncePoint )
+    mTitleSprite( nullptr ),
+    mNrOfTitleSprites( 0 ),
+    mTitleSpriteImageSequenceNr( 0 ),
+    mTitleSpriteWidth( 20.0f ),
+    mTitleSpriteX(),
+    mTitleSpriteY( 0.0f ),
+    mTitleSpriteAnimationEffect( nullptr ),
+    mTitleSpriteShiftRotateEffect( nullptr ),
+    mTickReferencePoint( tickReferncePoint ),
+    mDiffTick{ 0 }
   {
 
     auto windowWidth = mSettings.GetWindowWidth();
@@ -120,18 +130,27 @@ namespace Inv
       ( (float)mSettings.GetWindowWidth() - CInvHiscoreList::mMaxHiscoreNameLen * mCallsignLetterSize ) * 0.5f;
     mCallsignTopLeftY = mEnterCallsignTopLeftY + mQualifiedLetterSize * 4.5f;
 
-    mTestingSprite = std::make_unique<CInvSprite>( mSettings, mPd3dDevice );
-    mTestingSprite->AddMultipleSpriteImages( "sprites/invader_pink/%03u.png" );
-    mTestingSpriteImageSequenceNr = (uint32_t)mTestingSprite->GetNumberOfImages();
-    mNrOfTestingSprites = 5;
-    mTestSpriteWidth = 80.0;
-    float testSpritesDistance = (float)mSettings.GetWindowWidth() / (float)( mNrOfTestingSprites + 1 );
-    mTestSpriteX.reserve( mNrOfTestingSprites );
-    for( uint32_t i = 0; i < mNrOfTestingSprites; ++i )
-      mTestSpriteX.push_back( testSpritesDistance * (float)( i + 1 ) );
-    mTestSpriteY = 0.5 * ( mPressEnterTopLeftY + mHighScoreBottomRightY );
-    mTestSpriteState = 0;
-    mTestSpriteStateCoef = 6;
+    mTitleSprite = std::make_unique<CInvSprite>( mSettings, mPd3dDevice );
+    mTitleSprite->AddMultipleSpriteImages( "sprites/invader_pink/%03u.png" );
+    mTitleSpriteImageSequenceNr = (uint32_t)mTitleSprite->GetNumberOfImages();
+    mNrOfTitleSprites = 5;
+    mTitleSpriteWidth = 80.0;
+    float testSpritesDistance = (float)mSettings.GetWindowWidth() / (float)( mNrOfTitleSprites + 1 );
+    mTitleSpriteX.reserve( mNrOfTitleSprites );
+    for( uint32_t i = 0; i < mNrOfTitleSprites; ++i )
+      mTitleSpriteX.push_back( testSpritesDistance * (float)( i + 1 ) );
+    mTitleSpriteY = 0.5 * ( mPressEnterTopLeftY + mHighScoreBottomRightY );
+
+    auto *animEff = new CInvEffectSpriteAnimation( mSettings, mPd3dDevice, 1 );
+    animEff->SetPace( 6 );
+    mTitleSpriteAnimationEffect = std::shared_ptr<CInvEffect>( animEff );   
+    mTitleSprite->AddEffect( mTitleSpriteAnimationEffect );
+
+    auto * shiftRotEff = new CInvEffectSpriteShiftRotate( mSettings, mPd3dDevice, 2 );
+    shiftRotEff->SetShift( mTitleSpriteWidth * 0.2f, 0.0f );
+    shiftRotEff->SetPace( 300 );
+    mTitleSpriteShiftRotateEffect = std::shared_ptr<CInvEffect>( shiftRotEff );
+    mTitleSprite->AddEffect( mTitleSpriteShiftRotateEffect );
 
   } // CInvInsertCoinScreen::CInvInsertCoinScreen
 
@@ -149,21 +168,24 @@ namespace Inv
     bool & gameStart,
     ControlStateFlags_t controlState,
     ControlValue_t controlValue,
-    LARGE_INTEGER actualTimePoint )
+    LARGE_INTEGER actualTick )
   {
 
     gameStart = false;
 
-    mTextCreator.Draw( mWelcomeHeader.c_str(), mHeaderXPos, mHeaderYPos, mLetterSize );
+    mTextCreator.Draw( 
+      mWelcomeHeader.c_str(), 
+      mHeaderXPos, mHeaderYPos, mLetterSize,
+      mTickReferencePoint, actualTick, mDiffTick );
 
     if( 0 == newScoreToEnter )
     {
       gameStart = ControlStateHave( controlState, ControlState_t::kStart );
-      return DrawHighScores();
+      return DrawHighScores( actualTick );
     }
 
     bool isDone = false;
-    auto retVal = DrawEnterCallsign( controlValue, isDone );
+    auto retVal = DrawEnterCallsign( actualTick, controlValue, isDone );
 
     if( isDone )
     {
@@ -180,16 +202,14 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
-  void CInvInsertCoinScreen::Reset( LARGE_INTEGER newTimeRefPoint )
+  void CInvInsertCoinScreen::Reset( LARGE_INTEGER newTickRefPoint )
   {
-    mTimeReferencePoint = newTimeRefPoint;
+    mTickReferencePoint = newTickRefPoint;
     auto &hiscores = mHiscoreKeeper.GetHiscoreList();
     mRollMax = hiscores.size() * mHighScoreRollingStepPerLine;
     mLastControlValue = 0;
     mRollState = 0;
     mRollMax = mHiscoreKeeper.GetHiscoreList().size() * mHighScoreRollingStepPerLine;
-
-    mTestSpriteState = 0;
 
   } // CInvInsertCoinScreen::Reset
 
@@ -237,7 +257,7 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
-  bool CInvInsertCoinScreen::DrawHighScores()
+  bool CInvInsertCoinScreen::DrawHighScores( LARGE_INTEGER actualTick )
   {
     auto &hiscores = mHiscoreKeeper.GetHiscoreList();
     float shift = 0.0;
@@ -272,7 +292,8 @@ namespace Inv
             mHighScoreTopLeftX,
             lineYPos,
             mHighScoreWidth,
-            mHighScoreLetterSize );
+            mHighScoreLetterSize,
+            mTickReferencePoint, actualTick, mDiffTick );
         } // if
 
         lineYPos += mHighScoreLetterSize;
@@ -281,34 +302,47 @@ namespace Inv
 
     } // if
     
-    if( 0 < mTestingSpriteImageSequenceNr )
+    if( 0 < mTitleSpriteImageSequenceNr )
     {
-      for( uint32_t i = 0; i < mNrOfTestingSprites; ++i )
+      LARGE_INTEGER diffTick;
+      for( uint32_t i = 0; i < mNrOfTitleSprites; ++i )
       {
-         mTestingSprite->Draw(
-           ( mTestSpriteState % ( mTestSpriteStateCoef * mTestingSpriteImageSequenceNr ) ) 
-            / mTestSpriteStateCoef,
-           mTestSpriteX[i],
-           mTestSpriteY,
-           mTestSpriteWidth,
-           mTestSpriteWidth );
+        diffTick.QuadPart = - (LONGLONG)(2 * i * mNrOfTitleSprites);
+        mTitleSprite->Draw(
+          mTitleSpriteX[i],
+          mTitleSpriteY,
+          mTitleSpriteWidth,
+          mTitleSpriteWidth,
+          mTickReferencePoint,
+          actualTick,
+          diffTick );
       } // for
-      ++mTestSpriteState;
     } // if
 
-    mTextCreator.Draw( mPressToStart.c_str(), mPressEnterTopLeftX, mPressEnterTopLeftY, mPressEnterLetterSize );
+    mTextCreator.Draw( 
+      mPressToStart.c_str(), 
+      mPressEnterTopLeftX, mPressEnterTopLeftY, mPressEnterLetterSize,
+      mTickReferencePoint, actualTick, mDiffTick );
 
     return true;
   } // CInvInsertCoinScreen::DrawHighScores
 
   //-------------------------------------------------------------------------------------------------
 
-  bool CInvInsertCoinScreen::DrawEnterCallsign( ControlValue_t controlValue, bool & isDone )
+  bool CInvInsertCoinScreen::DrawEnterCallsign(
+    LARGE_INTEGER actualTick,
+    ControlValue_t controlValue, 
+    bool & isDone )
   {
     isDone = false;
 
-    mTextCreator.Draw( mYouQualified.c_str(), mQualifiedTopLeftX, mQualifiedTopLeftY, mQualifiedLetterSize );
-    mTextCreator.Draw( mEnterCallsign.c_str(), mEnterCallsignTopLeftX, mEnterCallsignTopLeftY, mQualifiedLetterSize );
+    mTextCreator.Draw( 
+      mYouQualified.c_str(), mQualifiedTopLeftX, mQualifiedTopLeftY, mQualifiedLetterSize,
+      mTickReferencePoint, actualTick, mDiffTick );
+
+    mTextCreator.Draw( 
+      mEnterCallsign.c_str(), mEnterCallsignTopLeftX, mEnterCallsignTopLeftY, mQualifiedLetterSize,
+      mTickReferencePoint, actualTick, mDiffTick );
 
     if( 0 != mLastControlValue && 0 == controlValue )
     {
@@ -333,7 +367,11 @@ namespace Inv
       CInvHiscoreList::mMaxHiscoreNameLen - letters : 0;
 
     if( 0 < letters )
-      mTextCreator.Draw( mCurrentCallsign, mCallsignTopLeftX, mCallsignTopLeftY, mCallsignLetterSize );
+    {
+      mTextCreator.Draw(
+        mCurrentCallsign, mCallsignTopLeftX, mCallsignTopLeftY, mCallsignLetterSize,
+        mTickReferencePoint, actualTick, mDiffTick );
+    }
 
     if( 0 < lettersLeft )
     {

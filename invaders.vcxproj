@@ -17,6 +17,10 @@
     <ClCompile Include="src\engine\CInvHiscoreList.cpp" />
     <ClCompile Include="src\engine\CInvInsertCoinScreen.cpp" />
     <ClCompile Include="src\engine\CInvPlayItScreen.cpp" />
+    <ClCompile Include="src\graphics\CInvEffect.cpp" />
+    <ClCompile Include="src\graphics\CInvEffectSpriteAnimation.cpp" />
+    <ClCompile Include="src\graphics\CInvEffectSpriteShift.cpp" />
+    <ClCompile Include="src\graphics\CInvEffectSpriteShiftRotate.cpp" />
     <ClCompile Include="src\graphics\CInvPrimitive.cpp" />
     <ClCompile Include="src\graphics\CInvScissorGuard.cpp" />
     <ClCompile Include="src\graphics\CInvSprite.cpp" />
@@ -32,6 +36,10 @@
     <ClInclude Include="src\engine\CInvHiscoreList.h" />
     <ClInclude Include="src\engine\CInvInsertCoinScreen.h" />
     <ClInclude Include="src\engine\CInvPlayItScreen.h" />
+    <ClInclude Include="src\graphics\CInvEffect.h" />
+    <ClInclude Include="src\graphics\CInvEffectSpriteAnimation.h" />
+    <ClInclude Include="src\graphics\CInvEffectSpriteShift.h" />
+    <ClInclude Include="src\graphics\CInvEffectSpriteShiftRotate.h" />
     <ClInclude Include="src\graphics\CInvPrimitive.h" />
     <ClInclude Include="src\graphics\CInvScissorGuard.h" />
     <ClInclude Include="src\graphics\CInvSprite.h" />

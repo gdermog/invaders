@@ -36,7 +36,7 @@ namespace Inv
         LPDIRECT3D9 pD3D,
         LPDIRECT3DDEVICE9 pd3dDevice,
         LPDIRECT3DVERTEXBUFFER9 pVB,
-        LARGE_INTEGER timeReferncePoint );
+        LARGE_INTEGER tickReferncePoint );
 
     CInvInsertCoinScreen( const CInvInsertCoinScreen & ) = delete;
     CInvInsertCoinScreen & operator=( const CInvInsertCoinScreen & ) = delete;
@@ -47,17 +47,20 @@ namespace Inv
       bool &gameStart, 
       ControlStateFlags_t controlState,
       ControlValue_t controlValue,
-      LARGE_INTEGER actualTimePoint );
+      LARGE_INTEGER actualTick );
 
-    void Reset( LARGE_INTEGER newTimeRefPoint );
+    void Reset( LARGE_INTEGER newTickRefPoint );
 
   private:
 
     void FormatHighScore( uint32_t inScore, const std::string & inName );
 
-    bool DrawHighScores();
+    bool DrawHighScores( LARGE_INTEGER actualTick );
 
-    bool DrawEnterCallsign( ControlValue_t controlValue, bool &isDone );
+    bool DrawEnterCallsign(
+      LARGE_INTEGER actualTick, 
+      ControlValue_t controlValue, 
+      bool & isDone );
 
     static const std::string mWelcomeHeader;
     static const std::string mPressToStart;
@@ -69,7 +72,8 @@ namespace Inv
     static const float mHighScoreAreaFontRelativeSize;
     static const float mPressEnterFontRelativeSize;
 
-    LARGE_INTEGER mTimeReferencePoint;
+    LARGE_INTEGER mTickReferencePoint;
+    LARGE_INTEGER mDiffTick;
 
     float mLetterSize;
     float mHeaderXPos;
@@ -113,14 +117,15 @@ namespace Inv
     LPDIRECT3DDEVICE9       mPd3dDevice;
     LPDIRECT3DVERTEXBUFFER9 mPVB;
 
-    std::unique_ptr<CInvSprite> mTestingSprite;
-    uint32_t mNrOfTestingSprites;
-    uint32_t mTestingSpriteImageSequenceNr;
-    float mTestSpriteWidth;
-    std::vector<float> mTestSpriteX;
-    float mTestSpriteY;
-    uint64_t mTestSpriteState;
-    uint64_t mTestSpriteStateCoef;
+    std::unique_ptr<CInvSprite> mTitleSprite;
+    uint32_t mNrOfTitleSprites;
+    uint32_t mTitleSpriteImageSequenceNr;
+    float mTitleSpriteWidth;
+    std::vector<float> mTitleSpriteX;
+    float mTitleSpriteY;
+
+    std::shared_ptr<CInvEffect> mTitleSpriteAnimationEffect;
+    std::shared_ptr<CInvEffect> mTitleSpriteShiftRotateEffect;
   };
 
 } // namespace Inv

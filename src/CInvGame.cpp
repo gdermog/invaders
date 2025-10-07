@@ -108,7 +108,7 @@ namespace Inv
     mSettings( settings ),
     mWindowClass{},
     mHWnd{},
-    mStartTime{},
+    mReferenceTick{},
     mFreq{},
     mPD3D( nullptr ),
     mPd3dDevice( nullptr ),
@@ -162,7 +162,7 @@ namespace Inv
       style, 0, 0, r.right - r.left, r.bottom - r.top,
       GetDesktopWindow(), NULL, mWindowClass.hInstance, NULL );
 
-    QueryPerformanceCounter( &mStartTime );
+    QueryPerformanceCounter( &mReferenceTick );
     QueryPerformanceFrequency( &mFreq );
 
     if( !SUCCEEDED( InitD3D() ) )
@@ -193,7 +193,7 @@ namespace Inv
       mPD3D,
       mPd3dDevice,
       mPVB,
-      mStartTime );
+      mReferenceTick );
 
     mPlayItScreen = std::make_unique<CInvPlayItScreen>(
       mSettings,
@@ -202,7 +202,7 @@ namespace Inv
       mPD3D,
       mPd3dDevice,
       mPVB,
-      mStartTime );
+      mReferenceTick );
 
     return true;
 
@@ -251,12 +251,8 @@ namespace Inv
     ControlStateFlags_t controlState = 0;
     ControlValue_t controlValue = 0;
 
-/**//**//**//**/
-    LARGE_INTEGER timeReferncePoint;
-    timeReferncePoint.QuadPart = mStartTime.QuadPart;
-/**//**//**//**/
-
-    mInsertCoinScreen->Reset( timeReferncePoint );
+    QueryPerformanceCounter( &mReferenceTick );
+    mInsertCoinScreen->Reset( mReferenceTick );
 
     while( stillInLoop )
     {
@@ -313,7 +309,7 @@ namespace Inv
                         // high scores list or enter callsign for new high score, if there is a highscore
                         // value pending from previous game.
           if( !mInsertCoinScreen->MainLoop(
-            newScoreToEnter, gameStartRequest, controlState, controlValue, timeReferncePoint ) )
+            newScoreToEnter, gameStartRequest, controlState, controlValue, mReferenceTick ) )
           {
             LOG << "Insert coin screen loop failed, quitting";
             stillInLoop = false;
@@ -324,8 +320,8 @@ namespace Inv
         {               // New game requested, initialization of hte game engine is necessary
           LOG << "Game start requested";
 
-          QueryPerformanceCounter( &timeReferncePoint );
-          mPlayItScreen->Reset( timeReferncePoint );
+          QueryPerformanceCounter( &mReferenceTick );
+          mPlayItScreen->Reset( mReferenceTick );
           gameInProgress = true;
           gameStartRequest = false;
         } // if
@@ -333,7 +329,7 @@ namespace Inv
         if( gameInProgress )
         {               // Game is in progress, engine is invoked here
           if( !mPlayItScreen->MainLoop(
-            newScoreToEnter, gameEndRequest, controlState, controlValue, timeReferncePoint ) )
+            newScoreToEnter, gameEndRequest, controlState, controlValue, mReferenceTick ) )
           {
             LOG << "Insert coin screen loop failed, quitting";
             stillInLoop = false;
@@ -343,8 +339,8 @@ namespace Inv
         if( gameEndRequest && gameInProgress )
         {
           LOG << "Game ended";
-          QueryPerformanceCounter( &timeReferncePoint );
-          mInsertCoinScreen->Reset( timeReferncePoint );
+          QueryPerformanceCounter( &mReferenceTick );
+          mInsertCoinScreen->Reset( mReferenceTick );
           gameInProgress = false;
           gameEndRequest = false;
         } // if
@@ -358,6 +354,7 @@ namespace Inv
       mPd3dDevice->Present( NULL, NULL, NULL, NULL );
 
       Sleep( 10 );
+      mReferenceTick.QuadPart++;
 
     } // while
 

@@ -22,6 +22,10 @@ static const std::string lModLogId( "SPRITE" );
 namespace Inv
 {
   CInvSprite::CInvSprite( const CInvSettings & settings, LPDIRECT3DDEVICE9 pd3dDevice ):
+    mTea2{},
+    mHalfSizeX( 0.0f ),
+    mHalfSizeY( 0.0f ),
+    mImageIndex( 0 ),
     mSettings( settings ),
     mPd3dDevice( pd3dDevice ),
     mTextures()
@@ -108,58 +112,76 @@ namespace Inv
   //----------------------------------------------------------------------------------------------
 
   void CInvSprite::Draw( 
-    size_t imageIndex, 
     float xCentre, 
     float yCentre, 
     float xSize, 
-    float ySize, 
-    float rotateRad, 
+    float ySize,     
+    LARGE_INTEGER referenceTick,
+    LARGE_INTEGER actualTick,
+    LARGE_INTEGER diffTick,
     DWORD color )
   {
-    if( nullptr == mPd3dDevice || mTextures.size() <= imageIndex )
+    if( nullptr == mPd3dDevice || mTextures.empty() )
       return;
 
-    auto tex = mTextures[imageIndex];
+    mImageIndex = 0;
+
+    mHalfSizeX = xSize * 0.5f;
+    mHalfSizeY = ySize * 0.5f;
+
+    mTea2[0] = { xCentre - mHalfSizeX, yCentre - mHalfSizeY, 0.5f, 1.0f, color, 0.0f, 0.0f, };
+    mTea2[1] = { xCentre + mHalfSizeX, yCentre - mHalfSizeY, 0.5f, 1.0f, color, 1.0f, 0.0f, };
+    mTea2[2] = { xCentre - mHalfSizeX, yCentre + mHalfSizeY, 0.5f, 1.0f, color, 0.0f, 1.0f, };
+    mTea2[3] = { xCentre + mHalfSizeX, yCentre + mHalfSizeY, 0.5f, 1.0f, color, 1.0f, 1.0f, };
+
+    if( !mEffects.empty() )
+    {
+      for( auto & effectCategory : mEffects )
+      {
+        for( auto & ef : effectCategory.second )
+          ef->ApplyEffect( this, referenceTick, actualTick, diffTick );
+      } // for
+
+      if( mTextures.size() <= mImageIndex )
+        mImageIndex = 0;
+    } // if
+
+    auto tex = mTextures[mImageIndex];
     if( nullptr == tex )
       return;
 
     IDirect3DTexture9 * t = (IDirect3DTexture9 *)tex;
     mPd3dDevice->SetTexture( 0, t );
 
-    xSize *= 0.5f;
-    ySize *= 0.5f;
-
-    if( !IsZero( rotateRad ) )
-    {
-      float c = cosf( rotateRad );
-      float s = sinf( rotateRad );
-
-#define ROTATE(xx,yy) ( xCentre + (xx)*c + (yy)*s ), ( yCentre + (yy)*c - (xx)*s ) 
-      CUSTOMVERTEX tea2[] =
-      {
-        { ROTATE( -xSize, -ySize ), 0.5f, 1.0f, color, 0.0f, 0.0f, }, // x, y, z, rhw, color
-        { ROTATE(  xSize, -ySize ), 0.5f, 1.0f, color, 1.0f, 0.0f, },
-        { ROTATE( -xSize,  ySize ), 0.5f, 1.0f, color, 0.0f, 1.0f, },
-        { ROTATE(  xSize,  ySize ), 0.5f, 1.0f, color, 1.0f, 1.0f, },
-      };
-
-      mPd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, tea2, sizeof( CUSTOMVERTEX ) );
-    } // if
-    else
-    {
-      CUSTOMVERTEX tea2[] =
-      {
-        { xCentre - xSize, yCentre - ySize, 0.5f, 1.0f, color, 0.0f, 0.0f, }, // x, y, z, rhw, color
-        { xCentre + xSize, yCentre - ySize, 0.5f, 1.0f, color, 1.0f, 0.0f, },
-        { xCentre - xSize, yCentre + ySize, 0.5f, 1.0f, color, 0.0f, 1.0f, },
-        { xCentre + xSize, yCentre + ySize, 0.5f, 1.0f, color, 1.0f, 1.0f, },
-      };
-
-      mPd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, tea2, sizeof( CUSTOMVERTEX ) );
-    } // else
-
+    mPd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, mTea2, sizeof( CUSTOMVERTEX ) );
 
   } // CInvSprite::Draw
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvSprite::AddEffect( std::shared_ptr<CInvEffect> effect )
+  {
+    if( nullptr == effect )
+      return;
+
+    auto & efList = mEffects[effect->GetEffectPriority()];
+    if( std::find( efList.begin(), efList.end(), effect ) == efList.end() )
+      efList.push_back( effect );
+
+  } // CInvSprite::AddEffect
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvSprite::RemoveEffect( std::shared_ptr<CInvEffect> effect )
+  {
+    if( nullptr == effect )
+      return;
+    auto & efList = mEffects[effect->GetEffectPriority()];
+
+    auto it = std::find( efList.begin(), efList.end(), effect );
+    if( it != efList.end() )
+      efList.erase( it );
+  } // CInvSprite::RemoveEffect
 
   //----------------------------------------------------------------------------------------------
 

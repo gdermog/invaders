@@ -76,6 +76,10 @@ namespace Inv
   constexpr double_t gPI = 3.141592653589793;
   //!< Value of pi constant - 3.1415926535897932384626433832795 ...
 
+  constexpr double_t g2PI = ( 2.0 * 3.141592653589793 );
+
+  constexpr double_t gRadPerDeg = (2 * 3.141592653589793 / 360.0);
+
   // A structure for our custom vertex type
   struct CUSTOMVERTEX
   {

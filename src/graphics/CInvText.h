@@ -40,6 +40,9 @@ namespace Inv
       float xTopLeft,
       float yTopLeft,
       float letterSize,
+      LARGE_INTEGER referenceTick,
+      LARGE_INTEGER actualTick,
+      LARGE_INTEGER diffTick,
       DWORD color = 0xffffffff ) const;
 
     void DrawFromRight(
@@ -48,6 +51,9 @@ namespace Inv
       float yTopLeft,
       float width,
       float letterSize,
+      LARGE_INTEGER referenceTick,
+      LARGE_INTEGER actualTick,
+      LARGE_INTEGER diffTick,
       DWORD color = 0xffffffff ) const;
 
   private:

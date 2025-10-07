@@ -33,7 +33,7 @@ namespace Inv
       LPDIRECT3D9 pD3D,
       LPDIRECT3DDEVICE9 pd3dDevice,
       LPDIRECT3DVERTEXBUFFER9 pVB,
-      LARGE_INTEGER timeReferencePoint );
+      LARGE_INTEGER tickReferencePoint );
 
     CInvPlayItScreen( const CInvPlayItScreen & ) = delete;
     CInvPlayItScreen & operator=( const CInvPlayItScreen & ) = delete;
@@ -44,14 +44,14 @@ namespace Inv
       bool & gameEnd,
       ControlStateFlags_t controlState,
       ControlValue_t controlValue,
-      LARGE_INTEGER actualTimePoint );
+      LARGE_INTEGER actualTickPoint );
 
-    void Reset( LARGE_INTEGER newTimeRefPoint );
+    void Reset( LARGE_INTEGER newTickRefPoint );
 
   private:
 
 
-    LARGE_INTEGER mTimeReferencePoint;
+    LARGE_INTEGER mTickReferencePoint;
 
     const CInvSettings & mSettings;
     const CInvText & mTextCreator;

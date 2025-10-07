@@ -21,9 +21,9 @@ namespace Inv
     LPDIRECT3D9 pD3D, 
     LPDIRECT3DDEVICE9 pd3dDevice, 
     LPDIRECT3DVERTEXBUFFER9 pVB, 
-    LARGE_INTEGER timeReferencePoint ):
+    LARGE_INTEGER tickReferencePoint ):
 
-    mTimeReferencePoint( timeReferencePoint ),
+    mTickReferencePoint( tickReferencePoint ),
     mSettings( settings ),
     mTextCreator( textCreator ),
     mPrimitives( primitives ),
@@ -48,7 +48,7 @@ namespace Inv
     bool & gameEnd,
     ControlStateFlags_t controlState,
     ControlValue_t controlValue,
-    LARGE_INTEGER actualTimePoint )
+    LARGE_INTEGER actualTickPoint )
   {
 
 newScoreToEnter = uint32_t( 1000000.0 * ( (float)std::rand() / (float)RAND_MAX ) );
@@ -61,7 +61,7 @@ gameEnd = true;
 
   //-------------------------------------------------------------------------------------------------
 
-  void CInvPlayItScreen::Reset( LARGE_INTEGER newTimeRefPoint )
+  void CInvPlayItScreen::Reset( LARGE_INTEGER newTickRefPoint )
   {
 
   } // CInvPlayItScreen::Reset

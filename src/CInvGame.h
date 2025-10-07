@@ -73,7 +73,7 @@ namespace Inv
 
     HWND mHWnd;
 
-    LARGE_INTEGER mStartTime;
+    LARGE_INTEGER mReferenceTick;
     LARGE_INTEGER mFreq;
 
     LPDIRECT3D9             mPD3D; 
