@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvText.cpp
-//! Module contains class CInvText, which implements singleton pattern for global logging
+//! Module defines class CInvText, which represents text that can be drawn on screen.
 //****************************************************************************************************
 //
 //****************************************************************************************************

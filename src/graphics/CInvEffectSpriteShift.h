@@ -43,17 +43,34 @@ namespace Inv
       LARGE_INTEGER referenceTick,
       LARGE_INTEGER actualTick,
       LARGE_INTEGER diffTick ) override;
+    /*!< \brief Applies effect to given element, returns true if element was changed
 
-    void SetShift( float shiftX, float shiftY )
-    { mShiftX = shiftX; mShiftY = shiftY; }
+        \param[in,out] element   Pointer to element to which effect is applied, actual
+                                 type depends on effect. CInvSprite or its descendant is expected
+                                 here. Beware, no smart typecheck is implemented, it is up to
+                                 caller to provide correct type.
+        \param[in] referenceTick Reference tick, usually time when effect was started
+        \param[in] actualTick    Current tick
+        \param[in] diffTick      An artificially introduced correction to the current tick,
+                                 used when one effect is applied to multiple objects and the
+                                 results are required to differ somewhat from each other. */
 
-    void GetShift( float & shiftX, float & shiftY ) const
-    { shiftX = mShiftX; shiftY = mShiftY; }
+    void SetShift( float shiftX, float shiftY ) { mShiftX = shiftX; mShiftY = shiftY; }
+    /*!< \brief Sets shift in X and Y direction that will be applied to sprite every time the
+         effect is applied. Default is (0,0), which means no shift. */
+
+    void GetShift( float & shiftX, float & shiftY ) const { shiftX = mShiftX; shiftY = mShiftY; }
+    /*!< \brief Returns shift in X and Y direction that will be applied to sprite every time the
+         effect is applied. */
+
 
   protected:
 
     float mShiftX;
+    //!< \brief Shift in X direction that will be applied to sprite every time the effect is applied.
+
     float mShiftY;
+    //!< \brief Shift in Y direction that will be applied to sprite every time the effect is applied.
 
   };
 

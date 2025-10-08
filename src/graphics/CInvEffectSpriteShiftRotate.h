@@ -20,8 +20,8 @@
 namespace Inv
 {
 
-  class CInvSprite;
-
+  /*! \brief The effect moves the sprite in the specified direction. However, this direction
+      is rotated over time, resulting in the sprite circling around a center position. */
   class CInvEffectSpriteShiftRotate: public CInvEffectSpriteShift
   {
     public:
@@ -31,8 +31,6 @@ namespace Inv
       LPDIRECT3DDEVICE9 pd3dDevice,
       uint32_t ePriority );
 
-    CInvEffectSpriteShiftRotate( const CInvEffectSpriteShiftRotate & ) = delete;
-    CInvEffectSpriteShiftRotate & operator=( const CInvEffectSpriteShiftRotate & ) = delete;
     virtual ~CInvEffectSpriteShiftRotate();
 
     virtual bool ApplyEffect(
@@ -42,18 +40,15 @@ namespace Inv
       LARGE_INTEGER diffTick ) override;
 
     void SetPace( uint32_t pace ) { mPace = pace; }
+    //!< Sets pace of rotation, number of ticks per full rotation
 
     uint32_t GetPace() const { return mPace; }
-
-//     void SetAngleRad( float angle ) { mAngleRad = angle; }
-//
-//     float GetAngleRad() const { return mAngleRad; }
+    //!< Returns pace of rotation, number of ticks per full rotation
 
   protected:
 
-    uint32_t mPace;     //!< Ticks per full rotation
-
- //   float mAngleRad;
+    uint32_t mPace;
+    //!< Ticks per full rotation
 
   };
 

@@ -17,6 +17,8 @@
 namespace Inv
 {
 
+  /*! \brief The class implements singleton pattern for global logging. The class provides a single
+      instance that can be accessed globally, and provides a stream for logging messages to a file. */
   class CInvLoggger
   {
     public:
@@ -44,6 +46,7 @@ namespace Inv
     CInvLoggger( const std::string & fnam );
 
     std::ofstream mLog;
+    //<! Output file stream for logging
 
   };
 

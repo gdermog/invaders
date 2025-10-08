@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvLoggger.cpp
-//! Module contains class CInvLoggger, which implements singleton pattern for global logging
+//! Module defines class CInvGame, which implements the main control loop of the game.
 //****************************************************************************************************
 //
 //****************************************************************************************************

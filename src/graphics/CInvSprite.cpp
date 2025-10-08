@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvSprite.cpp
-//! Module contains class CInvSprite, which implements singleton pattern for global logging
+//! Module defines class CInvSprite that represents a 2D sprite which can be drawn on screen.
 //****************************************************************************************************
 //
 //****************************************************************************************************

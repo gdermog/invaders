@@ -11,9 +11,6 @@
 
 #include <graphics/CInvEffectSpriteShiftRotate.h>
 
-#include <CInvLogger.h>
-#include <InvStringTools.h>
-
 #include <graphics/CInvSprite.h>
 
 static const std::string lModLogId( "EffectSpriteRotate" );
@@ -49,9 +46,6 @@ namespace Inv
     if( mIsSuspended )
       return true;
 
-    float x = mShiftX;
-    float y = mShiftY;
-
     auto angleIdx =
       ( actualTick.QuadPart - referenceTick.QuadPart + diffTick.QuadPart ) % mPace;
 
@@ -60,15 +54,22 @@ namespace Inv
     float c = cosf( angleRad );
     float s = sinf( angleRad );
 
-    mShiftX = x * c - y * s;
-    mShiftY = y * c + x * s;
+    float x = mShiftX * c - mShiftY * s;
+    float y = mShiftY * c + mShiftX * s;
 
-    auto retVal = CInvEffectSpriteShift::ApplyEffect( obj, referenceTick, actualTick, diffTick );
+    auto * sprite = static_cast<Inv::CInvSprite *>( obj );
 
-    mShiftX = x;
-    mShiftY = y;
+    sprite->mTea2[0].x += x;
+    sprite->mTea2[1].x += x;
+    sprite->mTea2[2].x += x;
+    sprite->mTea2[3].x += x;
 
-    return retVal;
+    sprite->mTea2[0].y += y;
+    sprite->mTea2[1].y += y;
+    sprite->mTea2[2].y += y;
+    sprite->mTea2[3].y += y;
+
+    return true;
 
   } // CInvEffectSpriteShiftRotate::ApplyEffect
 

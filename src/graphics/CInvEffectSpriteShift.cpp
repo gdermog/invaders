@@ -12,9 +12,6 @@
 
 #include <graphics/CInvEffectSpriteShift.h>
 
-#include <CInvLogger.h>
-#include <InvStringTools.h>
-
 #include <graphics/CInvSprite.h>
 
 static const std::string lModLogId( "EffectSprite" );

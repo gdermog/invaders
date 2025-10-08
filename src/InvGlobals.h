@@ -77,8 +77,13 @@ namespace Inv
   //!< Value of pi constant - 3.1415926535897932384626433832795 ...
 
   constexpr double_t g2PI = ( 2.0 * 3.141592653589793 );
+  //!< Value of constant 2 * pi
 
-  constexpr double_t gRadPerDeg = (2 * 3.141592653589793 / 360.0);
+  constexpr double_t gRadPerDeg = ( 3.141592653589793 / 180.0 );
+  //!< Value of constant for conversion from degrees to radians
+
+  constexpr double_t gDegPerRad = ( 180.0 / 3.141592653589793 );
+  //!< Value of constant for conversion from radians to degrees
 
   // A structure for our custom vertex type
   struct CUSTOMVERTEX
@@ -89,8 +94,11 @@ namespace Inv
   };
 
   // Our custom FVF, which describes our custom vertex structure
-#define D3DFVF_CUSTOMVERTEX (D3DFVF_XYZRHW|D3DFVF_DIFFUSE|D3DFVF_TEX1)
+#define D3DFVF_CUSTOMVERTEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1 )
 
+  /*! \brief Control states, used to represent state of user input controls like
+      keyboard keysor joystick buttons. The states can be combined using bitwise
+      OR operator. */
   enum class ControlState_t: uint16_t
   {
     kNone               = 0x00,
@@ -104,13 +112,16 @@ namespace Inv
   };
 
   using ControlStateFlags_t = std::underlying_type<ControlState_t>::type;
+  //!< Type used to hold combination of ControlState_t values
 
+  //! \brief Bitwise OR operator for ControlState_t enum, returns combination of two states.
   inline ControlStateFlags_t operator|( ControlState_t a, ControlState_t b )
   {
     return static_cast<ControlStateFlags_t>(
       static_cast<ControlStateFlags_t>( a ) | static_cast<ControlStateFlags_t>( b ) );
   } // operator|
 
+  //! \brief Bitwise OR assignment operator for ControlState_t enum, combines two states.
   inline ControlStateFlags_t operator|=( ControlStateFlags_t & a, ControlState_t b )
   {
     a = static_cast<ControlStateFlags_t>(
@@ -118,18 +129,21 @@ namespace Inv
     return a;
   } // operator|=
 
+  //! \brief Checks whether the specified flag combination contains the specified values(all of them).
   inline bool ControlStateHave( ControlStateFlags_t val, ControlState_t testingFor )
   {
     return ( static_cast<ControlStateFlags_t>( testingFor ) ==
       ( val & static_cast<ControlStateFlags_t>( testingFor ) ) );
   } // ControlStateHave
 
+  //! \brief Sets the specified flag(s) in the flag combination.
   inline void ControlStateSet( ControlStateFlags_t & val, ControlState_t setting )
   {
     val = static_cast<ControlStateFlags_t>(
       val | static_cast<ControlStateFlags_t>( setting ) );
   } // ControlStateSet
 
+  //! \brief Clears the specified flag(s) from the flag combination.
   inline void ControlStateClear( ControlStateFlags_t & val, ControlState_t clearing )
   {
     val = static_cast<ControlStateFlags_t>(
@@ -137,6 +151,7 @@ namespace Inv
   } // ControlStateClear
 
   using ControlValue_t = char;
+  //!< Type used to hold value of pressed key
 
 } // namespace Inv
 

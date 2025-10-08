@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvGame.h
-//! Module contains class CInvGame, which implements singleton pattern for global logging
+//! Module declares class CInvGame, which implements the main control loop of the game.
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -27,6 +27,12 @@
 namespace Inv
 {
 
+  /*! \brief Class implements the main control loop of the game. The class manages the overall game
+      state, including initialization, main loop, and cleanup. It uses other classes to handle specific
+      aspects of the game, such as rendering, input handling, and game logic. The class provides
+      methods to initialize the game, run the main loop, and clean up resources when the game ends.
+      The class is designed to work with Direct3D 9 for rendering and uses a window created using
+      the Win32 API. */
   class CInvGame
   {
   public:
@@ -49,42 +55,67 @@ namespace Inv
 
   private:
 
-
     HRESULT InitD3D();
+    //!< Initializes Direct3D, returns true if successful
 
     HRESULT InitVB();
+    //!< Initializes vertex buffer, returns true if successful
 
     bool IsKeyDown( int key );
+    //!< Returns true if given key is currently pressed
 
     void ProcessInput( ControlStateFlags_t & controlState, ControlValue_t & controlValue );
+    /*!< \brief Processes user input, updates control state and value
+     *!<
+         \param[out] controlState Current state of user controls, combination of ControlStateFlags_t
+                                  values.
+         \param[out] controlValue Value of key pressed */
 
     std::unique_ptr<CInvText> mTextCreator;
+    //!< \brief Text rendering object, used to draw text on screen.
 
     std::unique_ptr<CInvHiscoreList> mHiscoreKeeper;
+    //!< \brief High score list object, used to access and modify high scores.
 
     std::unique_ptr <CInvPrimitive> mPrimitives;
+    //!< \brief Primitive rendering object, used to draw basic shapes on screen.
 
     std::unique_ptr<CInvInsertCoinScreen> mInsertCoinScreen;
+    //!< \brief "Insert Coin" screen object, used to manage the initial game screen.
+
     std::unique_ptr<CInvPlayItScreen> mPlayItScreen;
+    //!< \brief "Play It" screen object, used to manage the game screen.
 
     const CInvSettings & mSettings;
+    //!< \brief Reference to global settings object, used to access configuration parameters.
 
     WNDCLASSEX mWindowClass;
+    //<! \brief Window class structure, used to create the game window.
 
     HWND mHWnd;
+    //<! \brief Handle to the game window.
 
     LARGE_INTEGER mReferenceTick;
+    //<! \brief Reference tick, used for timing and animations and actions.
+
     LARGE_INTEGER mFreq;
+    //<! \brief Frequency of the high-resolution performance counter.
 
     LPDIRECT3D9             mPD3D;
+    //<! Direct3D interface, used to create device
     LPDIRECT3DDEVICE9       mPd3dDevice;
+    //<! Direct3D device, used to draw on screen
     LPDIRECT3DVERTEXBUFFER9 mPVB;
+    //<! Vertex buffer, used to draw primitives
 
     DWORD mClearColor;
+    //<! Color used to clear the screen each frame
 
     static const std::wstring mWindiwClassId;
+    //<! Identifier of window class
 
     static const std::wstring mWindiwName;
+    //<! Name of the window
 
   };
 

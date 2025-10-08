@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvInsertCoinScreen.cpp
-//! Module contains class CInvInsertCoinScreen, which implements singleton pattern for global logging
+//! Module defines class CInvInsertCoinScreen, which implements implements the "Insert Coin" screen.
 //****************************************************************************************************
 //
 //****************************************************************************************************

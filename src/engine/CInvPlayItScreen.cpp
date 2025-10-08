@@ -1,6 +1,7 @@
 //****************************************************************************************************
 //! \file CInvPlayItScreen.cpp
-//! Module contains class CInvPlayItScreen, which implements...
+//! Module declares class CInvPlayItScreen, which implements the "Play It" screen, where the actual
+//! game is played.
 //****************************************************************************************************
 //
 //****************************************************************************************************

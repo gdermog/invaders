@@ -1,6 +1,7 @@
 //****************************************************************************************************
 //! \file CInvPrimitive.cpp
-//! Module contains class CInvPrimitive, which implements singleton pattern for global logging
+//! Module defines class CInvPrimitive, which provides methods to draw basic primitives such as
+//! lines and rectangles.
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -10,7 +11,6 @@
 #include <graphics/CInvPrimitive.h>
 
 #include <CInvLogger.h>
-
 
 static const std::string lModLogId( "Primitive" );
 
@@ -45,7 +45,7 @@ namespace Inv
     if( nullptr == mPd3dDevice )
       return;
 
-    // Half-pixel correction (experimentuj +/-0.5)
+    // Half-pixel correction
     if( pixelPerfect )
     {
       const float half = -0.5f;
@@ -55,11 +55,11 @@ namespace Inv
 
     LineVertex verts[] =
     {
-      { x1, y1, 0.5f, 1.0f, color},
-      { x2, y2, 0.5f, 1.0f, color},
+      { x1, y1, 0.5f, 1.0f, color },
+      { x2, y2, 0.5f, 1.0f, color },
     };
 
-    // Uložíme a obnovíme VS/PS a FVF (safe path)
+    // We save and restore VS/PS and FVF (safe path)
     IDirect3DVertexShader9 * prevVS = nullptr;
     IDirect3DPixelShader9 * prevPS = nullptr;
     DWORD prevFVF = 0;
@@ -68,7 +68,7 @@ namespace Inv
     DWORD prevScissor = 0;
     DWORD prevAlpha = 0;
 
-    // Get current state (ignorujeme chyby, ale logneme je)
+    // Get current state
     mPd3dDevice->GetVertexShader( &prevVS );
     mPd3dDevice->GetPixelShader( &prevPS );
     mPd3dDevice->GetFVF( &prevFVF );
@@ -77,7 +77,7 @@ namespace Inv
     mPd3dDevice->GetRenderState( D3DRS_SCISSORTESTENABLE, &prevScissor );
     mPd3dDevice->GetRenderState( D3DRS_ALPHABLENDENABLE, &prevAlpha );
 
-    // Přepneme na fixed-function, vypneme depth a lighting a scissor (pro overlay)
+    // Switch to fixed-function, turn off depth and lighting and scissor (for overlay)
     mPd3dDevice->SetVertexShader( NULL );
     mPd3dDevice->SetPixelShader( NULL );
     mPd3dDevice->SetFVF( LineVertex::FVF );
@@ -86,17 +86,17 @@ namespace Inv
     mPd3dDevice->SetRenderState( D3DRS_SCISSORTESTENABLE, FALSE );
     mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
 
-    // Důležité: DrawPrimitiveUP očekává počet primitiv (tady 1 LINELIST)
+    // Important: DrawPrimitiveUP expects a number of primitives (here 1 LINELIST)
     mPd3dDevice->DrawPrimitiveUP( D3DPT_LINELIST, 1, verts, sizeof( LineVertex ) );
 
-    // Obnovení stavů
+    // Restoring states
     mPd3dDevice->SetFVF( prevFVF );
     mPd3dDevice->SetRenderState( D3DRS_ZENABLE, prevZEnable );
     mPd3dDevice->SetRenderState( D3DRS_LIGHTING, prevLighting );
     mPd3dDevice->SetRenderState( D3DRS_SCISSORTESTENABLE, prevScissor );
     mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, prevAlpha );
 
-    // Obnovíme předchozí shadery (musejí být nastaveny před Release)
+    // Restore previous shaders (must have been set before Release)
     if( prevVS ) { mPd3dDevice->SetVertexShader( prevVS ); prevVS->Release(); }
     else mPd3dDevice->SetVertexShader( NULL );
 
@@ -116,7 +116,7 @@ namespace Inv
     if( nullptr == mPd3dDevice )
       return;
 
-    // Half-pixel correction (experimentuj +/-0.5)
+    // Half-pixel correction
     if( pixelPerfect )
     {
       const float half = -0.5f;
@@ -126,14 +126,14 @@ namespace Inv
 
     LineVertex verts[] =
     {
-      { x1, y1, 0.5f, 1.0f, color}, // levý horní roh
-      { x2, y1, 0.5f, 1.0f, color}, // pravý horní roh
-      { x2, y2, 0.5f, 1.0f, color}, // pravý dolní roh
-      { x1, y2, 0.5f, 1.0f, color}, // levý dolní roh
-      { x1, y1, 0.5f, 1.0f, color}, // levý horní roh (uzavření)
+      { x1, y1, 0.5f, 1.0f, color}, // top left corner
+      { x2, y1, 0.5f, 1.0f, color}, // top right corner
+      { x2, y2, 0.5f, 1.0f, color}, // bottom right corner
+      { x1, y2, 0.5f, 1.0f, color}, // bottom left corner
+      { x1, y1, 0.5f, 1.0f, color}, // top left corner (close)
     };
 
-    // Uložíme a obnovíme VS/PS a FVF (safe path)
+    // We save and restore VS/PS and FVF (safe path))
     IDirect3DVertexShader9 * prevVS = nullptr;
     IDirect3DPixelShader9 * prevPS = nullptr;
     DWORD prevFVF = 0;
@@ -151,7 +151,7 @@ namespace Inv
     mPd3dDevice->GetRenderState( D3DRS_SCISSORTESTENABLE, &prevScissor );
     mPd3dDevice->GetRenderState( D3DRS_ALPHABLENDENABLE, &prevAlpha );
 
-    // Přepneme na fixed-function, vypneme depth a lighting a scissor (pro overlay)
+    // Switch to fixed-function, turn off depth and lighting and scissor (for overlay)
     mPd3dDevice->SetVertexShader( NULL );
     mPd3dDevice->SetPixelShader( NULL );
     mPd3dDevice->SetFVF( LineVertex::FVF );
@@ -160,24 +160,24 @@ namespace Inv
     mPd3dDevice->SetRenderState( D3DRS_SCISSORTESTENABLE, FALSE );
     mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
 
-    // Důležité: DrawPrimitiveUP očekává počet primitiv (tady 4 segmenty)
+    // Important: DrawPrimitiveUP expects a number of primitives (here 4 segments)
     mPd3dDevice->DrawPrimitiveUP( D3DPT_LINESTRIP, 4, verts, sizeof( LineVertex ) );
 
-    // Obnovení stavů
+    // Restoring states
     mPd3dDevice->SetFVF( prevFVF );
     mPd3dDevice->SetRenderState( D3DRS_ZENABLE, prevZEnable );
     mPd3dDevice->SetRenderState( D3DRS_LIGHTING, prevLighting );
     mPd3dDevice->SetRenderState( D3DRS_SCISSORTESTENABLE, prevScissor );
     mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, prevAlpha );
 
-    // Obnovíme předchozí shadery (musejí být nastaveny před Release)
+    // Restore previous shaders (must have been set before Release)
     if( prevVS ) { mPd3dDevice->SetVertexShader( prevVS ); prevVS->Release(); }
     else mPd3dDevice->SetVertexShader( NULL );
 
     if( prevPS ) { mPd3dDevice->SetPixelShader( prevPS ); prevPS->Release(); }
     else mPd3dDevice->SetPixelShader( NULL );
 
-  } // CInvPrimitive::DrawLine
+  } // CInvPrimitive::DrawSquare
 
 
 
