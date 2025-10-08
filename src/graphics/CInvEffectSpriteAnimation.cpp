@@ -66,12 +66,22 @@ namespace Inv
     idx %= ( mPace * rng );
     sprite->mImageIndex = mFirstImage + idx / mPace;
 
-static size_t mxxx = 0;
-if( mxxx < sprite->mImageIndex )
-  mxxx = sprite->mImageIndex;
+    if( ! mEventCallbacks.empty() )
+    {
+      auto cbIt = mEventCallbacks.find( sprite->mImageIndex );
+      if( cbIt != mEventCallbacks.end() )
+        cbIt->second( (uint32_t)sprite->mImageIndex );
+                        // If the animation reached an important image with registered callback, 
+                        // calls it
+    } // if
 
-    if( !mIsContinuous && lastImage <= sprite->mImageIndex )
+    if( !mIsContinuous && lastImage <= (uint32_t)sprite->mImageIndex )
+    {                   // Non-continuous animation reached its end - class suspends 
+                        // itself and calls final callback
       Suspend();
+      if( nullptr != mFinalEventCallback )
+        mFinalEventCallback( (uint32_t)sprite->mImageIndex );
+    } // if
 
     return true;
 
@@ -89,6 +99,33 @@ if( mxxx < sprite->mImageIndex )
     mFirstImage = firstImage;
     mLastImage = lastImage;
   } // CInvEffectSpriteAnimation::SetImageRange
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvEffectSpriteAnimation::AddEventCallback( FnEventCallback_t callback )
+  {
+    if( nullptr == callback )
+    {
+      LOG << "CInvEffectSpriteAnimation::AddEventCallback: Warning: null final callback, ignoring.";
+      return;
+    } // if
+
+    mFinalEventCallback = callback;
+  } // CInvEffectSpriteAnimation::AddEventCallback
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvEffectSpriteAnimation::AddEventCallback( uint32_t imageIndex, FnEventCallback_t callback )
+  {
+    if( nullptr == callback )
+    {
+      LOG << "CInvEffectSpriteAnimation::AddEventCallback: Warning: null callback (idx "
+          << imageIndex <<"), ignoring.";
+      return;
+    } // if
+
+    mEventCallbacks[imageIndex] = callback;
+  } // CInvEffectSpriteAnimation::AddEventCallback
 
   //----------------------------------------------------------------------------------------------
 

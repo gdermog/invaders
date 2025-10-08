@@ -11,6 +11,7 @@
 #define H_InvGlobals
 
 #include <cmath>
+#include <functional>
 #include <cstdint>
 #include <fstream>
 #include <string>
@@ -95,6 +96,8 @@ namespace Inv
 
   // Our custom FVF, which describes our custom vertex structure
 #define D3DFVF_CUSTOMVERTEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1 )
+
+  using FnEventCallback_t = std::function<void( uint32_t )>;
 
   /*! \brief Control states, used to represent state of user input controls like
       keyboard keysor joystick buttons. The states can be combined using bitwise

@@ -50,6 +50,7 @@ namespace Inv
     mSceneBottomRightY( (float)settings.GetWindowHeight() ),
     mAlienStartingAreaCoefficient( 0.65f ),
 
+    mProcActorStateSelector( tickReferencePoint ),
     mProcActorRender( tickReferencePoint )
   {
   } // CInvGameScene::CInvGameScene
@@ -145,6 +146,8 @@ namespace Inv
   bool CInvGameScene::RenderActualScene( LARGE_INTEGER actualTickPoint )
   {
 
+    mProcActorStateSelector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+
     mProcActorRender.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
 
     return true;
@@ -157,6 +160,10 @@ namespace Inv
   {
     mTickReferencePoint = newTickRefPoint;
     mEnTTRegistry.clear();
+
+    mProcActorStateSelector.reset( newTickRefPoint );
+    mProcActorRender.reset( newTickRefPoint );
+
     GenerateNewScene( mSceneTopLeftX, mSceneTopLeftY, mSceneBottomRightX, mSceneBottomRightY );
   } // CInvGameScene::Reset
 

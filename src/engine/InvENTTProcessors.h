@@ -18,6 +18,18 @@
 
 namespace Inv
 {
+  //****** processor: setting of actors to specific states *******************************************
+
+  struct procActorStateSelector
+  {
+    procActorStateSelector( LARGE_INTEGER refTick );
+
+    void reset( LARGE_INTEGER refTick );
+
+    void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
+
+    LARGE_INTEGER mRefTick;
+  };
 
   //****** processor: rendering of actors ************************************************************
 

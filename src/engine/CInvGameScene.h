@@ -112,6 +112,7 @@ namespace Inv
     float mAlienStartingAreaCoefficient;
     //!< \brief Coefficient defining the area at the top of the scene where aliens can start
 
+    procActorStateSelector mProcActorStateSelector;
     procActorRender mProcActorRender;
 
 

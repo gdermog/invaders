@@ -26,6 +26,7 @@ namespace Inv
   {
     public:
 
+
     CInvEffect(
       const CInvSettings & settings,
       LPDIRECT3DDEVICE9 pd3dDevice,

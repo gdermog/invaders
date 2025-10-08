@@ -59,7 +59,12 @@ namespace Inv
   /*! \brief This component determines the actual behavior of the computer-controlled element. */
   struct cpAlienBehave
   {
-    int dummy;          //!< Placeholder, currently no behavior is defined.
+    float animationProbability;
+                        //!< Speed of basic animation, usually a small positive number
+
+    float shootProbability; 
+                        //!< Probability of shooting in each game tick, usually a small
+
   };
 
   //****** component: alien status *******************************************************************
@@ -67,6 +72,19 @@ namespace Inv
   /*! \brief This component determines the status of the alien computer-controlled element. */
   struct cpAlienStatus
   {
+    void AnimationDone( uint32_t ) { isAnimating = false; }
+
+    void FiringDone( uint32_t ) { isFiring = false; }
+
+    void ShootRequested( uint32_t ) { isShootRequested = true; }
+
+    bool isAnimating;   //!< \b true if the alien shoul play its own basic animation.
+
+    bool isFiring;      //!< \b true if the alien is in firing state, false otherwise.
+
+    bool isShootRequested;
+                        //!< \b true if the alien requested to shoot in current tick.
+
     bool isDying;       //!< \b true if the alien is in dying state, false otherwise.
   };
 
@@ -142,11 +160,11 @@ namespace Inv
     //!  not a reference, as the sprite may have unique set of effect applied for
     //!  each entity.
 
-    uint32_t drivingFiringImageIndex;
-    //!< Index of image in firing sprite which should create event "just fired"
-
     std::shared_ptr<CInvEffectSpriteAnimation> firingAnimationEffect;
     //!< Pointer to animation effect applied to firing sprite
+
+    LARGE_INTEGER diffTick;
+    //!< Animation driver
 
   };
 

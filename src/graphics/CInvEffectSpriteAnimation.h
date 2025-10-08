@@ -71,6 +71,21 @@ namespace Inv
 
           \param[in] isContinuous If true, animation loops, if false, it stops at last image */
 
+#define BIND_MEMBER_EVENT_CALLBACK( ref, fnName )  std::bind( &fnName, (ref), std::placeholders::_1)
+          //!< This macro allows to specify a member function as the event callback function 
+
+    void AddEventCallback( FnEventCallback_t callback );
+    /*!< \brief Adds an event callback that will be called when animation reaches last image
+         (only if mIsContinuous is false).
+
+         \param[in] callback Callback function to be called, see FnEventCallback_t for details */
+
+    void AddEventCallback( uint32_t imageIndex, FnEventCallback_t callback );
+    /*!< \brief Adds an event callback that will be called when animation reaches given image index.
+
+         \param[in] imageIndex Index of image at which callback is triggered
+         \param[in] callback   Callback function to be called, see FnEventCallback_t for details */
+
   private:
 
     uint32_t mPace;
@@ -85,6 +100,14 @@ namespace Inv
 
     bool mIsContinuous;
     /*!< \brief If true, animation loops, if false, gets suspended at last image. */
+
+    FnEventCallback_t mFinalEventCallback;
+    /*!< \brief Callback function that will be called when animation reaches last image
+         (only if mIsContinuous is false). */
+
+    std::map<uint32_t, FnEventCallback_t> mEventCallbacks;
+    /*!< \brief Map of event callbacks, where key is image index at which callback is triggered,
+         and value is the callback function. */
 
   };
 

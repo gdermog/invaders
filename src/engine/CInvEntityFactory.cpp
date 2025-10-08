@@ -72,11 +72,11 @@ namespace Inv
     mEnTTRegistry.emplace<cpGeometry>( invader, alienSizeX, alienSizeX * aspectRatio );
                         // component: geometry
 
-    mEnTTRegistry.emplace<cpAlienBehave>( invader, -1 );
+    mEnTTRegistry.emplace<cpAlienBehave>( invader, 0.0025f, 0.001f );
                         // component: ai behavior
 
-    mEnTTRegistry.emplace<cpAlienStatus>( invader, false );
-                        // component: alien status (not dying yet)
+    mEnTTRegistry.emplace<cpAlienStatus>( invader, false, false, false, false );
+                        // component: alien status (not animating, not firing, shoot not requested, not dying )
 
     mEnTTRegistry.emplace<cpHealth>( invader, 1u, 1u );
                         // component: health points (single hit will do)
@@ -91,12 +91,16 @@ namespace Inv
 /* different animation points of interest and so on.                                  */
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
+    auto &aStat = mEnTTRegistry.get<cpAlienStatus>( invader );
+
+
     auto standardAnimationEffect = std::make_shared<CInvEffectSpriteAnimation>(
       mSettings, mPd3dDevice, 1u );
     standardAnimationEffect->SetPace( 6 );
     standardAnimationEffect->SetImageRange( 16u, 23u );
     standardAnimationEffect->SetContinuous( false );
- //   standardAnimationEffect->Suspend();
+    standardAnimationEffect->Suspend();
+    standardAnimationEffect->AddEventCallback( BIND_MEMBER_EVENT_CALLBACK( &aStat, cpAlienStatus::AnimationDone ) );
     entitySprite->AddEffect( standardAnimationEffect );
                         // Standard animation effect starts suspended, it will be
                         // activated on random event.
@@ -107,15 +111,16 @@ namespace Inv
     firingAnimationEffect->SetImageRange( 0u, 23u );
     firingAnimationEffect->SetContinuous( false );
     firingAnimationEffect->Suspend();
+    firingAnimationEffect->AddEventCallback( BIND_MEMBER_EVENT_CALLBACK( &aStat, cpAlienStatus::FiringDone ) );
+    firingAnimationEffect->AddEventCallback( 8u, BIND_MEMBER_EVENT_CALLBACK( &aStat, cpAlienStatus::FiringDone ) );
     entitySprite->AddEffect( firingAnimationEffect );
                         // Firing animation effect starts suspended, it will be
                         // activated on random event.
 
     mEnTTRegistry.emplace<cpGraphics>( invader,
-      entitySprite, 7u /*0u*/, standardAnimationEffect,
-      entitySprite, 8u, firingAnimationEffect );
-                         // component: graphics (sprite, static image index, standard animation
-                         // sequence, "just fired" index, firing animation sequence )
+      entitySprite, 0u, standardAnimationEffect, entitySprite, firingAnimationEffect, LARGE_INTEGER{0} );
+                        // component: graphics (sprite, static image index, standard animation
+                        // sequence, firing animation sequence, animation driver is zeroed )
 
   } // CInvEntityFactory::AddEntity
 
