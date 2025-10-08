@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvScissorGuard.cpp                                                                         
-//! Module contains class CInvScissorGuard, which implements ...                                                                   
+//! \file CInvScissorGuard.cpp
+//! Module contains class CInvScissorGuard, which implements ...
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <graphics/CInvScissorGuard.h>
@@ -26,7 +26,7 @@ namespace Inv
       return;
 
     DWORD prev = 0;
-    if( SUCCEEDED( mPd3dDevice->GetRenderState( D3DRS_SCISSORTESTENABLE, &prev ) ) ) 
+    if( SUCCEEDED( mPd3dDevice->GetRenderState( D3DRS_SCISSORTESTENABLE, &prev ) ) )
     {
       mPrevEnabled = prev;
       mHavePrevEnabled = true;
@@ -36,7 +36,7 @@ namespace Inv
       mPrevEnabled = 0;
       mHavePrevEnabled = false;
     } // else
-    
+
     mHavePrevRect = SUCCEEDED( mPd3dDevice->GetScissorRect( &mPrevRect ) );
 
     mPd3dDevice->SetScissorRect( &newRect );
@@ -53,7 +53,7 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
-  void CInvScissorGuard::Restore() 
+  void CInvScissorGuard::Restore()
   {
     if( mRestored || nullptr == mPd3dDevice ) return;
 

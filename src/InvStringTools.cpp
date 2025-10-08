@@ -4,12 +4,12 @@
 //****************************************************************************************************
 //*                                                                                                  *
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                       *                   
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                       *
 //****************************************************************************************************
 
 
-#include <cctype>    
-#include <algorithm> 
+#include <cctype>
+#include <algorithm>
 
 #include <InvStringTools.h>
 
@@ -103,7 +103,7 @@ namespace Inv
 
   NumberType_t IsNumeric( const char * str )
   {
-    if( str == nullptr ) 
+    if( str == nullptr )
       return NumberType_t::kNothing;
     const char * ptr = str;
 
@@ -114,7 +114,7 @@ namespace Inv
       {
         if( !( ( '0' <= *ptr && *ptr <= '9' ) ||
                ( 'A' <= *ptr && *ptr <= 'F' ) ||
-               ( 'a' <= *ptr && *ptr <= 'f' ) ) ) 
+               ( 'a' <= *ptr && *ptr <= 'f' ) ) )
           return NumberType_t::kNothing;
         ++ptr;
       } // while
@@ -170,11 +170,11 @@ namespace Inv
   {
     if( separators == nullptr ) return -1;
     const char * sepPtr = separators;
-    while( *sepPtr != 0 ) 
-    { 
-      if( character == *sepPtr ) 
-        return (int)( sepPtr - separators ); 
-      sepPtr++; 
+    while( *sepPtr != 0 )
+    {
+      if( character == *sepPtr )
+        return (int)( sepPtr - separators );
+      sepPtr++;
     }
     return -1;
   } // IsSeparator
@@ -183,9 +183,9 @@ namespace Inv
 
   bool IEquals( const std::string & a, const std::string & b )
   {
-    return 
+    return
       std::equal( a.begin(), a.end(), b.begin(), b.end(),
-        []( char a, char b ) 
+        []( char a, char b )
         {
             return std::tolower( static_cast<unsigned char>( a ) ) ==
                    std::tolower( static_cast<unsigned char>( b ) );
@@ -204,12 +204,12 @@ namespace Inv
   {
     output.clear();
 
-    if( line == nullptr ) 
+    if( line == nullptr )
       return;
 
-    if( separators == nullptr || *separators == 0 ) 
-    { 
-      output.emplace_back( line ); 
+    if( separators == nullptr || *separators == 0 )
+    {
+      output.emplace_back( line );
       return;
     } // if
 
@@ -230,8 +230,8 @@ namespace Inv
     {
       if( isUnseparable >= 0 && line[strLoop] == '\\' &&
         IsSeparator( line[strLoop + 1], glues ) >= 0 ) continue;
-                        // If part of a string is in quotes, the characters inside are expected       
-                        // to be escaped, i.e., for example, a double character \" must not end 
+                        // If part of a string is in quotes, the characters inside are expected
+                        // to be escaped, i.e., for example, a double character \" must not end
                         // the sequence with quotes
 
       if( isUnseparable < 0 && IsSeparator( line[strLoop], separators ) >= 0 )
@@ -264,7 +264,7 @@ namespace Inv
 
         auto tmpSep = IsSeparator( line[strLoop], glues );
         if( tmpSep >= 0 )
-        {               // If the loaded character is a glue character, it starts 
+        {               // If the loaded character is a glue character, it starts
                         //or ends a non-separable sequence (but it must be the same
                         // as the leading one).
           if( isUnseparable < 0 ) isUnseparable = tmpSep;

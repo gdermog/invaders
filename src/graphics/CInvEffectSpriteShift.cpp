@@ -1,10 +1,11 @@
 //****************************************************************************************************
-//! \file CInvEffectSpriteShift.cpp                                                                         
-//! Module contains class CInvEffectSpriteShift, which implements singleton pattern for global logging                                                                    
+//! \file CInvEffectSpriteShift.cpp
+//! Module contains class CInvEffectSpriteShift, which defines effect that shifts sprite by given
+//! offset in X and Y direction.
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <d3dx9.h>
@@ -21,8 +22,8 @@ static const std::string lModLogId( "EffectSprite" );
 namespace Inv
 {
 
-  CInvEffectSpriteShift::CInvEffectSpriteShift( 
-    const CInvSettings & settings, 
+  CInvEffectSpriteShift::CInvEffectSpriteShift(
+    const CInvSettings & settings,
     LPDIRECT3DDEVICE9 pd3dDevice,
     uint32_t ePriority ):
 

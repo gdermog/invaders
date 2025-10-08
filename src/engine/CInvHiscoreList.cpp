@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvHiscore.cpp                                                                         
-//! Module contains class CInvHiscore, which implements ...                                                                
+//! \file CInvHiscore.cpp
+//! Module contains class CInvHiscore, which implements ...
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <filesystem>
@@ -135,7 +135,7 @@ namespace Inv
       mHiscoreList.emplace_back(    9000, "plague" );
     } // if
 
-    std::sort( mHiscoreList.begin(), mHiscoreList.end(), []( auto & left, auto & right ) 
+    std::sort( mHiscoreList.begin(), mHiscoreList.end(), []( auto & left, auto & right )
     {
       return  right.first < left.first;
     } );
@@ -179,7 +179,7 @@ namespace Inv
 
     mHiscoreList.emplace_back( inScore, nameStr );
 
-    std::sort( mHiscoreList.begin(), mHiscoreList.end(), []( auto & left, auto & right ) 
+    std::sort( mHiscoreList.begin(), mHiscoreList.end(), []( auto & left, auto & right )
     {
       return right.first < left.first;
     } );

@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvLoggger.h                                                                          
-//! Module contains class CInvLoggger, which implements singleton pattern for global logging                                                                      
+//! \file CInvLoggger.h
+//! Module contains class CInvLoggger, which implements singleton pattern for global logging
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvLoggger

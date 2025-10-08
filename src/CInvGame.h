@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvGame.h                                                                          
-//! Module contains class CInvGame, which implements singleton pattern for global logging                                                                      
+//! \file CInvGame.h
+//! Module contains class CInvGame, which implements singleton pattern for global logging
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvGame
@@ -76,9 +76,9 @@ namespace Inv
     LARGE_INTEGER mReferenceTick;
     LARGE_INTEGER mFreq;
 
-    LPDIRECT3D9             mPD3D; 
-    LPDIRECT3DDEVICE9       mPd3dDevice; 
-    LPDIRECT3DVERTEXBUFFER9 mPVB; 
+    LPDIRECT3D9             mPD3D;
+    LPDIRECT3DDEVICE9       mPd3dDevice;
+    LPDIRECT3DVERTEXBUFFER9 mPVB;
 
     DWORD mClearColor;
 

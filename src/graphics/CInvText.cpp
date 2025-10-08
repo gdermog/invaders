@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvText.cpp                                                                         
-//! Module contains class CInvText, which implements singleton pattern for global logging                                                                    
+//! \file CInvText.cpp
+//! Module contains class CInvText, which implements singleton pattern for global logging
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <filesystem>
@@ -34,7 +34,7 @@ namespace Inv
       sprite->AddSpriteImage( imgName );
       mLetterMap[ch] = std::move( sprite );
     } // for
-  
+
     for( char ch = '0'; ch <= '9'; ++ch )
     {
       auto sprite = std::make_unique<CInvSprite>( mSettings, mPd3dDevice );
@@ -53,7 +53,7 @@ namespace Inv
   //----------------------------------------------------------------------------------------------
 
   void CInvText::Draw(
-    const std::string & txt, 
+    const std::string & txt,
     float xTopLeft,
     float yTopLeft,
     float letterSize,
@@ -62,7 +62,7 @@ namespace Inv
     LARGE_INTEGER diffTick,
     DWORD color ) const
   {
-    
+
     float x = xTopLeft + letterSize * 0.5;
     float y = yTopLeft + letterSize * 0.5;
                         // Sprites are drawn from center, one letter - one sprite
@@ -73,8 +73,8 @@ namespace Inv
       if( it != mLetterMap.end() )
       {
         auto & sprite = it->second;
-        sprite->Draw( 
-          x, y, letterSize, letterSize, 
+        sprite->Draw(
+          x, y, letterSize, letterSize,
           referenceTick, actualTick, diffTick,
           color );
       } // if
@@ -88,8 +88,8 @@ namespace Inv
   //----------------------------------------------------------------------------------------------
 
   void CInvText::DrawFromRight(
-    const std::string & txt, 
-    float xTopLeft, 
+    const std::string & txt,
+    float xTopLeft,
     float yTopLeft,
     float width,
     float letterSize,
@@ -110,9 +110,9 @@ namespace Inv
       if( it != mLetterMap.end() )
       {
         auto & sprite = it->second;
-        sprite->Draw( 
-          x, y, letterSize, letterSize, 
-          referenceTick, actualTick, diffTick, 
+        sprite->Draw(
+          x, y, letterSize, letterSize,
+          referenceTick, actualTick, diffTick,
           color );
       } // if
 

@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvSprite.h                                                                          
-//! Module contains class CInvSprite, which ..                                                                     
+//! \file CInvSprite.h
+//! Module contains class CInvSprite, which ..
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvSprite
@@ -26,7 +26,7 @@
 namespace Inv
 {
 
-  
+
 
   class CInvSprite
   {
@@ -47,8 +47,8 @@ namespace Inv
     size_t GetNumberOfImages() const { return mTextures.size(); }
 
     void Draw(
-      float xCentre, 
-      float yCentre, 
+      float xCentre,
+      float yCentre,
       float xSize,
       float ySize,
       LARGE_INTEGER referenceTick,

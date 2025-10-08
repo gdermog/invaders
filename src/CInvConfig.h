@@ -1,11 +1,11 @@
 //****************************************************************************************************
-//! \file CInvConfig.h                                                                         
-//! Module contains declaration of CInvConfig class, which handles application configuration 
-//! parsing.                                
+//! \file CInvConfig.h
+//! Module contains declaration of CInvConfig class, which handles application configuration
+//! parsing.
 //****************************************************************************************************
-//*                                                                                                  
+//*
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                   
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvConfig
@@ -21,14 +21,14 @@ namespace Inv
 
   //***** CInvConfig *****************************************************************************
 
-	/*!  \brief This class, which handles application configuration parsing (commandline and INI file). */
+  /*!  \brief This class, which handles application configuration parsing (commandline and INI file). */
   class CInvConfig
   {
 
   public:
 
     //------------------------------------------------------------------------------------------------
-    //! @name Constructors, destructor, clonning, assign operators                                   
+    //! @name Constructors, destructor, clonning, assign operators
     //@{----------------------------------------------------------------------------------------------
 
     CInvConfig();
@@ -36,26 +36,26 @@ namespace Inv
     virtual ~CInvConfig();
 
    //@}-----------------------------------------------------------------------------------------------
-   //! @name Public methods 
+   //! @name Public methods
    //@{-----------------------------------------------------------------------------------------------
 
     void Preprint();
     /*! \brief Sends all settings to given output stream
-     
+
         \param[in,out] out Output stream, default is std::cout */
 
     bool ParseCommandLine( int argc, char * const argv[] );
     /*! \brief Parses command line arguments
-    
+
         \param[in] argc Number of command line arguments
         \param[in] argv Array of command line argument strings
-				\return true if parsing was successful, false otherwise */
+        \return true if parsing was successful, false otherwise */
 
     bool ParseINIFile( std::ifstream & in, size_t &lastLineRead );
     /*! \brief Parses INI file content from given input stream
-    
+
         \param[in]  in           Input stream containing INI file content
-				\param[out] lastLineRead Number of last line read from input stream*/
+        \param[out] lastLineRead Number of last line read from input stream*/
 
     std::string GetValueStr(
       const std::string & inSect,
@@ -67,7 +67,7 @@ namespace Inv
          \param[in] inSect    Section name (empty string for global section)
          \param[in] inItem    Item name
          \param[in] inDefault Default value to return if item or section does not exist
-				 \return Value of given item in given section or default value */
+         \return Value of given item in given section or default value */
 
     bool GetValueBool(
       const std::string & inSect,
@@ -78,7 +78,7 @@ namespace Inv
 
          \param[in] inSect    Section name (empty string for global section)
          \param[in] inItem    Item name
-				 \param[in] inDefault Default value to return if item or section does not exist */
+         \param[in] inDefault Default value to return if item or section does not exist */
 
     double_t GetValueDouble(
       const std::string & inSect,
@@ -88,7 +88,7 @@ namespace Inv
          If item or section does not exist, returns default value.
 
          \param[in] inSect    Section name (empty string for global section)
-				 \param[in] inItem    Item name */
+         \param[in] inItem    Item name */
 
     int64_t GetValueInteger(
       const std::string & inSect,
@@ -98,7 +98,7 @@ namespace Inv
          If item or section does not exist, returns default value.
 
          \param[in] inSect    Section name (empty string for global section)
-				 \param[in] inItem    Item name */
+         \param[in] inItem    Item name */
 
     uint64_t GetValueUnsigned(
       const std::string & inSect,
@@ -107,12 +107,12 @@ namespace Inv
     /*!< \brief Returns unsigned integer value of given item in given section.
          If item or section does not exist, returns default value
          .
-				 \param[in] inSect    Section name (empty string for global section) */
+         \param[in] inSect    Section name (empty string for global section) */
 
   protected:
 
     //@{}---------------------------------------------------------------------------------------------
-    //! @name Protected data                                                                         
+    //! @name Protected data
     //@{----------------------------------------------------------------------------------------------
 
     //! Value of configuration item
@@ -122,10 +122,10 @@ namespace Inv
     };
 
     using CfgItemList_t = StrMap_t<CfgItem_t>;
-		//!< List of configuration items in one section
+    //!< List of configuration items in one section
 
     StrMap_t<CfgItemList_t> mCfgContent;
-		//!< Whole configuration content (map of sections, each section is map of items)
+    //!< Whole configuration content (map of sections, each section is map of items)
 
     const char * mSeparators;
     const char * mSeparatorsSpace;
@@ -149,23 +149,23 @@ namespace Inv
 
     bool ParseINIKeyValuePair(
       const std::string & inLine, const std::string & actSection );
-    /*!< \brief Parses one line of INI file containing key=value pair and inserts 
+    /*!< \brief Parses one line of INI file containing key=value pair and inserts
          it into configuration content.
 
          \param[in] inLine      Line to be parsed
          \param[in] actSection  Name of actual section (empty string for global section)
-				 \return true if parsing was successful, false otherwise */
+         \return true if parsing was successful, false otherwise */
 
     bool InsertItem(
       const std::string & in_ai8Sect,
       const std::string & in_ai8Item,
       const StrVect_t & in_ai8ItemVal );
     /*!< \brief Inserts given item into configuration content.
-    
+
          \param[in] in_ai8Sect     Section name (empty string for global section)
          \param[in] in_ai8Item     Item name
-				 \param[in] in_ai8ItemVal  Item value */
- 
+         \param[in] in_ai8ItemVal  Item value */
+
     //@}
 
   }; // CInvConfig

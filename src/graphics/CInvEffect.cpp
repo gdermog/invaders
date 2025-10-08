@@ -1,10 +1,11 @@
 //****************************************************************************************************
-//! \file CInvEffect.cpp                                                                         
-//! Module contains class CInvEffect, which implements singleton pattern for global logging                                                                    
+//! \file CInvEffect.cpp
+//! Module contains class CInvEffect, which defines base class for all effects that can be applied
+//! to graphical elements.
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <d3dx9.h>
@@ -15,8 +16,8 @@ static const std::string lModLogId( "Effect" );
 namespace Inv
 {
 
-  CInvEffect::CInvEffect( 
-    const CInvSettings & settings, 
+  CInvEffect::CInvEffect(
+    const CInvSettings & settings,
     LPDIRECT3DDEVICE9 pd3dDevice,
     uint32_t ePriority ):
 
@@ -24,7 +25,7 @@ namespace Inv
     mPd3dDevice( pd3dDevice ),
     mIsSuspended( false ),
     mEffectPriority( ePriority )
-  {} 
+  {}
 
   //----------------------------------------------------------------------------------------------
 

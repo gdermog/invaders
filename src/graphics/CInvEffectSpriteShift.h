@@ -1,10 +1,11 @@
 //****************************************************************************************************
-//! \file CInvEffectSpriteShift.h                                                                          
-//! Module contains class CInvEffectSpriteShift, which ..                                                                     
+//! \file CInvEffectSpriteShift.h
+//! Module contains class CInvEffectSpriteShift, which declares effect that shifts sprite by given
+//! offset in X and Y direction.
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvEffectSpriteShift
@@ -20,19 +21,21 @@
 namespace Inv
 {
 
-  class CInvSprite;
-
+  /*! \brief Effect that shifts sprite by given offset in X and Y direction. The shift is applied
+      every time the effect is applied, so multiple applications will result in cumulative
+      shift. The effect can be used to implement simple movement of sprites. The effect itself is
+      not time-dependent, it is a simple translation. The axis itself is not very important, it is
+      used more as a base class for more advanced effects involving translating an object in some
+      direction.*/
   class CInvEffectSpriteShift: public CInvEffect
   {
     public:
 
-    CInvEffectSpriteShift( 
-      const CInvSettings & settings, 
+    CInvEffectSpriteShift(
+      const CInvSettings & settings,
       LPDIRECT3DDEVICE9 pd3dDevice,
       uint32_t ePriority );
 
-    CInvEffectSpriteShift( const CInvEffectSpriteShift & ) = delete;
-    CInvEffectSpriteShift & operator=( const CInvEffectSpriteShift & ) = delete;
     ~CInvEffectSpriteShift();
 
     virtual bool ApplyEffect(
@@ -41,7 +44,7 @@ namespace Inv
       LARGE_INTEGER actualTick,
       LARGE_INTEGER diffTick ) override;
 
-    void SetShift( float shiftX, float shiftY ) 
+    void SetShift( float shiftX, float shiftY )
     { mShiftX = shiftX; mShiftY = shiftY; }
 
     void GetShift( float & shiftX, float & shiftY ) const

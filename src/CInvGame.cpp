@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvLoggger.cpp                                                                         
-//! Module contains class CInvLoggger, which implements singleton pattern for global logging                                                                    
+//! \file CInvLoggger.cpp
+//! Module contains class CInvLoggger, which implements singleton pattern for global logging
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <CInvGame.h>
@@ -265,7 +265,7 @@ namespace Inv
           stillInLoop = false;
       } // while
 
-      if( IsKeyDown( VK_ESCAPE ) ) 
+      if( IsKeyDown( VK_ESCAPE ) )
         stillInLoop = false;
 
       ProcessInput( controlState, controlValue );
@@ -414,7 +414,7 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
-  bool CInvGame::IsKeyDown( int key ) 
+  bool CInvGame::IsKeyDown( int key )
   {
     return lKeyDown[key & 255];
   } // CInvGame::IsKeyDown

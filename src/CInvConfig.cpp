@@ -4,7 +4,7 @@
 //****************************************************************************************************
 //*                                                                                                  *
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                      *                   
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                      *
 //****************************************************************************************************
 
 #include <iomanip>
@@ -46,7 +46,7 @@ namespace Inv
    //-------------------------------------------------------------------------------------------------
 
    void CInvConfig::Preprint()
-   { 
+   {
 
      for( auto &section: mCfgContent )
      {
@@ -122,7 +122,7 @@ namespace Inv
 
            } // if
            else
-           {            // This token is part of actual value   
+           {            // This token is part of actual value
 
              if( ( StartsWith( tIter, "\"" ) && EndsWith( tIter, "\"" ) ) ||
                ( StartsWith( tIter, "\'" ) && EndsWith( tIter, "\'" ) ) )
@@ -147,7 +147,7 @@ namespace Inv
          } // if
          else
          {
-           if( !InsertItem( {}, lastKey, lastVal ) ) 
+           if( !InsertItem( {}, lastKey, lastVal ) )
              return false;
          } // else
        } // if
@@ -217,13 +217,13 @@ namespace Inv
 
    //-------------------------------------------------------------------------------------------------
 
-   std::string CInvConfig::GetValueStr( 
-     const std::string & inSect, 
-     const std::string & inItem, 
+   std::string CInvConfig::GetValueStr(
+     const std::string & inSect,
+     const std::string & inItem,
      const std::string & inDefault ) const
    {
      auto sectIt = mCfgContent.find( inSect );
-     if( sectIt == mCfgContent.end() ) 
+     if( sectIt == mCfgContent.end() )
        return { inDefault };
 
      auto itemIt = sectIt->second.find( inItem );
@@ -236,14 +236,14 @@ namespace Inv
 
    //-------------------------------------------------------------------------------------------------
 
-   bool CInvConfig::GetValueBool( 
-     const std::string & inSect, 
-     const std::string & inItem, 
+   bool CInvConfig::GetValueBool(
+     const std::string & inSect,
+     const std::string & inItem,
      bool inDefault ) const
    {
      auto strVal = GetValueStr( inSect, inItem, {} );
 
-     if( strVal.empty() ) 
+     if( strVal.empty() )
        return inDefault;
 
      auto strValType = IsNumeric( strVal.c_str() );
@@ -252,16 +252,16 @@ namespace Inv
          NumberType_t::kIntegerNumeric == strValType ||
          NumberType_t::kHexaNumeric == strValType )
        return ( std::stoll( strVal, nullptr, 0 ) != 0 );
-     
+
      return IEquals( strVal, gTrueName );
 
    } // CInvConfig::GetValueBool
 
    //-------------------------------------------------------------------------------------------------
 
-   double_t CInvConfig::GetValueDouble( 
-     const std::string & inSect, 
-     const std::string & inItem, 
+   double_t CInvConfig::GetValueDouble(
+     const std::string & inSect,
+     const std::string & inItem,
      double_t inDefault ) const
    {
      auto strVal = GetValueStr( inSect, inItem, {} );
@@ -286,8 +286,8 @@ namespace Inv
    //-------------------------------------------------------------------------------------------------
 
    int64_t CInvConfig::GetValueInteger(
-     const std::string & inSect, 
-     const std::string & inItem, 
+     const std::string & inSect,
+     const std::string & inItem,
      int64_t inDefault ) const
    {
      auto strVal = GetValueStr( inSect, inItem, {} );
@@ -308,9 +308,9 @@ namespace Inv
    //-------------------------------------------------------------------------------------------------
 
 
-   uint64_t CInvConfig::GetValueUnsigned( 
+   uint64_t CInvConfig::GetValueUnsigned(
      const std::string & inSect,
-     const std::string & inItem, 
+     const std::string & inItem,
      uint64_t inDefault ) const
    {
      auto strVal = GetValueStr( inSect, inItem, {} );
@@ -330,7 +330,7 @@ namespace Inv
 
    //-------------------------------------------------------------------------------------------------
 
-   bool CInvConfig::ParseINIKeyValuePair( 
+   bool CInvConfig::ParseINIKeyValuePair(
      const std::string & inLine, const std::string & actSection )
    {
      bool readingKey = true;
@@ -404,8 +404,8 @@ namespace Inv
    //-------------------------------------------------------------------------------------------------
 
    bool CInvConfig::InsertItem(
-     const std::string & in_ai8Sect, 
-     const std::string & in_ai8Item, 
+     const std::string & in_ai8Sect,
+     const std::string & in_ai8Item,
      const StrVect_t & in_ai8ItemVal )
    {
      if( in_ai8Item.empty() )

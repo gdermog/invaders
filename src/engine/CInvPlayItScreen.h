@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvPlayItScreen.h                                                                          
-//! Module contains class CInvPlayItScreen, which implements singleton pattern for global logging                                                                      
+//! \file CInvPlayItScreen.h
+//! Module contains class CInvPlayItScreen, which implements singleton pattern for global logging
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvPlayItScreen

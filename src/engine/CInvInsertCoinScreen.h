@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvInsertCoinScreen.h                                                                          
-//! Module contains class CInvInsertCoinScreen, which implements singleton pattern for global logging                                                                      
+//! \file CInvInsertCoinScreen.h
+//! Module contains class CInvInsertCoinScreen, which implements singleton pattern for global logging
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvInsertCoinScreen
@@ -27,7 +27,7 @@ namespace Inv
   class CInvInsertCoinScreen
   {
     public:
-    
+
       CInvInsertCoinScreen(
         const CInvSettings & settings,
         const CInvText & textCreator,
@@ -41,10 +41,10 @@ namespace Inv
     CInvInsertCoinScreen( const CInvInsertCoinScreen & ) = delete;
     CInvInsertCoinScreen & operator=( const CInvInsertCoinScreen & ) = delete;
     ~CInvInsertCoinScreen();
-   
-    bool MainLoop( 
-      uint32_t & newScoreToEnter, 
-      bool &gameStart, 
+
+    bool MainLoop(
+      uint32_t & newScoreToEnter,
+      bool &gameStart,
       ControlStateFlags_t controlState,
       ControlValue_t controlValue,
       LARGE_INTEGER actualTick );
@@ -58,8 +58,8 @@ namespace Inv
     bool DrawHighScores( LARGE_INTEGER actualTick );
 
     bool DrawEnterCallsign(
-      LARGE_INTEGER actualTick, 
-      ControlValue_t controlValue, 
+      LARGE_INTEGER actualTick,
+      ControlValue_t controlValue,
       bool & isDone );
 
     static const std::string mWelcomeHeader;

@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvEffectSpriteShiftRotate.h                                                                          
-//! Module contains class CInvEffectSpriteShiftRotate, which ..                                                                     
+//! \file CInvEffectSpriteShiftRotate.h
+//! Module contains class CInvEffectSpriteShiftRotate, which ..
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvEffectSpriteShiftRotate
@@ -26,8 +26,8 @@ namespace Inv
   {
     public:
 
-    CInvEffectSpriteShiftRotate( 
-      const CInvSettings & settings, 
+    CInvEffectSpriteShiftRotate(
+      const CInvSettings & settings,
       LPDIRECT3DDEVICE9 pd3dDevice,
       uint32_t ePriority );
 
@@ -46,7 +46,7 @@ namespace Inv
     uint32_t GetPace() const { return mPace; }
 
 //     void SetAngleRad( float angle ) { mAngleRad = angle; }
-// 
+//
 //     float GetAngleRad() const { return mAngleRad; }
 
   protected:

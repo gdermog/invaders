@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvInsertCoinScreen.cpp                                                                         
-//! Module contains class CInvInsertCoinScreen, which implements singleton pattern for global logging                                                                    
+//! \file CInvInsertCoinScreen.cpp
+//! Module contains class CInvInsertCoinScreen, which implements singleton pattern for global logging
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <engine/CInvInsertCoinScreen.h>
@@ -110,7 +110,7 @@ namespace Inv
     mHighScoreLineContent.reserve( CInvHiscoreList::mMaxHiscoreLineLen );
 
     mPressEnterLetterSize = mLetterSize * mPressEnterFontRelativeSize;
-    mPressEnterTopLeftX = 
+    mPressEnterTopLeftX =
       ( (float)mSettings.GetWindowWidth() - mPressToStart.size() * mPressEnterLetterSize ) * 0.5f;
     mPressEnterTopLeftY =  (float)mSettings.GetWindowHeight() - mPressEnterLetterSize * 1.1f;
 
@@ -121,7 +121,7 @@ namespace Inv
     mQualifiedTopLeftX = ( (float)mSettings.GetWindowWidth() - mYouQualified.size() * mQualifiedLetterSize ) * 0.5f;
     mQualifiedTopLeftY = mHeaderYPos + 3 * mLetterSize;
 
-    mEnterCallsignTopLeftX = 
+    mEnterCallsignTopLeftX =
       ( (float)mSettings.GetWindowWidth() - mEnterCallsign.size() * mQualifiedLetterSize ) * 0.5f;
     mEnterCallsignTopLeftY = mQualifiedTopLeftY + mQualifiedLetterSize * 1.5f;
 
@@ -143,7 +143,7 @@ namespace Inv
 
     auto *animEff = new CInvEffectSpriteAnimation( mSettings, mPd3dDevice, 1 );
     animEff->SetPace( 6 );
-    mTitleSpriteAnimationEffect = std::shared_ptr<CInvEffect>( animEff );   
+    mTitleSpriteAnimationEffect = std::shared_ptr<CInvEffect>( animEff );
     mTitleSprite->AddEffect( mTitleSpriteAnimationEffect );
 
     auto * shiftRotEff = new CInvEffectSpriteShiftRotate( mSettings, mPd3dDevice, 2 );
@@ -173,8 +173,8 @@ namespace Inv
 
     gameStart = false;
 
-    mTextCreator.Draw( 
-      mWelcomeHeader.c_str(), 
+    mTextCreator.Draw(
+      mWelcomeHeader.c_str(),
       mHeaderXPos, mHeaderYPos, mLetterSize,
       mTickReferencePoint, actualTick, mDiffTick );
 
@@ -301,7 +301,7 @@ namespace Inv
       } // for
 
     } // if
-    
+
     if( 0 < mTitleSpriteImageSequenceNr )
     {
       LARGE_INTEGER diffTick;
@@ -319,8 +319,8 @@ namespace Inv
       } // for
     } // if
 
-    mTextCreator.Draw( 
-      mPressToStart.c_str(), 
+    mTextCreator.Draw(
+      mPressToStart.c_str(),
       mPressEnterTopLeftX, mPressEnterTopLeftY, mPressEnterLetterSize,
       mTickReferencePoint, actualTick, mDiffTick );
 
@@ -331,16 +331,16 @@ namespace Inv
 
   bool CInvInsertCoinScreen::DrawEnterCallsign(
     LARGE_INTEGER actualTick,
-    ControlValue_t controlValue, 
+    ControlValue_t controlValue,
     bool & isDone )
   {
     isDone = false;
 
-    mTextCreator.Draw( 
+    mTextCreator.Draw(
       mYouQualified.c_str(), mQualifiedTopLeftX, mQualifiedTopLeftY, mQualifiedLetterSize,
       mTickReferencePoint, actualTick, mDiffTick );
 
-    mTextCreator.Draw( 
+    mTextCreator.Draw(
       mEnterCallsign.c_str(), mEnterCallsignTopLeftX, mEnterCallsignTopLeftY, mQualifiedLetterSize,
       mTickReferencePoint, actualTick, mDiffTick );
 
@@ -362,7 +362,7 @@ namespace Inv
     mLastControlValue = controlValue;
 
     auto letters = mCurrentCallsign.size();
-    auto lettersLeft = 
+    auto lettersLeft =
       letters < CInvHiscoreList::mMaxHiscoreNameLen ?
       CInvHiscoreList::mMaxHiscoreNameLen - letters : 0;
 

@@ -1,11 +1,11 @@
 //****************************************************************************************************
-//! \file CInvSettings.h                                                                         
-//! Module contains declaration of CInvSettings class, which contains all parameters entered     
-//! by the user from outside.                                                                        
+//! \file CInvSettings.h
+//! Module contains declaration of CInvSettings class, which contains all parameters entered
+//! by the user from outside.
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 19. 11. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 19. 11. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvSettings
@@ -20,8 +20,8 @@ namespace Inv
 
   //***** CInvSettings *****************************************************************************
 
-  /*! \brief This class contains all parameters entered by the user from outside. They are given and 
-      constant, they cannot be changed during program execution. Values are imported through means of 
+  /*! \brief This class contains all parameters entered by the user from outside. They are given and
+      constant, they cannot be changed during program execution. Values are imported through means of
       CInvConfig class. */
   class CInvSettings
   {
@@ -29,7 +29,7 @@ namespace Inv
   public:
 
     //------------------------------------------------------------------------------------------------
-    //! @name Constructors, destructor, clonning, assign operators                                   
+    //! @name Constructors, destructor, clonning, assign operators
     //@{----------------------------------------------------------------------------------------------
 
     CInvSettings();
@@ -42,17 +42,17 @@ namespace Inv
 
     std::vector<std::string> ImportSettings( const Inv::CInvConfig & inCfg );
     /*! \brief Imports settings from configuration object
-    
+
         \param[in] inCfg Configuration object containing all parameters
         \return List of error messages. If empty, import was successful. */
 
     void Preprint();
     /*! \brief Sends all settings to given output stream
-     
+
         \param[in,out] out Output stream, default is std::cout */
 
     //@{}---------------------------------------------------------------------------------------------
-    //! @name Input data getters                                                                            
+    //! @name Input data getters
     //@{----------------------------------------------------------------------------------------------
 
     const std::string & GetGameIdentifier() const { return mGameIdentifier; }
@@ -61,8 +61,8 @@ namespace Inv
     int32_t GetSeed() const { return mSeed; }
     //!< \brief Returns seed for random number generator, if -1, current time is used
 
-		bool GetFullScreen() const { return mFullScreen; }
-		//!< \brief Returns true if the game should run in fullscreen mode
+    bool GetFullScreen() const { return mFullScreen; }
+    //!< \brief Returns true if the game should run in fullscreen mode
 
     uint32_t GetWindowWidth() const { return mScreenWidth; }
     //!< \brief Returns screen width in pixels
@@ -79,7 +79,7 @@ namespace Inv
   protected:
 
     //@}----------------------------------------------------------------------------------------------
-    //! @name Protected input data                                                                            
+    //! @name Protected input data
     //@{----------------------------------------------------------------------------------------------
 
     std::string mGameIdentifier;
@@ -88,12 +88,12 @@ namespace Inv
     int32_t mSeed;      //!< Seed for random number generator, if -1, current time is used
 
     bool mFullScreen;   //!< If true, game runs in fullscreen mode
-   
-    uint32_t mScreenWidth;   
+
+    uint32_t mScreenWidth;
                         //!< Screen width in pixels
-    uint32_t mScreenHeight;  
+    uint32_t mScreenHeight;
                         //!< Screen height in pixels
-    
+
     std::string mImagePath;
                         //!< Path to image files
 
@@ -101,8 +101,8 @@ namespace Inv
                         //!< Path to hiscore file
 
     std::ostream & PrpLine();
-		/*!< \brief Helper for formatting output in Preprint method */
-    
+    /*!< \brief Helper for formatting output in Preprint method */
+
 
     //@}
 

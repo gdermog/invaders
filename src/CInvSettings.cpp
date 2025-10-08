@@ -1,11 +1,11 @@
 //****************************************************************************************************
-//! \file CInvSettings.cpp                                                                       
+//! \file CInvSettings.cpp
 //! Module contains definitions of CInvSettings class, declared in CInvSettings.h, which
-//! contains all parameters entered  by the user from outside.                                    
+//! contains all parameters entered  by the user from outside.
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 19. 11. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 19. 11. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <iomanip>
@@ -31,7 +31,7 @@ namespace Inv
      mHiscorePath( "./hiscore.csv" )
    {
 
-   } // CInvSettings::CInvSettings 
+   } // CInvSettings::CInvSettings
 
    //-------------------------------------------------------------------------------------------------
 
@@ -73,7 +73,7 @@ namespace Inv
        mImagePath = inCfg.GetValueStr( "graphics", "images", "./images" );
 
        mHiscorePath = inCfg.GetValueStr( "game", "highscore", "./hiscore.csv" );
-      
+
      }
      catch( std::exception& e )
      {
@@ -97,7 +97,7 @@ namespace Inv
    //-------------------------------------------------------------------------------------------------
 
    void CInvSettings::Preprint()
-   { 
+   {
      PrpLine() << "GameIdentifier:" << mGameIdentifier;
      PrpLine() << "Seed:" << mSeed;
      LOG;

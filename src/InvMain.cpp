@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file InvMain.cpp                                                                      
-//! Module contains main entrypoint for the application.                                                                            
+//! \file InvMain.cpp
+//! Module contains main entrypoint for the application.
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <iomanip>
@@ -104,7 +104,7 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR cmd, INT )
   gameSettings.Preprint();
 
   //------ Start the game -----------------------------------------------------------------------------
-  
+
   Inv::CInvGame game( gameSettings );
 
   if( !game.Initialize() )
@@ -128,4 +128,3 @@ INT WINAPI WinMain( HINSTANCE hInst, HINSTANCE, LPSTR cmd, INT )
   return 0;
 
 } // WinMain
-

@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvPlayItScreen.cpp                                                                         
-//! Module contains class CInvPlayItScreen, which implements...                                                                   
+//! \file CInvPlayItScreen.cpp
+//! Module contains class CInvPlayItScreen, which implements...
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <engine/CInvPlayItScreen.h>
@@ -15,12 +15,12 @@ namespace Inv
   //-------------------------------------------------------------------------------------------------
 
   CInvPlayItScreen::CInvPlayItScreen(
-    const CInvSettings & settings, 
-    const CInvText & textCreator, 
-    CInvPrimitive & primitives, 
-    LPDIRECT3D9 pD3D, 
-    LPDIRECT3DDEVICE9 pd3dDevice, 
-    LPDIRECT3DVERTEXBUFFER9 pVB, 
+    const CInvSettings & settings,
+    const CInvText & textCreator,
+    CInvPrimitive & primitives,
+    LPDIRECT3D9 pD3D,
+    LPDIRECT3DDEVICE9 pd3dDevice,
+    LPDIRECT3DVERTEXBUFFER9 pVB,
     LARGE_INTEGER tickReferencePoint ):
 
     mTickReferencePoint( tickReferencePoint ),
@@ -37,7 +37,7 @@ namespace Inv
   //-------------------------------------------------------------------------------------------------
 
   CInvPlayItScreen::~CInvPlayItScreen()
-  { 
+  {
 
   } // CInvPlayItScreen::~CInvPlayItScreen
 

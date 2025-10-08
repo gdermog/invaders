@@ -1,10 +1,11 @@
 //****************************************************************************************************
-//! \file CInvEffectSpriteAnimation.cpp                                                                         
-//! Module contains class CInvEffectSpriteAnimation, which implements s...                                                      
+//! \file CInvEffectSpriteAnimation.cpp
+//! Module contains class CInvEffectSpriteAnimation, which defines effect that animates sprite by
+//! changing its image in given pace
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <d3dx9.h>
@@ -18,14 +19,14 @@ static const std::string lModLogId( "EffectSprite" );
 namespace Inv
 {
 
-  CInvEffectSpriteAnimation::CInvEffectSpriteAnimation( 
-    const CInvSettings & settings, 
+  CInvEffectSpriteAnimation::CInvEffectSpriteAnimation(
+    const CInvSettings & settings,
     LPDIRECT3DDEVICE9 pd3dDevice,
     uint32_t ePriority ):
 
     CInvEffect( settings, pd3dDevice, ePriority ),
     mPace( 1 )
-  {} 
+  {}
 
   //----------------------------------------------------------------------------------------------
 

@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvPrimitive.cpp                                                                         
-//! Module contains class CInvPrimitive, which implements singleton pattern for global logging                                                                    
+//! \file CInvPrimitive.cpp
+//! Module contains class CInvPrimitive, which implements singleton pattern for global logging
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <graphics/CInvPrimitive.h>
@@ -19,7 +19,7 @@ namespace Inv
   CInvPrimitive::CInvPrimitive( const CInvSettings & settings, LPDIRECT3DDEVICE9 pd3dDevice ):
     mSettings( settings ),
     mPd3dDevice( pd3dDevice )
-  {} 
+  {}
 
   //----------------------------------------------------------------------------------------------
 
@@ -42,18 +42,18 @@ namespace Inv
     D3DCOLOR color,
     bool pixelPerfect )
   {
-    if( nullptr == mPd3dDevice ) 
+    if( nullptr == mPd3dDevice )
       return;
 
     // Half-pixel correction (experimentuj +/-0.5)
-    if( pixelPerfect ) 
+    if( pixelPerfect )
     {
       const float half = -0.5f;
       x1 += half; y1 += half;
       x2 += half; y2 += half;
     }
 
-    LineVertex verts[] = 
+    LineVertex verts[] =
     {
       { x1, y1, 0.5f, 1.0f, color},
       { x2, y2, 0.5f, 1.0f, color},

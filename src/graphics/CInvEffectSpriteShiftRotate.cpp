@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvEffectSpriteShiftRotate.cpp                                                                         
-//! Module contains class CInvEffectSpriteShiftRotate, which implements singleton pattern for global logging                                                                    
+//! \file CInvEffectSpriteShiftRotate.cpp
+//! Module contains class CInvEffectSpriteShiftRotate, which implements singleton pattern for global logging
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <d3dx9.h>
@@ -21,8 +21,8 @@ static const std::string lModLogId( "EffectSpriteRotate" );
 namespace Inv
 {
 
-  CInvEffectSpriteShiftRotate::CInvEffectSpriteShiftRotate( 
-    const CInvSettings & settings, 
+  CInvEffectSpriteShiftRotate::CInvEffectSpriteShiftRotate(
+    const CInvSettings & settings,
     LPDIRECT3DDEVICE9 pd3dDevice,
     uint32_t ePriority ):
 
@@ -52,7 +52,7 @@ namespace Inv
     float x = mShiftX;
     float y = mShiftY;
 
-    auto angleIdx = 
+    auto angleIdx =
       ( actualTick.QuadPart - referenceTick.QuadPart + diffTick.QuadPart ) % mPace;
 
     float angleRad = g2PI * ( (float)angleIdx ) / ( (float)mPace );

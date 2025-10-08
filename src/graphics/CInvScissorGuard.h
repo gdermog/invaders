@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvScissorGuard.h                                                                          
-//! Module contains class CInvScissorGuard, which implements ...                                                                     
+//! \file CInvScissorGuard.h
+//! Module contains class CInvScissorGuard, which implements ...
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvScissorGuard
@@ -27,7 +27,7 @@ namespace Inv
     CInvScissorGuard & operator=( const CInvScissorGuard & ) = delete;
     ~CInvScissorGuard();
 
-    void Restore(); 
+    void Restore();
 
   private:
 

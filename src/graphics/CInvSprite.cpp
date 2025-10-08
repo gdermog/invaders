@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvSprite.cpp                                                                         
-//! Module contains class CInvSprite, which implements singleton pattern for global logging                                                                    
+//! \file CInvSprite.cpp
+//! Module contains class CInvSprite, which implements singleton pattern for global logging
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <filesystem>
@@ -29,7 +29,7 @@ namespace Inv
     mSettings( settings ),
     mPd3dDevice( pd3dDevice ),
     mTextures()
-  {} 
+  {}
 
   //----------------------------------------------------------------------------------------------
 
@@ -111,11 +111,11 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
-  void CInvSprite::Draw( 
-    float xCentre, 
-    float yCentre, 
-    float xSize, 
-    float ySize,     
+  void CInvSprite::Draw(
+    float xCentre,
+    float yCentre,
+    float xSize,
+    float ySize,
     LARGE_INTEGER referenceTick,
     LARGE_INTEGER actualTick,
     LARGE_INTEGER diffTick,

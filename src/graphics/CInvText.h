@@ -1,10 +1,10 @@
 //****************************************************************************************************
-//! \file CInvText.h                                                                          
-//! Module contains class CInvText, which ..                                                                     
+//! \file CInvText.h
+//! Module contains class CInvText, which ..
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_CInvText
@@ -26,8 +26,8 @@ namespace Inv
   {
     public:
 
-    CInvText( 
-      const CInvSettings & settings, 
+    CInvText(
+      const CInvSettings & settings,
       LPDIRECT3DDEVICE9 pd3dDevice,
       const std::string & lettersRelPath );
 

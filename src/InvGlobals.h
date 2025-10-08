@@ -1,17 +1,17 @@
 //****************************************************************************************************
-//! \file InvGlobals.h                                                                          
-//! Module contains some basics types and global constants used in other modules.                                                                            
+//! \file InvGlobals.h
+//! Module contains some basics types and global constants used in other modules.
 //****************************************************************************************************
-//                                                                                                  
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                     
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #ifndef H_InvGlobals
 #define H_InvGlobals
 
-#include <cmath> 
-#include <cstdint> 
+#include <cmath>
+#include <cstdint>
 #include <fstream>
 #include <string>
 #include <memory>
@@ -56,22 +56,22 @@ namespace Inv
   //!< Specifies the size of a number that is already considered zero
 
   inline bool IsZero( double_t val, double_t tol = gAlmostZero ) { return ( ( -tol <= val ) && ( val <= tol ) ); }
-	//!< Returns true if the value is zero within given tolerance
+  //!< Returns true if the value is zero within given tolerance
 
   inline bool IsPositive(double_t val, double_t tol = gAlmostZero ) { return ( tol < val ); }
-	//!< Returns true if the value is positive within given tolerance
+  //!< Returns true if the value is positive within given tolerance
 
   inline bool IsNegative(double_t val, double_t tol = gAlmostZero) { return ( val < -tol ); }
   //!< Returns true if the value is negative within given tolerance
 
   constexpr unsigned gPrintoutIdWidth = 20;
-	//!< Standard width for printout identifiers
+  //!< Standard width for printout identifiers
 
   constexpr unsigned gHelpMarginWidth = 5;
-	//!< Standard left margin for commandline help printout
+  //!< Standard left margin for commandline help printout
 
   constexpr unsigned gHelpItemWidth = 20;
-	//!< Standard width for commandline help items
+  //!< Standard width for commandline help items
 
   constexpr double_t gPI = 3.141592653589793;
   //!< Value of pi constant - 3.1415926535897932384626433832795 ...
@@ -120,13 +120,13 @@ namespace Inv
 
   inline bool ControlStateHave( ControlStateFlags_t val, ControlState_t testingFor )
   {
-    return ( static_cast<ControlStateFlags_t>( testingFor ) == 
+    return ( static_cast<ControlStateFlags_t>( testingFor ) ==
       ( val & static_cast<ControlStateFlags_t>( testingFor ) ) );
   } // ControlStateHave
 
   inline void ControlStateSet( ControlStateFlags_t & val, ControlState_t setting )
   {
-    val = static_cast<ControlStateFlags_t>( 
+    val = static_cast<ControlStateFlags_t>(
       val | static_cast<ControlStateFlags_t>( setting ) );
   } // ControlStateSet
 
