@@ -14,9 +14,12 @@
     <ClCompile Include="src\CInvConfig.cpp" />
     <ClCompile Include="src\CInvGame.cpp" />
     <ClCompile Include="src\CInvLogger.cpp" />
+    <ClCompile Include="src\engine\CInvEntityFactory.cpp" />
+    <ClCompile Include="src\engine\CInvGameScene.cpp" />
     <ClCompile Include="src\engine\CInvHiscoreList.cpp" />
     <ClCompile Include="src\engine\CInvInsertCoinScreen.cpp" />
     <ClCompile Include="src\engine\CInvPlayItScreen.cpp" />
+    <ClCompile Include="src\engine\InvENTTProcessors.cpp" />
     <ClCompile Include="src\graphics\CInvEffect.cpp" />
     <ClCompile Include="src\graphics\CInvEffectSpriteAnimation.cpp" />
     <ClCompile Include="src\graphics\CInvEffectSpriteShift.cpp" />
@@ -24,6 +27,7 @@
     <ClCompile Include="src\graphics\CInvPrimitive.cpp" />
     <ClCompile Include="src\graphics\CInvScissorGuard.cpp" />
     <ClCompile Include="src\graphics\CInvSprite.cpp" />
+    <ClCompile Include="src\graphics\CInvSpriteStorage.cpp" />
     <ClCompile Include="src\graphics\CInvText.cpp" />
     <ClCompile Include="src\InvMain.cpp" />
     <ClCompile Include="src\CInvSettings.cpp" />
@@ -33,9 +37,13 @@
     <ClInclude Include="src\CInvConfig.h" />
     <ClInclude Include="src\CInvGame.h" />
     <ClInclude Include="src\CInvLogger.h" />
+    <ClInclude Include="src\engine\CInvEntityFactory.h" />
+    <ClInclude Include="src\engine\CInvGameScene.h" />
     <ClInclude Include="src\engine\CInvHiscoreList.h" />
     <ClInclude Include="src\engine\CInvInsertCoinScreen.h" />
     <ClInclude Include="src\engine\CInvPlayItScreen.h" />
+    <ClInclude Include="src\engine\InvENTTComponents.h" />
+    <ClInclude Include="src\engine\InvENTTProcessors.h" />
     <ClInclude Include="src\graphics\CInvEffect.h" />
     <ClInclude Include="src\graphics\CInvEffectSpriteAnimation.h" />
     <ClInclude Include="src\graphics\CInvEffectSpriteShift.h" />
@@ -43,6 +51,7 @@
     <ClInclude Include="src\graphics\CInvPrimitive.h" />
     <ClInclude Include="src\graphics\CInvScissorGuard.h" />
     <ClInclude Include="src\graphics\CInvSprite.h" />
+    <ClInclude Include="src\graphics\CInvSpriteStorage.h" />
     <ClInclude Include="src\graphics\CInvText.h" />
     <ClInclude Include="src\InvGlobals.h" />
     <ClInclude Include="src\CInvSettings.h" />

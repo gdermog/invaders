@@ -17,8 +17,11 @@
 #include <InvGlobals.h>
 
 #include <graphics/CInvSprite.h>
+#include <graphics/CInvSpriteStorage.h>
 #include <graphics/CInvText.h>
 #include <graphics/CInvPrimitive.h>
+
+#include <engine/CInvGameScene.h>
 
 namespace Inv
 {
@@ -35,6 +38,7 @@ namespace Inv
     CInvPlayItScreen(
       const CInvSettings & settings,
       const CInvText & textCreator,
+      const CInvSpriteStorage & spriteStorage,
       CInvPrimitive & primitives,
       LPDIRECT3D9 pD3D,
       LPDIRECT3DDEVICE9 pd3dDevice,
@@ -80,8 +84,14 @@ namespace Inv
     const CInvText & mTextCreator;
     //!< \brief Reference to text creator, used to draw text on screen
 
+    const CInvSpriteStorage & mSpriteStorage;
+    //!< \brief Reference to sprite storage object, used to access sprites.
+
     CInvPrimitive & mPrimitives;
     //!< \brief Reference to primitive drawer, used to draw basic shapes on screen
+
+    CInvGameScene mGameScene;
+    //!< \brief Game scene object, used to manage the game entities and logic.
 
     LPDIRECT3D9             mPD3D;
     //<! Direct3D interface, used to create device

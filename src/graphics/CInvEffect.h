@@ -58,6 +58,9 @@ namespace Inv
     void Restore() { mIsSuspended = false; }
     //!< \brief Restores effect, it will be applied again
 
+    bool IsSuspended() const { return mIsSuspended; }
+    //!< \brief Returns true if effect is currently suspended
+
   protected:
 
     const CInvSettings & mSettings;

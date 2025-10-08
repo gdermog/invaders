@@ -35,7 +35,8 @@ namespace Inv
     public:
 
     CInvSprite( const CInvSettings & settings, LPDIRECT3DDEVICE9 pd3dDevice );
-    CInvSprite( const CInvSprite & ) = delete;
+    CInvSprite( const CInvSprite & );
+
     CInvSprite & operator=( const CInvSprite & ) = delete;
     ~CInvSprite();
 
@@ -67,6 +68,7 @@ namespace Inv
       LARGE_INTEGER referenceTick,
       LARGE_INTEGER actualTick,
       LARGE_INTEGER diffTick,
+      uint32_t specificImageIndex = 0ul,
       DWORD color = 0xffffffff );
     /*!< \brief Draws the sprite at given position and size, applying all effects before drawing.
 
@@ -97,6 +99,21 @@ namespace Inv
 
          \param[in] imageIndex Index of image whose size is requested
          \return Pair of width and height in pixels */
+
+    void GetResultingPosition(
+      float & xTopLeft, float & yTopLeft,
+      float & xBottomRight, float & yBottomRight,
+      float & xSize, float &ySize,
+      size_t & imageIndex ) const;
+    /*!< \brief Returns the resulting position of the sprite after all effects have been applied.
+         The position is given as top-left and bottom-right coordinates.
+
+         \param[out] xTopLeft       X coordinate of top-left corner of sprite
+         \param[out] yTopLeft       Y coordinate of top-left corner of sprite
+         \param[out] xBottomRight   X coordinate of bottom-right corner of sprite
+         \param[out] yBottomRight   Y coordinate of bottom-right corner of sprite */
+
+
 
   protected:
 

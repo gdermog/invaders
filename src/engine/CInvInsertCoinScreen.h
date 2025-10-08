@@ -16,6 +16,7 @@
 #include <InvGlobals.h>
 
 #include <graphics/CInvSprite.h>
+#include <graphics/CInvSpriteStorage.h>
 #include <graphics/CInvText.h>
 #include <graphics/CInvPrimitive.h>
 
@@ -38,6 +39,7 @@ namespace Inv
       CInvInsertCoinScreen(
         const CInvSettings & settings,
         const CInvText & textCreator,
+        const CInvSpriteStorage & spriteStorage,
         CInvHiscoreList & hiscoreKeeper,
         CInvPrimitive & primitives,
         LPDIRECT3D9 pD3D,
@@ -187,10 +189,16 @@ namespace Inv
     //!< \brief Reference to global settings object, used to access configuration parameters.
     const CInvText & mTextCreator;
     //!< \brief Reference to text rendering object, used to draw text on screen.
+
+    const CInvSpriteStorage & mSpriteStorage;
+    //!< \brief Reference to sprite storage object, used to access sprites.
+
     CInvHiscoreList & mHiscoreKeeper;
     //!< \brief Reference to high score list object, used to access and modify high scores.
     CInvPrimitive & mPrimitives;
     //!< \brief Reference to primitive rendering object, used to draw basic shapes on screen.
+
+
 
     std::string mCurrentCallsign;
     //!< \brief Current callsign being entered by player, modified by user input.
@@ -204,7 +212,7 @@ namespace Inv
     LPDIRECT3DVERTEXBUFFER9 mPVB;
     //!< \brief Pointer to Direct3D vertex buffer, used for rendering primitives.
 
-    std::unique_ptr<CInvSprite> mTitleSprite;
+    std::shared_ptr<CInvSprite> mTitleSprite;
     //!< \brief Sprite object used to display animated title sprites on screen.
     uint32_t mNrOfTitleSprites;
     //!< \brief Number of title sprites to be displayed, calculated during construction.

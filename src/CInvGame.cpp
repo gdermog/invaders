@@ -185,9 +185,18 @@ namespace Inv
 
     mPrimitives = std::make_unique<CInvPrimitive>( mSettings, mPd3dDevice );
 
+    mSpriteStorage = std::make_unique<CInvSpriteStorage>( mSettings, mPd3dDevice );
+
+    //------ Graphics initialization - sprites ----------------------------------------------------------
+
+    mSpriteStorage->AddSprite( "PINK", "invader_pink" );
+
+    //------ Main structures initialization ----------------------------------------------------------
+
     mInsertCoinScreen = std::make_unique<CInvInsertCoinScreen>(
       mSettings,
       *mTextCreator,
+      *mSpriteStorage,
       *mHiscoreKeeper,
       *mPrimitives,
       mPD3D,
@@ -198,11 +207,13 @@ namespace Inv
     mPlayItScreen = std::make_unique<CInvPlayItScreen>(
       mSettings,
       *mTextCreator,
+      *mSpriteStorage,
       *mPrimitives,
       mPD3D,
       mPd3dDevice,
       mPVB,
       mReferenceTick );
+
 
     return true;
 

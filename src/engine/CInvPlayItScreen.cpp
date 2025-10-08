@@ -18,6 +18,7 @@ namespace Inv
   CInvPlayItScreen::CInvPlayItScreen(
     const CInvSettings & settings,
     const CInvText & textCreator,
+    const CInvSpriteStorage & spriteStorage,
     CInvPrimitive & primitives,
     LPDIRECT3D9 pD3D,
     LPDIRECT3DDEVICE9 pd3dDevice,
@@ -27,7 +28,10 @@ namespace Inv
     mTickReferencePoint( tickReferencePoint ),
     mSettings( settings ),
     mTextCreator( textCreator ),
+    mSpriteStorage( spriteStorage ),
     mPrimitives( primitives ),
+    mGameScene( settings, textCreator, spriteStorage, primitives,
+                pD3D, pd3dDevice, pVB, tickReferencePoint ),
     mPD3D( pD3D ),
     mPd3dDevice( pd3dDevice ),
     mPVB( pVB ),
@@ -52,11 +56,11 @@ namespace Inv
     LARGE_INTEGER actualTickPoint )
   {
 
-newScoreToEnter = uint32_t( 1000000.0 * ( (float)std::rand() / (float)RAND_MAX ) );
-Sleep( 600 );
-gameEnd = true;
+    bool retVal = true;
 
-    return true;
+    retVal |= mGameScene.RenderActualScene( actualTickPoint );
+
+    return retVal;
 
   } // CInvPlayItScreen::MainLoop
 
@@ -64,6 +68,9 @@ gameEnd = true;
 
   void CInvPlayItScreen::Reset( LARGE_INTEGER newTickRefPoint )
   {
+
+
+    mGameScene.Reset( newTickRefPoint );
 
   } // CInvPlayItScreen::Reset
 

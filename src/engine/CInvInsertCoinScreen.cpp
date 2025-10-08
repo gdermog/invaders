@@ -31,8 +31,8 @@ namespace Inv
 
   const uint32_t CInvInsertCoinScreen::mHighScoreAreaVisibleLines = 10;
   const uint32_t CInvInsertCoinScreen::mHighScoreRollingStepPerLine = 20;
-  const float CInvInsertCoinScreen::mHighScoreAreaFontRelativeSize = 0.85;
-  const float CInvInsertCoinScreen::mPressEnterFontRelativeSize = 0.90;
+  const float CInvInsertCoinScreen::mHighScoreAreaFontRelativeSize = 0.85f;
+  const float CInvInsertCoinScreen::mPressEnterFontRelativeSize = 0.90f;
 
   //-------------------------------------------------------------------------------------------------
 
@@ -40,6 +40,7 @@ namespace Inv
   CInvInsertCoinScreen::CInvInsertCoinScreen(
     const CInvSettings & settings,
     const CInvText & textCreator,
+    const CInvSpriteStorage & spriteStorage,
     CInvHiscoreList & hiscoreKeeper,
     CInvPrimitive & primitives,
     LPDIRECT3D9 pD3D,
@@ -74,6 +75,7 @@ namespace Inv
     mSettings( settings ),
     mTextCreator( textCreator ),
     mHiscoreKeeper( hiscoreKeeper ),
+    mSpriteStorage( spriteStorage ),
     mCurrentCallsign(),
     mLastControlValue( 0 ),
     mPD3D( pD3D ),
@@ -130,27 +132,32 @@ namespace Inv
       ( (float)mSettings.GetWindowWidth() - CInvHiscoreList::mMaxHiscoreNameLen * mCallsignLetterSize ) * 0.5f;
     mCallsignTopLeftY = mEnterCallsignTopLeftY + mQualifiedLetterSize * 4.5f;
 
-    mTitleSprite = std::make_unique<CInvSprite>( mSettings, mPd3dDevice );
-    mTitleSprite->AddMultipleSpriteImages( "sprites/invader_pink/%03u.png" );
-    mTitleSpriteImageSequenceNr = (uint32_t)mTitleSprite->GetNumberOfImages();
-    mNrOfTitleSprites = 5;
-    mTitleSpriteWidth = 80.0;
-    float testSpritesDistance = (float)mSettings.GetWindowWidth() / (float)( mNrOfTitleSprites + 1 );
-    mTitleSpriteX.reserve( mNrOfTitleSprites );
-    for( uint32_t i = 0; i < mNrOfTitleSprites; ++i )
-      mTitleSpriteX.push_back( testSpritesDistance * (float)( i + 1 ) );
-    mTitleSpriteY = 0.5 * ( mPressEnterTopLeftY + mHighScoreBottomRightY );
+    mTitleSprite = mSpriteStorage.GetSprite( "PINK" );
+    if( nullptr == mTitleSprite )
+      LOG << "Title sprite not found in storage.";
+    else
+    {
+      mTitleSpriteImageSequenceNr = (uint32_t)mTitleSprite->GetNumberOfImages();
+      mNrOfTitleSprites = 5;
+      mTitleSpriteWidth = 80.0f;
+      float testSpritesDistance = (float)mSettings.GetWindowWidth() / (float)( mNrOfTitleSprites + 1 );
+      mTitleSpriteX.reserve( mNrOfTitleSprites );
+      for( uint32_t i = 0; i < mNrOfTitleSprites; ++i )
+        mTitleSpriteX.push_back( testSpritesDistance * (float)( i + 1 ) );
+      mTitleSpriteY = 0.5f * ( mPressEnterTopLeftY + mHighScoreBottomRightY );
 
-    auto *animEff = new CInvEffectSpriteAnimation( mSettings, mPd3dDevice, 1 );
-    animEff->SetPace( 6 );
-    mTitleSpriteAnimationEffect = std::shared_ptr<CInvEffect>( animEff );
-    mTitleSprite->AddEffect( mTitleSpriteAnimationEffect );
+      auto * animEff = new CInvEffectSpriteAnimation( mSettings, mPd3dDevice, 1 );
+      animEff->SetPace( 6 );
+      mTitleSpriteAnimationEffect = std::shared_ptr<CInvEffect>( animEff );
+      mTitleSprite->AddEffect( mTitleSpriteAnimationEffect );
 
-    auto * shiftRotEff = new CInvEffectSpriteShiftRotate( mSettings, mPd3dDevice, 2 );
-    shiftRotEff->SetShift( mTitleSpriteWidth * 0.2f, 0.0f );
-    shiftRotEff->SetPace( 300 );
-    mTitleSpriteShiftRotateEffect = std::shared_ptr<CInvEffect>( shiftRotEff );
-    mTitleSprite->AddEffect( mTitleSpriteShiftRotateEffect );
+      auto * shiftRotEff = new CInvEffectSpriteShiftRotate( mSettings, mPd3dDevice, 2 );
+      shiftRotEff->SetShift( mTitleSpriteWidth * 0.2f, 0.0f );
+      shiftRotEff->SetPace( 300 );
+      mTitleSpriteShiftRotateEffect = std::shared_ptr<CInvEffect>( shiftRotEff );
+      mTitleSprite->AddEffect( mTitleSpriteShiftRotateEffect );
+
+    } // else
 
   } // CInvInsertCoinScreen::CInvInsertCoinScreen
 
@@ -302,7 +309,7 @@ namespace Inv
 
     } // if
 
-    if( 0 < mTitleSpriteImageSequenceNr )
+    if( nullptr != mTitleSprite && 0 < mTitleSpriteImageSequenceNr )
     {
       LARGE_INTEGER diffTick;
       for( uint32_t i = 0; i < mNrOfTitleSprites; ++i )

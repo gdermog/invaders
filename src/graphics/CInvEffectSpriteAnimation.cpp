@@ -14,6 +14,8 @@
 
 #include <graphics/CInvSprite.h>
 
+#include <CInvLogger.h>
+
 static const std::string lModLogId( "EffectSprite" );
 
 namespace Inv
@@ -25,7 +27,10 @@ namespace Inv
     uint32_t ePriority ):
 
     CInvEffect( settings, pd3dDevice, ePriority ),
-    mPace( 1 )
+    mPace( 1 ),
+    mFirstImage( 0 ),
+    mLastImage( UINT32_MAX ),
+    mIsContinuous( true )
   {}
 
   //----------------------------------------------------------------------------------------------
@@ -44,18 +49,46 @@ namespace Inv
     if( nullptr == obj )
       return false;
 
-    if( mIsSuspended )
+    if( IsSuspended() )
       return true;
 
     auto * sprite = static_cast<Inv::CInvSprite *>( obj );
 
+    auto nrOfImages = (uint32_t)sprite->GetNumberOfImages();
+
+    auto lastImage = mLastImage;
+    if( nrOfImages <= lastImage )
+      lastImage = nrOfImages - 1;
+
+    auto rng = lastImage - mFirstImage + 1;
+
     LONGLONG idx = actualTick.QuadPart - referenceTick.QuadPart + diffTick.QuadPart;
-    idx %= ( mPace * sprite->GetNumberOfImages() );
-    sprite->mImageIndex = idx / mPace;
+    idx %= ( mPace * rng );
+    sprite->mImageIndex = mFirstImage + idx / mPace;
+
+static size_t mxxx = 0;
+if( mxxx < sprite->mImageIndex )
+  mxxx = sprite->mImageIndex;
+
+    if( !mIsContinuous && lastImage <= sprite->mImageIndex )
+      Suspend();
 
     return true;
 
   } // CInvEffectSpriteAnimation::ApplyEffect
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvEffectSpriteAnimation::SetImageRange( uint32_t firstImage, uint32_t lastImage )
+  {
+    if( firstImage > lastImage )
+    {
+      LOG << "CInvEffectSpriteAnimation::SetImageRange: Warning: firstImage > lastImage, ignoring.";
+      return;
+    } // if
+    mFirstImage = firstImage;
+    mLastImage = lastImage;
+  } // CInvEffectSpriteAnimation::SetImageRange
 
   //----------------------------------------------------------------------------------------------
 

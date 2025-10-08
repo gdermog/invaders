@@ -59,12 +59,32 @@ namespace Inv
     uint32_t GetPace() const { return mPace; }
     /*!< \brief Returns pace of animation, number of ticks between changing to next image. */
 
+    void SetImageRange( uint32_t firstImage, uint32_t lastImage );
+    /*!< \brief Sets range of images to be used in animation. If range is not set
+         explicitly, all images in sprite are used.
+
+          \param[in] firstImage Index of first image to be used in animation
+          \param[in] lastImage  Index of last image to be used in animation */
+
+    void SetContinuous( bool isContinuous ) { mIsContinuous = isContinuous; }
+    /*!< \brief Sets whether animation is continuous (loops) or stops at last image (gets suspended).
+
+          \param[in] isContinuous If true, animation loops, if false, it stops at last image */
+
   private:
 
     uint32_t mPace;
     /*!< \brief Pace of animation, number of ticks between changing to next image.Smaller
           number means faster animation. Default is 1, which means image changes every tick. */
 
+    uint32_t mFirstImage;
+    /*!< \brief Index of first image to be used in animation. */
+
+    uint32_t mLastImage;
+    /*!< \brief Index of last image to be used in animation. */
+
+    bool mIsContinuous;
+    /*!< \brief If true, animation loops, if false, gets suspended at last image. */
 
   };
 

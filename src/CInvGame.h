@@ -17,6 +17,7 @@
 #include <CInvSettings.h>
 
 #include <graphics/CInvSprite.h>
+#include <graphics/CInvSpriteStorage.h>
 #include <graphics/CInvText.h>
 #include <graphics/CInvPrimitive.h>
 
@@ -85,6 +86,9 @@ namespace Inv
 
     std::unique_ptr<CInvPlayItScreen> mPlayItScreen;
     //!< \brief "Play It" screen object, used to manage the game screen.
+
+    std::unique_ptr<CInvSpriteStorage> mSpriteStorage;
+    //!< \brief Sprite storage object, used to manage and access sprites.
 
     const CInvSettings & mSettings;
     //!< \brief Reference to global settings object, used to access configuration parameters.

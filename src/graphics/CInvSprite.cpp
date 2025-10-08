@@ -25,11 +25,30 @@ namespace Inv
     mTea2{},
     mHalfSizeX( 0.0f ),
     mHalfSizeY( 0.0f ),
+    mEffects(),
     mImageIndex( 0 ),
     mSettings( settings ),
     mPd3dDevice( pd3dDevice ),
-    mTextures()
-  {}
+    mTextures(),
+    mTextureSizes()
+  {
+  }
+
+  //----------------------------------------------------------------------------------------------
+
+  CInvSprite::CInvSprite( const CInvSprite & other ):
+    mTea2{},
+    mHalfSizeX( other.mHalfSizeX ),
+    mHalfSizeY( other.mHalfSizeY ),
+    mEffects( other.mEffects ),
+    mImageIndex( other.mImageIndex ),
+    mSettings( other.mSettings ),
+    mPd3dDevice( other.mPd3dDevice ),
+    mTextures( other.mTextures ),
+    mTextureSizes( other.mTextureSizes )
+  {
+    memcpy( mTea2, other.mTea2, sizeof( mTea2 ) );
+  } // CInvSprite::CInvSprite
 
   //----------------------------------------------------------------------------------------------
 
@@ -119,12 +138,15 @@ namespace Inv
     LARGE_INTEGER referenceTick,
     LARGE_INTEGER actualTick,
     LARGE_INTEGER diffTick,
+    uint32_t specificImageIndex,
     DWORD color )
   {
     if( nullptr == mPd3dDevice || mTextures.empty() )
       return;
 
-    mImageIndex = 0;
+    mImageIndex = specificImageIndex;
+    if( (uint32_t)mTextures.size() <= mImageIndex )
+      mImageIndex = 0;
 
     mHalfSizeX = xSize * 0.5f;
     mHalfSizeY = ySize * 0.5f;
@@ -192,5 +214,22 @@ namespace Inv
 
     return mTextureSizes[imageIndex];
   } // GetImageSize
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvSprite::GetResultingPosition(
+    float & xTopLeft, float & yTopLeft,
+    float & xBottomRight, float & yBottomRight,
+    float & xSize, float & ySize,
+    size_t & imageIndex ) const
+  {
+    xTopLeft = mTea2[0].x;
+    yTopLeft = mTea2[0].y;
+    xBottomRight = mTea2[3].x;
+    yBottomRight = mTea2[3].y;
+    xSize = 2.0f * mHalfSizeX;
+    ySize = 2.0f * mHalfSizeY;
+    imageIndex = mImageIndex;
+  } // CInvSprite::GetResultingPosition
 
 } // namespace Inv

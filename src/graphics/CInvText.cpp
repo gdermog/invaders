@@ -63,8 +63,8 @@ namespace Inv
     DWORD color ) const
   {
 
-    float x = xTopLeft + letterSize * 0.5;
-    float y = yTopLeft + letterSize * 0.5;
+    float x = xTopLeft + letterSize * 0.5f;
+    float y = yTopLeft + letterSize * 0.5f;
                         // Sprites are drawn from center, one letter - one sprite
 
     for( auto ltr : txt )
@@ -99,8 +99,8 @@ namespace Inv
     DWORD color ) const
   {
 
-    float x = xTopLeft + width - letterSize * 0.5;
-    float y = yTopLeft + letterSize * 0.5;
+    float x = xTopLeft + width - letterSize * 0.5f;
+    float y = yTopLeft + letterSize * 0.5f;
                         // Sprites are drawn from center, one letter - one sprite
 
     for( auto rit = txt.rbegin(); rit != txt.rend(); ++rit )
