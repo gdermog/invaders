@@ -36,6 +36,7 @@ namespace Inv
     mTextCreator( textCreator ),
     mSpriteStorage( spriteStorage ),
     mPrimitives( primitives ),
+    mCollisionTest( settings, pd3dDevice ),
     mEnTTRegistry(),
     mEntityFactory( settings, spriteStorage, mEnTTRegistry, pD3D, pd3dDevice, pVB ),
     mPD3D( pD3D ),
@@ -50,11 +51,12 @@ namespace Inv
     mSceneBottomRightY( (float)settings.GetWindowHeight() ),
     mAlienStartingAreaCoefficient( 0.65f ),
 
+    mProcGarbageCollector( tickReferencePoint ),
     mProcActorStateSelector( tickReferencePoint ),
     mProcEntitySpawner( tickReferencePoint, mEntityFactory ),
     mProcActorMover( tickReferencePoint ),
     mProcActorOutOfSceneCheck( tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
-    mProcGarbageCollector( tickReferencePoint ),
+    mProcCollisionDetector( tickReferencePoint, mCollisionTest ),
     mProcActorRender( tickReferencePoint )
   {
   } // CInvGameScene::CInvGameScene
@@ -141,7 +143,6 @@ namespace Inv
 
     } // for
 
-
     return true;
   } // CInvGameScene::GenerateNewScene
 
@@ -167,19 +168,26 @@ namespace Inv
       playerWidth );
 
     return true;
-  }
+  } // CInvGameScene::SpawnPlayer
 
   //-------------------------------------------------------------------------------------------------
 
   bool CInvGameScene::RenderActualScene( LARGE_INTEGER actualTickPoint )
   {
 
+    mProcGarbageCollector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+
     mProcActorStateSelector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
     mProcEntitySpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+
     mProcActorMover.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
     mProcActorOutOfSceneCheck.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
-    mProcGarbageCollector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+
     mProcActorRender.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+
+    mProcCollisionDetector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+
+auto xxx = mProcCollisionDetector.mCollidedPairs.size();
 
     return true;
 
@@ -198,5 +206,12 @@ namespace Inv
     GenerateNewScene( mSceneTopLeftX, mSceneTopLeftY, mSceneBottomRightX, mSceneBottomRightY );
     SpawnPlayer();
   } // CInvGameScene::Reset
+
+  //-------------------------------------------------------------------------------------------------
+
+  bool CInvGameScene::EliminateEntity( entt::entity entity )
+  {
+    return true;
+  }
 
 } // namespace Inv

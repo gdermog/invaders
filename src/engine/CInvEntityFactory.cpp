@@ -83,9 +83,9 @@ namespace Inv
     mEnTTRegistry.emplace<cpHealth>( invader, 1u, 1u );
                         // component: health points (single hit will do)
 
-    mEnTTRegistry.emplace<cpDamage>( invader, 1u, false, true );
+    mEnTTRegistry.emplace<cpDamage>( invader, 1u, true, false, false );
                         // component: entity damage (can hit player, no friendly fire,
-                        // dying/removed on hit)
+                        // not dying/removed on hit)
 
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 /* There must be some diferentiation of animation indexex according to sprite type.   */
@@ -222,15 +222,8 @@ namespace Inv
     mEnTTRegistry.emplace<cpGeometry>( missile, missileSizeX, missileSizeX * aspectRatio );
                         // component: geometry
 
-    mEnTTRegistry.emplace<cpDamage>( missile, 1u, false, true );
-                        // component: entity damage (can hit player, friendly fire disabled,
-                        // removed on hit)
-
-    if( fromPlayer )
-      mEnTTRegistry.emplace<cpPlayBehave>( missile, -1 );
-    else
-      mEnTTRegistry.emplace<cpAlienBehave>( missile, 0.0f, 0.0f );
-                        // Missile belongs to player or alien
+    mEnTTRegistry.emplace<cpDamage>( missile, 1u, !fromPlayer, fromPlayer, true );
+                        // component: entity damage
 
     auto standardAnimationEffect = std::make_shared<CInvEffectSpriteAnimation>(
       mSettings, mPd3dDevice, 1u );

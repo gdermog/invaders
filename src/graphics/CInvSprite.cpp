@@ -235,4 +235,26 @@ namespace Inv
     imageIndex = mImageIndex;
   } // CInvSprite::GetResultingPosition
 
+  //----------------------------------------------------------------------------------------------
+
+  void CInvSprite::GetResultingBoundingBox( float & xMin, float & xMax, float & yMin, float & yMax ) const
+  {
+    float retVal1 = min( mTea2[0].x, mTea2[1].x );
+    float retVal2 = min( mTea2[2].x, mTea2[3].x );
+    xMin = min( retVal1, retVal2 );
+
+    retVal1 = max( mTea2[0].x, mTea2[1].x );
+    retVal2 = max( mTea2[2].x, mTea2[3].x );
+    xMax = max( retVal1, retVal2 );
+
+    retVal1 = min( mTea2[0].y, mTea2[1].y );
+    retVal2 = min( mTea2[2].y, mTea2[3].y );
+    yMin = min( retVal1, retVal2 );
+
+    retVal1 = max( mTea2[0].y, mTea2[1].y );
+    retVal2 = max( mTea2[2].y, mTea2[3].y );
+    yMax = max( retVal1, retVal2 );
+
+  } // CInvSprite::GetResultingBoundingBox
+
 } // namespace Inv

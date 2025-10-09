@@ -135,8 +135,9 @@ namespace Inv
     uint32_t damagePoints;
     //!< Damage points dealt to other entity when a collision occurs.
 
-    bool friendlyFire;  //!< \b true if the entity can damage other entities of the same type
-    //!  (e.g. player can damage other players), false otherwise.
+    bool dangerToPlayer;//!< \b true if the entity can deal damage to player, false otherwise.
+
+    bool dangerToAliens;//!< \b true if the entity can deal damage to aliens (other than player),
 
     bool removeOnHit;   //!< \b true if the entity is removed from game when it hits another
     //!  entity, false otherwise. Only special ammo may have this set to

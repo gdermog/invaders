@@ -59,6 +59,33 @@ namespace Inv
     LARGE_INTEGER mRefTick;
   };
 
+  //****** processor: colliding of actors ***************************************************************
+
+  class CInvCollisionTest;
+
+  struct procCollisionDetector
+  {
+    procCollisionDetector( LARGE_INTEGER refTick, CInvCollisionTest &cTest );
+
+    void reset( LARGE_INTEGER refTick );
+
+    void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
+
+    LARGE_INTEGER mRefTick;
+
+    CInvCollisionTest & mCTest;
+
+    std::set<entt::entity> mCanDamage;
+
+    std::set<entt::entity> mCanBeDamagedAlien;
+    std::set<entt::entity> mCanBeDamagedPlayer;
+
+    std::vector<std::pair<entt::entity, entt::entity>> mCollidedPairs;
+                        //!< List of pairs of entities that collided in the last update. First is dangerous
+                        //!  entity, second is entity that can be damaged.
+
+  };
+
   //****** processor: searching for actor that are out of scene **************************************
 
   struct procActorOutOfSceneCheck

@@ -11,6 +11,7 @@
 #include <engine/InvENTTComponents.h>
 
 #include <graphics/CInvSprite.h>
+#include <graphics/CInvCollisionTest.h>
 #include <engine/CInvEntityFactory.h>
 
 namespace Inv
@@ -143,6 +144,93 @@ namespace Inv
     } );
 
   } // procActorMover::update
+
+
+  //****** processor: colliding of actors ***************************************************************
+
+  procCollisionDetector::procCollisionDetector( LARGE_INTEGER refTick, CInvCollisionTest & cTest ):
+    mRefTick( refTick ),
+    mCTest( cTest )
+  {
+  }
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procCollisionDetector::reset( LARGE_INTEGER refTick )
+  {
+    mRefTick = refTick;
+  } // procActorMover::reset
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procCollisionDetector::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
+  {
+    mCollidedPairs.clear();
+    mCanDamage.clear();
+    mCanBeDamagedAlien.clear();
+    mCanBeDamagedPlayer.clear();
+
+    auto viewDmg = reg.view<cpDamage, cpGraphics>();
+    viewDmg.each( [&]( entt::entity entity, const auto & dmg, const auto & gph )
+    {
+        mCanDamage.insert( entity );
+    } );
+
+    auto viewHealth = reg.view<cpHealth, cpGraphics>();
+    viewHealth.each( [&]( entt::entity entity, const auto & hlt, const auto & )
+    {
+      auto [ bAlien, sAlien ] = reg.try_get<cpAlienBehave, cpAlienStatus>( entity );
+      if( nullptr != bAlien && nullptr != sAlien && false == sAlien->isDying )
+        mCanBeDamagedAlien.insert( entity );
+
+      auto [ bPlayer, sPlayer ] = reg.try_get<cpPlayBehave, cpPlayStatus>( entity );
+      if( nullptr != bPlayer && nullptr != sPlayer && ! sPlayer->isDying && !sPlayer->isInvulnerable )
+        mCanBeDamagedPlayer.insert( entity );
+    } );
+
+    for( auto dangerousEntity : mCanDamage )
+    {
+      auto [dmgDanger, gphDanger] = reg.try_get<cpDamage, cpGraphics>( dangerousEntity );
+
+      if( nullptr == dmgDanger || nullptr == gphDanger )
+        continue;
+
+      if( dmgDanger->dangerToAliens )
+      {
+        for( auto vulnerableEntity : mCanBeDamagedAlien )
+        {
+          if( dangerousEntity == vulnerableEntity )
+            continue;
+          auto [hltVulner, gphVulner] = reg.try_get<cpHealth, cpGraphics>( vulnerableEntity );
+          if( nullptr == hltVulner || nullptr == gphVulner )
+            continue;
+          if( nullptr == gphDanger->standardSprite || nullptr == gphVulner->standardSprite )
+            continue;
+          if( mCTest.AreInCollision( *(gphDanger->standardSprite), *(gphVulner->standardSprite) ) )
+            mCollidedPairs.push_back( { dangerousEntity, vulnerableEntity } );
+        } // for
+      }
+
+      if( dmgDanger->dangerToPlayer )
+      {
+        for( auto vulnerableEntity : mCanBeDamagedPlayer )
+        {
+          if( dangerousEntity == vulnerableEntity )
+            continue;
+          auto [hltVulner, gphVulner] = reg.try_get<cpHealth, cpGraphics>( vulnerableEntity );
+          if( nullptr == hltVulner || nullptr == gphVulner )
+            continue;
+          if( nullptr == gphDanger->standardSprite || nullptr == gphVulner->standardSprite )
+            continue;
+          if( mCTest.AreInCollision( *( gphDanger->standardSprite ), *( gphVulner->standardSprite ) ) )
+            mCollidedPairs.push_back( { dangerousEntity, vulnerableEntity } );
+        } // for
+      } // if
+
+    } // for
+
+
+  } // procCollisionDetector::update
 
   //****** processor: searching for actor that are out of scene **************************************
 

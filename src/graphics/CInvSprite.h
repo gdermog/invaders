@@ -114,7 +114,9 @@ namespace Inv
          \param[out] xBottomRight   X coordinate of bottom-right corner of sprite
          \param[out] yBottomRight   Y coordinate of bottom-right corner of sprite */
 
-
+    void GetResultingBoundingBox(
+      float & xMin, float & xMax,
+      float & yMin, float & yMax ) const;
 
   protected:
 

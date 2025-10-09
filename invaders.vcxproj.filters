@@ -93,6 +93,9 @@
     <ClCompile Include="src\graphics\CInvEffectSpriteBlink.cpp">
       <Filter>Source Files\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\CInvCollisionTest.cpp">
+      <Filter>Source Files\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InvGlobals.h">
@@ -162,6 +165,9 @@
       <Filter>Header Files\engine</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\CInvEffectSpriteBlink.h">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\CInvCollisionTest.h">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
   </ItemGroup>

@@ -20,6 +20,7 @@
 #include <graphics/CInvPrimitive.h>
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvSpriteStorage.h>
+#include <graphics/CInvCollisionTest.h>
 
 #include <engine/CInvEntityFactory.h>
 #include <engine/InvENTTProcessors.h>
@@ -48,11 +49,21 @@ namespace Inv
     bool GenerateNewScene(
       float sceneTopLeftX, float sceneTopLeftY,
       float sceneBottomRightX, float sceneBottomRightY );
+    /*!< \brief Generates a new game scene, with aliens and other entities placed at their
+         starting positions.
+
+         \param[in] sceneTopLeftX     X coordinate of top left corner of the game scene [px]
+         \param[in] sceneTopLeftY     Y coordinate of top left corner of the game scene [px]
+         \param[in] sceneBottomRightX X coordinate of bottom right corner of the game scene [px]
+         \param[in] sceneBottomRightY Y coordinate of bottom right corner of the game scene [px]
+         \returns true if the scene was generated successfully, false otherwise. */
 
     bool SpawnPlayer();
+    /*!< \brief Spawns the player entity at the bottom center of the scene. The player entity
+         is created in "invulnerable" state. */
 
     bool RenderActualScene( LARGE_INTEGER actualTickPoint );
-    /*!< \brief Renders the actual game scene.
+    /*!< \brief Renders the actual game scene using EnTT processors chain.
 
          \param[in] actualTickPoint Current tick point, used to calculate game situation */
 
@@ -63,6 +74,12 @@ namespace Inv
          \param[in] newTickRefPoint New reference tick point, usually current time */
 
   private:
+
+
+    bool EliminateEntity( entt::entity entity );
+    /*!< \brief Eliminates given entity from the game scene, replacing it by appropriate explosion.
+         if the eliminated entiti is the player, starts sequence leading to respawn and reducing
+         number of lives. */
 
 
     LARGE_INTEGER mTickReferencePoint;
@@ -81,6 +98,9 @@ namespace Inv
 
     CInvPrimitive & mPrimitives;
     //!< \brief Reference to primitive drawer, used to draw basic shapes on screen
+
+    CInvCollisionTest mCollisionTest;
+    //!< \brief Collision test object, used to detect collisions between entities
 
     entt::registry mEnTTRegistry;
     //!< EnTT registry containing all entities and components of the current game scene
@@ -114,11 +134,12 @@ namespace Inv
     float mAlienStartingAreaCoefficient;
     //!< \brief Coefficient defining the area at the top of the scene where aliens can start
 
+    procGarbageCollector mProcGarbageCollector;
     procActorStateSelector mProcActorStateSelector;
     procEntitySpawner mProcEntitySpawner;
     procActorMover mProcActorMover;
     procActorOutOfSceneCheck mProcActorOutOfSceneCheck;
-    procGarbageCollector mProcGarbageCollector;
+    procCollisionDetector mProcCollisionDetector;
     procActorRender mProcActorRender;
 
 
