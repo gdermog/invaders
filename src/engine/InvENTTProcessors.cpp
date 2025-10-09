@@ -110,6 +110,7 @@ namespace Inv
           yBottomRight - 0.15f * ySize,
           0.33f * xSize,
           0.0f,
+          //(float)rand() / (float)RAND_MAX - 0.5f, // Random horizontal speed component
           /*SPEED*/ 1.0f );
 
         stat.isShootRequested = false;

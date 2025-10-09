@@ -30,7 +30,10 @@ namespace Inv
     mPace( 1 ),
     mFirstImage( 0 ),
     mLastImage( UINT32_MAX ),
-    mIsContinuous( true )
+    mIsContinuous( true ),
+    mFinalEventCallbackReported( false ),
+    mFinalEventCallback( nullptr ),
+    mEventCallbacks()
   {}
 
   //----------------------------------------------------------------------------------------------
@@ -69,23 +72,55 @@ namespace Inv
     if( ! mEventCallbacks.empty() )
     {
       auto cbIt = mEventCallbacks.find( sprite->mImageIndex );
-      if( cbIt != mEventCallbacks.end() )
-        cbIt->second( (uint32_t)sprite->mImageIndex );
-                        // If the animation reached an important image with registered callback,
+      if( cbIt != mEventCallbacks.end() && false == cbIt->second.first )
+      {                 // If the animation reached an important image with registered callback,
                         // calls it
+        cbIt->second.second( (uint32_t)sprite->mImageIndex );
+        cbIt->second.first = true;
+
+      }
     } // if
 
-    if( !mIsContinuous && lastImage <= (uint32_t)sprite->mImageIndex )
-    {                   // Non-continuous animation reached its end - class suspends
+    if( lastImage <= (uint32_t)sprite->mImageIndex )
+    {
+      for( auto & cbIt : mEventCallbacks )
+        cbIt.second.first = false;
+                        // On final image, reset all event callbacks to be callable again
+
+      if( !mIsContinuous )
+      {                 // Non-continuous animation reached its end - class suspends
                         // itself and calls final callback
-      Suspend();
-      if( nullptr != mFinalEventCallback )
-        mFinalEventCallback( (uint32_t)sprite->mImageIndex );
+        if( nullptr != mFinalEventCallback && false == mFinalEventCallbackReported )
+        {
+          mFinalEventCallback( (uint32_t)sprite->mImageIndex );
+          mFinalEventCallbackReported = true;
+        } // if
+        Suspend();
+      } // if
     } // if
 
     return true;
 
   } // CInvEffectSpriteAnimation::ApplyEffect
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvEffectSpriteAnimation::Suspend()
+  {
+
+    CInvEffect::Suspend();
+  } // CInvEffectSpriteAnimation::Suspend
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvEffectSpriteAnimation::Restore()
+  {
+    mFinalEventCallbackReported = false;
+    for( auto & cbIt : mEventCallbacks )
+      cbIt.second.first = false;
+
+    CInvEffect::Restore();
+  } // CInvEffectSpriteAnimation::Restore
 
   //----------------------------------------------------------------------------------------------
 
@@ -110,6 +145,7 @@ namespace Inv
       return;
     } // if
 
+    mFinalEventCallbackReported = false;
     mFinalEventCallback = callback;
   } // CInvEffectSpriteAnimation::AddEventCallback
 
@@ -124,7 +160,7 @@ namespace Inv
       return;
     } // if
 
-    mEventCallbacks[imageIndex] = callback;
+    mEventCallbacks[imageIndex] = std::make_pair( false, callback );
   } // CInvEffectSpriteAnimation::AddEventCallback
 
   //----------------------------------------------------------------------------------------------

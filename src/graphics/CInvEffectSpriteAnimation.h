@@ -51,6 +51,12 @@ namespace Inv
                                  used when one effect is applied to multiple objects and the
                                  results are required to differ somewhat from each other. */
 
+    virtual void Suspend() override;
+    //!< \brief Suspends effect, it will not be applied until restored
+
+    virtual void Restore() override;
+    //!< \brief Restores effect, it will be applied again
+
     void SetPace( uint32_t pace ) { mPace = pace; }
     /*!< \brief Sets pace of animation, number of ticks between changing to next image.
          Smaller number means faster animation. Default is 1, which means image changes
@@ -101,13 +107,19 @@ namespace Inv
     bool mIsContinuous;
     /*!< \brief If true, animation loops, if false, gets suspended at last image. */
 
+    bool mFinalEventCallbackReported;
+    /*!< \brief Internal flag to prevent multiple calls of final event callback if animation.
+         Flag is reseted on calling Restore(). */
+
     FnEventCallback_t mFinalEventCallback;
     /*!< \brief Callback function that will be called when animation reaches last image
          (only if mIsContinuous is false). */
 
-    std::map<uint32_t, FnEventCallback_t> mEventCallbacks;
+    std::map<uint32_t, std::pair<bool,FnEventCallback_t>> mEventCallbacks;
     /*!< \brief Map of event callbacks, where key is image index at which callback is triggered,
-         and value is the callback function. */
+         and value is the callback function. Boolean flag is set to true when the callback is
+         triggered, so it is not triggered again in next tick which results in the same image
+         index. Flags are reseted when last image is reached. */
 
   };
 

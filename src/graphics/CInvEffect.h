@@ -53,10 +53,10 @@ namespace Inv
                                  used when one effect is applied to multiple objects and the
                                  results are required to differ somewhat from each other. */
 
-    void Suspend() { mIsSuspended = true; }
+    virtual void Suspend() { mIsSuspended = true; }
     //!< \brief Suspends effect, it will not be applied until restored
 
-    void Restore() { mIsSuspended = false; }
+    virtual void Restore() { mIsSuspended = false; }
     //!< \brief Restores effect, it will be applied again
 
     bool IsSuspended() const { return mIsSuspended; }
