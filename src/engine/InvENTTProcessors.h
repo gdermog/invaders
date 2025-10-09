@@ -14,7 +14,6 @@
 
 #include <InvGlobals.h>
 
-#include <engine/InvENTTComponents.h>
 
 namespace Inv
 {

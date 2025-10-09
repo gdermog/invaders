@@ -8,11 +8,9 @@
 //****************************************************************************************************
 
 #include <engine/InvENTTProcessors.h>
+#include <engine/InvENTTComponents.h>
 
-#include <graphics/CInvPrimitive.h>
 #include <graphics/CInvSprite.h>
-#include <graphics/CInvSpriteStorage.h>
-
 #include <engine/CInvEntityFactory.h>
 
 namespace Inv
