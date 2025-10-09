@@ -190,6 +190,7 @@ namespace Inv
     //------ Graphics initialization - sprites ----------------------------------------------------------
 
     mSpriteStorage->AddSprite( "PINK", "invader_pink" );
+    mSpriteStorage->AddSprite( "SPIT", "spit" );
 
     //------ Main structures initialization ----------------------------------------------------------
 

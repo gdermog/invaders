@@ -51,6 +51,10 @@ namespace Inv
     mAlienStartingAreaCoefficient( 0.65f ),
 
     mProcActorStateSelector( tickReferencePoint ),
+    mProcEntitySpawner( tickReferencePoint, mEntityFactory ),
+    mProcActorMover( tickReferencePoint ),
+    mProcActorOutOfSceneCheck( tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
+    mProcGarbageCollector( tickReferencePoint ),
     mProcActorRender( tickReferencePoint )
   {
   } // CInvGameScene::CInvGameScene
@@ -91,7 +95,7 @@ namespace Inv
     if( (float)mSettings.GetWindowHeight() < mSceneBottomRightY )
       mSceneBottomRightY = (float)mSettings.GetWindowHeight();
 
-    std::vector<std::pair<uint32_t, std::string>> alienRows =
+    std::vector<std::pair<uint32_t, std::string>> alienRows = //{ {1,"PINK"} };
     {
       { 10, "PINK" },
       {  9, "PINK" },
@@ -147,7 +151,10 @@ namespace Inv
   {
 
     mProcActorStateSelector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
-
+    mProcEntitySpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+    mProcActorMover.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+    mProcActorOutOfSceneCheck.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+    mProcGarbageCollector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
     mProcActorRender.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
 
     return true;

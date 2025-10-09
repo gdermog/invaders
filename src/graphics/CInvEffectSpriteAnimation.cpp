@@ -71,12 +71,12 @@ namespace Inv
       auto cbIt = mEventCallbacks.find( sprite->mImageIndex );
       if( cbIt != mEventCallbacks.end() )
         cbIt->second( (uint32_t)sprite->mImageIndex );
-                        // If the animation reached an important image with registered callback, 
+                        // If the animation reached an important image with registered callback,
                         // calls it
     } // if
 
     if( !mIsContinuous && lastImage <= (uint32_t)sprite->mImageIndex )
-    {                   // Non-continuous animation reached its end - class suspends 
+    {                   // Non-continuous animation reached its end - class suspends
                         // itself and calls final callback
       Suspend();
       if( nullptr != mFinalEventCallback )

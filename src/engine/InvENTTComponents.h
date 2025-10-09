@@ -62,7 +62,7 @@ namespace Inv
     float animationProbability;
                         //!< Speed of basic animation, usually a small positive number
 
-    float shootProbability; 
+    float shootProbability;
                         //!< Probability of shooting in each game tick, usually a small
 
   };
@@ -153,12 +153,6 @@ namespace Inv
 
     std::shared_ptr<CInvEffectSpriteAnimation> standardAnimationEffect;
     //!< Pointer to animation effect applied to standard sprite
-
-    std::shared_ptr<CInvSprite> firingSprite;
-    //!< Pointer to sprite object used to render the entity in firing
-    //!  state on screen. Remark: should contain copy of CInvSprite from CInvSpriteStorage,
-    //!  not a reference, as the sprite may have unique set of effect applied for
-    //!  each entity.
 
     std::shared_ptr<CInvEffectSpriteAnimation> firingAnimationEffect;
     //!< Pointer to animation effect applied to firing sprite

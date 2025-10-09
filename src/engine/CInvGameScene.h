@@ -113,6 +113,10 @@ namespace Inv
     //!< \brief Coefficient defining the area at the top of the scene where aliens can start
 
     procActorStateSelector mProcActorStateSelector;
+    procEntitySpawner mProcEntitySpawner;
+    procActorMover mProcActorMover;
+    procActorOutOfSceneCheck mProcActorOutOfSceneCheck;
+    procGarbageCollector mProcGarbageCollector;
     procActorRender mProcActorRender;
 
 

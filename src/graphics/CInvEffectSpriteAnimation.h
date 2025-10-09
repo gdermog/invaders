@@ -72,7 +72,7 @@ namespace Inv
           \param[in] isContinuous If true, animation loops, if false, it stops at last image */
 
 #define BIND_MEMBER_EVENT_CALLBACK( ref, fnName )  std::bind( &fnName, (ref), std::placeholders::_1)
-          //!< This macro allows to specify a member function as the event callback function 
+          //!< This macro allows to specify a member function as the event callback function
 
     void AddEventCallback( FnEventCallback_t callback );
     /*!< \brief Adds an event callback that will be called when animation reaches last image

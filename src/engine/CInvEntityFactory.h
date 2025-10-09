@@ -50,6 +50,12 @@ namespace Inv
          \param[in] alienSizeX  Width of the alien entity [px], height will be calculated according
                                 to sprite aspect ratio. */
 
+    void AddMissileEntity(
+      const std::string & entityType,
+      float posX, float posY,
+      float missileSizeX,
+      float velocityX, float velocityY );
+
   private:
 
     const CInvSettings & mSettings;

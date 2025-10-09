@@ -112,17 +112,68 @@ namespace Inv
     firingAnimationEffect->SetContinuous( false );
     firingAnimationEffect->Suspend();
     firingAnimationEffect->AddEventCallback( BIND_MEMBER_EVENT_CALLBACK( &aStat, cpAlienStatus::FiringDone ) );
-    firingAnimationEffect->AddEventCallback( 8u, BIND_MEMBER_EVENT_CALLBACK( &aStat, cpAlienStatus::FiringDone ) );
+    firingAnimationEffect->AddEventCallback( 8u, BIND_MEMBER_EVENT_CALLBACK( &aStat, cpAlienStatus::ShootRequested ) );
     entitySprite->AddEffect( firingAnimationEffect );
                         // Firing animation effect starts suspended, it will be
                         // activated on random event.
 
     mEnTTRegistry.emplace<cpGraphics>( invader,
-      entitySprite, 0u, standardAnimationEffect, entitySprite, firingAnimationEffect, LARGE_INTEGER{0} );
+      entitySprite, 0u, standardAnimationEffect, firingAnimationEffect, LARGE_INTEGER{0} );
                         // component: graphics (sprite, static image index, standard animation
                         // sequence, firing animation sequence, animation driver is zeroed )
 
   } // CInvEntityFactory::AddEntity
+
+  //-------------------------------------------------------------------------------------------------
+
+  void CInvEntityFactory::AddMissileEntity(
+    const std::string & entityType,
+    float posX, float posY,
+    float missileSizeX,
+    float velocityX, float velocityY )
+  {
+
+    std::shared_ptr<CInvSprite> entitySprite = mSpriteStorage.GetSprite( entityType );
+    if( nullptr == entitySprite )
+    {
+      LOG << "Error: Sprite with ID '" << entityType << "' does not exist, cannot create entity.";
+      return;
+    } // if
+
+    const auto missile = mEnTTRegistry.create();
+
+
+    mEnTTRegistry.emplace<cpId>( missile, mNextEntityId++, entityType, true );
+                        // component: entity full identifier
+
+    mEnTTRegistry.emplace<cpPosition>( missile, posX, posY, 0.0f );
+                        // component: position
+
+    mEnTTRegistry.emplace<cpVelocity>( missile, velocityX, velocityY, 0.0f );
+                        // component: velocity
+
+    auto baseSize = entitySprite->GetImageSize( 0 );
+    auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
+    mEnTTRegistry.emplace<cpGeometry>( missile, missileSizeX, missileSizeX * aspectRatio );
+                        // component: geometry
+
+    mEnTTRegistry.emplace<cpDamage>( missile, 1u, false, true );
+                        // component: entity damage (can hit player, friendly fire disabled,
+                        // removed on hit)
+
+    auto standardAnimationEffect = std::make_shared<CInvEffectSpriteAnimation>(
+      mSettings, mPd3dDevice, 1u );
+    standardAnimationEffect->SetPace( 6 );
+    standardAnimationEffect->SetContinuous( true );
+    entitySprite->AddEffect( standardAnimationEffect );
+                        // Missile is animated continuously and have no event bound to animation
+
+    mEnTTRegistry.emplace<cpGraphics>( missile,
+      entitySprite, 0u, standardAnimationEffect,  nullptr, LARGE_INTEGER{ 0 } );
+                        // component: graphics (sprite, static image index, standard animation
+                        // sequence, no firing animation sequence, animation driver is zeroed )
+
+  } // CInvEntityFactory::AddMissileEntity
 
 
 } // namespace Inv
