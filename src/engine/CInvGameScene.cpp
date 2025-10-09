@@ -147,6 +147,30 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
+  bool CInvGameScene::SpawnPlayer( )
+  {
+    auto baseSprite = mSpriteStorage.GetSprite( "FIGHT" );
+    if( nullptr == baseSprite )
+      return false;
+
+    float playerWidth = mSceneWidth * 0.1f;
+
+    auto baseSize = baseSprite->GetImageSize( 0 );
+    auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
+    auto playerHeight = playerWidth * aspectRatio;
+
+
+    mEntityFactory.AddPlayerEntity(
+      "FIGHT",
+      mSceneTopLeftX + mSceneWidth * 0.5f,
+      mSceneBottomRightY - playerHeight,
+      playerWidth );
+
+    return true;
+  }
+
+  //-------------------------------------------------------------------------------------------------
+
   bool CInvGameScene::RenderActualScene( LARGE_INTEGER actualTickPoint )
   {
 
@@ -172,6 +196,7 @@ namespace Inv
     mProcActorRender.reset( newTickRefPoint );
 
     GenerateNewScene( mSceneTopLeftX, mSceneTopLeftY, mSceneBottomRightX, mSceneBottomRightY );
+    SpawnPlayer();
   } // CInvGameScene::Reset
 
 } // namespace Inv

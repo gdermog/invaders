@@ -36,9 +36,9 @@ namespace Inv
   void procActorStateSelector::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
   {
     auto view = reg.view<const cpAlienBehave, cpAlienStatus, cpGraphics>();
-
     view.each( [=]( const cpAlienBehave & behave, cpAlienStatus & status, cpGraphics &gph )
-    {
+    {                   // Updating status for alien actors
+
         if( status.isAnimating || status.isFiring || status.isDying )
           return;       // Previous status must be resolved before any other is set
 
@@ -103,7 +103,7 @@ namespace Inv
           xTopLeft, yTopLeft, xBottomRight, yBottomRight, xSize, ySize, imageIndex );
 
         mEntityFactory.AddMissileEntity(
-          "SPIT",
+          "SPIT", false,
           0.5f * ( xTopLeft + xBottomRight ),
           yBottomRight - 0.15f * ySize,
           0.33f * xSize,
@@ -180,7 +180,7 @@ namespace Inv
 
   void procActorOutOfSceneCheck::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
   {
-    auto view = reg.view< cpId, const cpPosition, const cpGeometry>();
+    auto view = reg.view<cpId, const cpPosition, const cpGeometry>();
     view.each( [=]( cpId & id, const cpPosition & pos, const cpGeometry & geo )
     {
        if( ( pos.X + 0.5f * geo.width < mSceneTopLeftX )     ||

@@ -30,7 +30,6 @@ namespace Inv
     mPace( 1 ),
     mFirstImage( 0 ),
     mLastImage( UINT32_MAX ),
-    mIsContinuous( true ),
     mFinalEventCallbackReported( false ),
     mFinalEventCallback( nullptr ),
     mEventCallbacks()
@@ -66,6 +65,7 @@ namespace Inv
     auto rng = lastImage - mFirstImage + 1;
 
     LONGLONG idx = actualTick.QuadPart - referenceTick.QuadPart + diffTick.QuadPart;
+    if( idx < 0 ) idx = 0;
     idx %= ( mPace * rng );
     sprite->mImageIndex = mFirstImage + idx / mPace;
 
@@ -87,7 +87,7 @@ namespace Inv
         cbIt.second.first = false;
                         // On final image, reset all event callbacks to be callable again
 
-      if( !mIsContinuous )
+      if( ! IsContinuous() )
       {                 // Non-continuous animation reached its end - class suspends
                         // itself and calls final callback
         if( nullptr != mFinalEventCallback && false == mFinalEventCallbackReported )
@@ -102,14 +102,6 @@ namespace Inv
     return true;
 
   } // CInvEffectSpriteAnimation::ApplyEffect
-
-  //----------------------------------------------------------------------------------------------
-
-  void CInvEffectSpriteAnimation::Suspend()
-  {
-
-    CInvEffect::Suspend();
-  } // CInvEffectSpriteAnimation::Suspend
 
   //----------------------------------------------------------------------------------------------
 

@@ -24,7 +24,8 @@ namespace Inv
     mSettings( settings ),
     mPd3dDevice( pd3dDevice ),
     mIsSuspended( false ),
-    mEffectPriority( ePriority )
+    mEffectPriority( ePriority ),
+    mIsContinuous( true )
   {}
 
   //----------------------------------------------------------------------------------------------

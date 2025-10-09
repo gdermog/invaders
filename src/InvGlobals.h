@@ -99,6 +99,9 @@ namespace Inv
 
   using FnEventCallback_t = std::function<void( uint32_t )>;
 
+#define BIND_MEMBER_EVENT_CALLBACK( ref, fnName )  std::bind( &fnName, (ref), std::placeholders::_1)
+  //!< This macro allows to specify a member function as the event callback function
+
   /*! \brief Control states, used to represent state of user input controls like
       keyboard keysor joystick buttons. The states can be combined using bitwise
       OR operator. */

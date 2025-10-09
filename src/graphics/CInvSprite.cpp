@@ -164,6 +164,9 @@ namespace Inv
           ef->ApplyEffect( this, referenceTick, actualTick, diffTick );
       } // for
 
+      if( SIZE_MAX == mImageIndex )
+        return;         // Sprite drawing was cancelled by effect
+
       if( mTextures.size() <= mImageIndex )
         mImageIndex = 0;
     } // if

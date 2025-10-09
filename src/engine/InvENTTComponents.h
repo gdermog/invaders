@@ -101,6 +101,15 @@ namespace Inv
   /*! \brief This component determines the status of the player-controlled element. */
   struct cpPlayStatus
   {
+    void InvulnerabilityCanceled( uint32_t ) { isInvulnerable = false; }
+
+    bool isInvulnerable;//!< \b true if the player is in invulnerable state, false otherwise.
+                        //!  Invulnerability may be granted for short time after respawn or by
+                        //!  picking up special power-up.
+
+    bool isShootRequested;
+                        //!< \b true if the player requested to shoot in current tick.
+
     bool isDying;       //!< \b true if the player is in dying state, false otherwise.
   };
 

@@ -90,6 +90,9 @@
     <ClCompile Include="src\engine\InvENTTProcessors.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\CInvEffectSpriteBlink.cpp">
+      <Filter>Source Files\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InvGlobals.h">
@@ -157,6 +160,9 @@
     </ClInclude>
     <ClInclude Include="src\engine\InvENTTProcessors.h">
       <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\CInvEffectSpriteBlink.h">
+      <Filter>Header Files\graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

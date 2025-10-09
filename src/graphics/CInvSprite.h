@@ -31,6 +31,7 @@ namespace Inv
     friend class CInvEffectSpriteAnimation;
     friend class CInvEffectSpriteShift;
     friend class CInvEffectSpriteShiftRotate;
+    friend class CInvEffectSpriteBlink;
 
     public:
 

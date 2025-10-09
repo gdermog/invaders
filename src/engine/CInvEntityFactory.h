@@ -37,7 +37,7 @@ namespace Inv
     CInvEntityFactory & operator=( const CInvEntityFactory & ) = delete;
     ~CInvEntityFactory();
 
-    void AddAlienEntity(
+    entt::entity AddAlienEntity(
       const std::string & entityType,
       float posX, float posY,
       float alienSizeX );
@@ -50,8 +50,14 @@ namespace Inv
          \param[in] alienSizeX  Width of the alien entity [px], height will be calculated according
                                 to sprite aspect ratio. */
 
-    void AddMissileEntity(
+    entt::entity AddPlayerEntity(
       const std::string & entityType,
+      float posX, float posY,
+      float playerSizeX );
+
+    entt::entity AddMissileEntity(
+      const std::string & entityType,
+      bool fromPlayer,
       float posX, float posY,
       float missileSizeX,
       float velocityX, float velocityY );

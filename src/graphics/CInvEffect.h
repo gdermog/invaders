@@ -16,6 +16,7 @@
 #include <InvGlobals.h>
 #include <CInvSettings.h>
 
+
 namespace Inv
 {
 
@@ -62,6 +63,14 @@ namespace Inv
     bool IsSuspended() const { return mIsSuspended; }
     //!< \brief Returns true if effect is currently suspended
 
+    void SetContinuous( bool isContinuous ) { mIsContinuous = isContinuous; }
+    /*!< \brief Sets whether effect is continuous (loops) or stops at after given time (gets suspended).
+
+          \param[in] isContinuous If true, effect loops, if false, it stops after given time */
+
+    bool IsContinuous() const { return mIsContinuous; }
+    /*!< \brief Returns true if effect is continuous (loops), false if it stops after given time */
+
   protected:
 
     const CInvSettings & mSettings;
@@ -75,6 +84,9 @@ namespace Inv
 
     uint32_t mEffectPriority;
     //!< \brief Effect priority, lower number means higher priority
+
+    bool mIsContinuous;
+    /*!< \brief If true, effects loops, if false, gets suspended after single run. */
 
   };
 

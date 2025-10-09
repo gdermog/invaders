@@ -192,6 +192,8 @@ namespace Inv
     mSpriteStorage->AddSprite( "PINK", "invader_pink" );
     mSpriteStorage->AddSprite( "SPIT", "spit" );
 
+    mSpriteStorage->AddSprite( "FIGHT", "fighter" );
+
     //------ Main structures initialization ----------------------------------------------------------
 
     mInsertCoinScreen = std::make_unique<CInvInsertCoinScreen>(

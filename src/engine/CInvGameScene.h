@@ -49,6 +49,8 @@ namespace Inv
       float sceneTopLeftX, float sceneTopLeftY,
       float sceneBottomRightX, float sceneBottomRightY );
 
+    bool SpawnPlayer();
+
     bool RenderActualScene( LARGE_INTEGER actualTickPoint );
     /*!< \brief Renders the actual game scene.
 

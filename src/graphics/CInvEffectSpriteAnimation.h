@@ -51,9 +51,6 @@ namespace Inv
                                  used when one effect is applied to multiple objects and the
                                  results are required to differ somewhat from each other. */
 
-    virtual void Suspend() override;
-    //!< \brief Suspends effect, it will not be applied until restored
-
     virtual void Restore() override;
     //!< \brief Restores effect, it will be applied again
 
@@ -72,13 +69,7 @@ namespace Inv
           \param[in] firstImage Index of first image to be used in animation
           \param[in] lastImage  Index of last image to be used in animation */
 
-    void SetContinuous( bool isContinuous ) { mIsContinuous = isContinuous; }
-    /*!< \brief Sets whether animation is continuous (loops) or stops at last image (gets suspended).
 
-          \param[in] isContinuous If true, animation loops, if false, it stops at last image */
-
-#define BIND_MEMBER_EVENT_CALLBACK( ref, fnName )  std::bind( &fnName, (ref), std::placeholders::_1)
-          //!< This macro allows to specify a member function as the event callback function
 
     void AddEventCallback( FnEventCallback_t callback );
     /*!< \brief Adds an event callback that will be called when animation reaches last image
@@ -103,9 +94,6 @@ namespace Inv
 
     uint32_t mLastImage;
     /*!< \brief Index of last image to be used in animation. */
-
-    bool mIsContinuous;
-    /*!< \brief If true, animation loops, if false, gets suspended at last image. */
 
     bool mFinalEventCallbackReported;
     /*!< \brief Internal flag to prevent multiple calls of final event callback if animation.
