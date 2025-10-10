@@ -16,6 +16,7 @@
 #include <InvGlobals.h>
 #include <CInvSettings.h>
 
+#include <engine/InvENTTProcessors.h>
 
 namespace Inv
 {
@@ -71,6 +72,10 @@ namespace Inv
     bool IsContinuous() const { return mIsContinuous; }
     /*!< \brief Returns true if effect is continuous (loops), false if it stops after given time */
 
+#ifdef _DEBUG
+    void SetDebugId( uint32_t id ) { mDebugId = id; }
+#endif
+
   protected:
 
     const CInvSettings & mSettings;
@@ -87,6 +92,10 @@ namespace Inv
 
     bool mIsContinuous;
     /*!< \brief If true, effects loops, if false, gets suspended after single run. */
+
+#ifdef _DEBUG
+    uint32_t  mDebugId;
+#endif
 
   };
 

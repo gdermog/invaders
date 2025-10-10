@@ -40,7 +40,7 @@ namespace Inv
     mPrimitives( primitives ),
     mCollisionTest( settings, pd3dDevice ),
     mEnTTRegistry(),
-    mEntityFactory( settings, spriteStorage, mEnTTRegistry, pD3D, pd3dDevice, pVB ),
+    mEntityFactory( settings, spriteStorage, mEnTTRegistry, *this, pD3D, pd3dDevice, pVB ),
     mPD3D( pD3D ),
     mPd3dDevice( pd3dDevice ),
     mPVB( pVB ),
@@ -53,7 +53,7 @@ namespace Inv
     mSceneBottomRightY( (float)settings.GetWindowHeight() ),
     mAlienStartingAreaCoefficient( 0.65f ),
 
-    mProcGarbageCollector( tickReferencePoint ),
+    mProcGarbageCollector( tickReferencePoint, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
     mProcActorStateSelector( tickReferencePoint ),
     mProcEntitySpawner( tickReferencePoint, mEntityFactory ),
     mProcActorMover( tickReferencePoint ),
@@ -99,7 +99,7 @@ namespace Inv
     if( (float)mSettings.GetWindowHeight() < mSceneBottomRightY )
       mSceneBottomRightY = (float)mSettings.GetWindowHeight();
 
-    std::vector<std::pair<uint32_t, std::string>> alienRows = //{ {1,"PINK"} };
+    std::vector<std::pair<uint32_t, std::string>> alienRows =
     {
       { 10, "PINK" },
       {  9, "PINK" },
@@ -150,7 +150,7 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
-  bool CInvGameScene::SpawnPlayer( )
+  bool CInvGameScene::SpawnPlayer()
   {
     auto baseSprite = mSpriteStorage.GetSprite( "FIGHT" );
     if( nullptr == baseSprite )
@@ -168,6 +168,18 @@ namespace Inv
       mSceneTopLeftX + mSceneWidth * 0.5f,
       mSceneBottomRightY - playerHeight,
       playerWidth );
+
+
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+/* DOOMED! Player dies at the start of the game for debugging purposes    */
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+    mEntityFactory.AddMissileEntity(
+      "SPIT", false,
+      mSceneTopLeftX + mSceneWidth * 0.5f,
+      mSceneBottomRightY - 4 * playerHeight,
+      0.33f * playerWidth,
+      0.0f, 1.0f );
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
     return true;
   } // CInvGameScene::SpawnPlayer
@@ -193,9 +205,13 @@ namespace Inv
                         // All entities are rendered according to their graphics component and status
 
     mProcCollisionDetector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
-    for( auto & item: mProcCollisionDetector.mCollidedPairs )
+    for( auto & item : mProcCollisionDetector.mCollidedPairs )
+    {                   // Missile hits and alien-player collisions are handled
+      auto [ id1, dmg1 ] = mEnTTRegistry.try_get<cpId, cpDamage>( item.first );
+      if( nullptr != id1 && nullptr != dmg1 && dmg1->removeOnHit )
+        id1->active = false;
       EliminateEntity( item.second );
-                        // Missile hits and alien-player collisions are handled
+    } // for
 
     return true;
 
@@ -233,12 +249,63 @@ namespace Inv
 
   bool CInvGameScene::EliminateEntity( entt::entity entity )
   {
+    auto entId = mEnTTRegistry.try_get<cpId>( entity );
+    if( nullptr == entId || ! entId->active )
+      return false;
+
+    auto [playBehave, playStatus, playHealth, playGph] =
+      mEnTTRegistry.try_get<cpPlayBehave, cpPlayStatus, cpHealth, cpGraphics>( entity );
+    if( nullptr != playBehave && nullptr != playStatus )
+    {                   // Player entity elimination from game scene is commenced (hit by alien or
+                        // alien missile). Player entity is marked as dying, explosion is created
+                        // at player position and special "dying" effect is started on player sprite.
+
+      if( nullptr == playHealth || nullptr == playGph)
+        return false;   // Player has no health or graphics component - this is probably a bug.
+
+      if( playStatus->isInvulnerable || playStatus->isDying )
+        return false;   // Player is invulnerable or already dying, ignore the hit.
+
+      if( 0 < playHealth->hitPoints )
+        --playHealth->hitPoints;
+                        // Player looses one health point.
+
+      if( 0 < playHealth->hitPoints )
+        return true;    // Player ship still has some health points and continues to fight.
+                        // Remark: this has nothing to do with number of player lives (ships),
+                        // number of hitpoints defines how many hits the single ship can take
+                        // before it is destroyed.
+
+      playStatus->isDying = true;
+                        // Welcome to the scrapyard, pal ...
+
+      auto [ pPos, pVel, pGeo] = mEnTTRegistry.try_get<cpPosition, cpVelocity, cpGeometry>( entity );
+      auto explosionSize = ( nullptr == pGeo ? 150.0f : playGph->standardSprite->GetResultingSizeX() * 1.5f );
+      auto xplX = ( nullptr == pPos ? 0.0f : pPos->X );
+      auto xplY = ( nullptr == pPos ? 0.0f : pPos->Y );
+      auto xplVx = ( nullptr == pVel ? 0.0f : pVel->vX );
+      auto xplVy = ( nullptr == pVel ? 0.0f : pVel->vY );
+      mEntityFactory.AddExplosionEntity( "FEXPL", xplX, xplY, explosionSize, xplVx, xplVy );
+                        // Explosion is created at player position, moving with the player. Explosion entity
+                        // is automatically pruned from game scene when its animation finishes.
+
+      if( nullptr != playGph && nullptr != playGph->specificAnimationEffect )
+      {                 // Dying effect is started on player sprite. When the effect finishes, player entity
+                        // is marked for pruning and removed from game scene by garbage collector. This
+                        // then triggers EntityJustPruned() method, which notifies main game scene about
+                        // player elimination.
+        if( nullptr != playGph->specificAnimationEffect )
+          playGph->specificAnimationEffect->Restore();
+      } // if
+
+    } // if
+
     return true;
-  }
+  } // CInvGameScene::EliminateEntity
 
   //-------------------------------------------------------------------------------------------------
 
-  void CInvGameScene::EntityJustPruned( entt::entity & entity )
+  void CInvGameScene::EntityJustPruned( entt::entity entity, uint32_t nr )
   {
     auto [ entId, entBehave, entStatus ] = mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus>(entity);
 
@@ -246,13 +313,66 @@ namespace Inv
       return;
 
     if( nullptr != entBehave && nullptr != entStatus )
-    {                   // Player entity elimination from game scene is done, appropriate measures¨
+    {                   // Player entity elimination from game scene is done, appropriate measures
                         // must be taken (respawn, reduce number of lives, end of game etc.)
 
-      LOG << lModLogId << "Player was pruned from game scene.";
+      LOG << "Player was pruned from game scene.";
+
+/**//**//**//**//**//**//**//**//**//**//**//**/
+     // SpawnPlayer();
+/**//**//**//**//**//**//**//**//**//**//**//**/
+/* Player must not be simply spawned like this. There must be some "attention... ready... go! notice
+   displayed, number of lives must be substracted, player game stats reseted ... */
 
     } // if
 
   } // CInvGameScene::EntityJustPruned
+
+  //-------------------------------------------------------------------------------------------------
+
+  void CInvGameScene::CallbackUnsetActive( entt::entity ent, uint32_t nr )
+  {
+    auto pId = mEnTTRegistry.try_get<cpId>( ent );
+    if( nullptr != pId )
+      pId->active = false;
+  } // CInvGameScene::CallbackUnsetActive
+
+  //-------------------------------------------------------------------------------------------------
+
+  void CInvGameScene::CallbackPlayerInvulnerabilityCanceled( entt::entity ent, uint32_t nr )
+  {
+    auto pStat = mEnTTRegistry.try_get<cpPlayStatus>( ent );
+    if( nullptr != pStat )
+      pStat->isInvulnerable = false;
+  } // CInvGameScene::CallbackPlayerInvulnerabilityCanceled
+
+  //-------------------------------------------------------------------------------------------------
+
+  void CInvGameScene::CallbackAlienAnimationDone( entt::entity ent, uint32_t nr )
+  {
+    auto aStat = mEnTTRegistry.try_get<cpAlienStatus>( ent );
+    if( nullptr != aStat )
+      aStat->isAnimating = false;
+  } // CInvGameScene::CallbackAlienAnimationDone
+
+  //-------------------------------------------------------------------------------------------------
+
+  void CInvGameScene::CallbackAlienFiringDone( entt::entity ent, uint32_t nr )
+  {
+    auto aStat = mEnTTRegistry.try_get<cpAlienStatus>( ent );
+    if( nullptr != aStat )
+      aStat->isFiring = false;
+  } // CInvGameScene::CallbackAlienFiringDone
+
+  //-------------------------------------------------------------------------------------------------
+
+  void CInvGameScene::CallbackAlienShootRequested( entt::entity ent, uint32_t nr )
+  {
+    auto aStat = mEnTTRegistry.try_get<cpAlienStatus>( ent );
+    if( nullptr != aStat )
+      aStat->isShootRequested = true;
+  } // CInvGameScene::CallbackAlienShootRequested
+
+  //-------------------------------------------------------------------------------------------------
 
 } // namespace Inv

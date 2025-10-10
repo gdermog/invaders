@@ -14,10 +14,20 @@
 
 #include <InvGlobals.h>
 
+#include <engine/InvENTTComponents.h>
 
 namespace Inv
 {
-  using FnEventCallbackEntity_t = std::function<void( entt::entity & )>;
+  using FnEventCallback_t = std::function<void( uint32_t )>;
+
+  using FnEventCallbackEithEntityId_t = std::function<void( entt::entity, uint32_t )>;
+
+#define BIND_MEMBER_EVENT_CALLBACK( ref, fnName )  std::bind( &fnName, (ref), std::placeholders::_1, std::placeholders::_2 )
+  //!< Macro to simplify binding of member function as event callback
+
+#define BIND_MEMBER_EVENT_CALLBACK_ON( ref, fnName, ent )  std::bind( &fnName, (ref), (ent), std::placeholders::_1 )
+  //!< Macro to simplify binding of member function as event callback, with expects entity passed as first argument
+
 
   //****** processor: setting of actors to specific states *******************************************
 
@@ -121,7 +131,7 @@ namespace Inv
 
   struct procGarbageCollector
   {
-    procGarbageCollector( LARGE_INTEGER refTick );
+    procGarbageCollector( LARGE_INTEGER refTick, FnEventCallbackEithEntityId_t pruneCallback );
 
     void reset( LARGE_INTEGER refTick );
 
@@ -129,11 +139,13 @@ namespace Inv
 
     LARGE_INTEGER mRefTick;
 
-    FnEventCallbackEntity_t mPruneCallback;
+    FnEventCallbackEithEntityId_t mPruneCallback;
 
   };
 
   //****** processor: rendering of actors ************************************************************
+
+  class CInvSprite;
 
   struct procActorRender
   {
@@ -144,6 +156,16 @@ namespace Inv
     void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
 
     LARGE_INTEGER mRefTick;
+
+    using SpriteInfo_t = struct
+    {
+      std::shared_ptr<CInvSprite> sprite;
+      cpGraphics & gph;
+      const cpPosition & pos;
+      const cpGeometry & geo;
+    };
+
+    std::map<float, std::vector<SpriteInfo_t>> mZAxisSorting;
 
   };
 

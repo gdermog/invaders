@@ -97,10 +97,10 @@ namespace Inv
   // Our custom FVF, which describes our custom vertex structure
 #define D3DFVF_CUSTOMVERTEX ( D3DFVF_XYZRHW | D3DFVF_DIFFUSE | D3DFVF_TEX1 )
 
-  using FnEventCallback_t = std::function<void( uint32_t )>;
-
-#define BIND_MEMBER_EVENT_CALLBACK( ref, fnName )  std::bind( &fnName, (ref), std::placeholders::_1)
-  //!< This macro allows to specify a member function as the event callback function
+#define LVL_MISSILE     0.2f
+#define LVL_ALIEN       0.3f
+#define LVL_PLAYER      0.4f
+#define LVL_EXPLOSION   0.5f
 
   /*! \brief Control states, used to represent state of user input controls like
       keyboard keysor joystick buttons. The states can be combined using bitwise

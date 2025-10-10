@@ -286,31 +286,9 @@ namespace Inv
       ProcessInput( controlState, controlValue );
 
       // Clear the backbuffer to a background color
-      mPd3dDevice->Clear( 0, NULL, D3DCLEAR_TARGET, mClearColor, 1.0f, 0 );
-
-      mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, true );
-      mPd3dDevice->SetRenderState( D3DRS_ZENABLE, false );
-
-      mPd3dDevice->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
-      mPd3dDevice->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
-      mPd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_DIFFUSE );
-      mPd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_TEXTURE );
-      mPd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE );
-
-      mPd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
-      mPd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE );
-      mPd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE );
-
-      mPd3dDevice->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
-      mPd3dDevice->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
-      mPd3dDevice->SetRenderState( D3DRS_LIGHTING, false );
-      //mPd3dDevice->SetTexture(0,NULL);
-      mPd3dDevice->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
-
-      D3DVIEWPORT9 vp = { 0,0, mSettings.GetWindowWidth(), mSettings.GetWindowHeight(), 0, 1 };
-      //mPd3dDevice->SetViewport(&vp);
-
-      mPd3dDevice->SetFVF( D3DFVF_CUSTOMVERTEX );
+      mPd3dDevice->Clear( 0, nullptr,
+        D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
+        mClearColor, 1.0f,  0 );
 
       // Begin the scene
       if( SUCCEEDED( mPd3dDevice->BeginScene() ) )
@@ -401,6 +379,8 @@ namespace Inv
     d3dpp.BackBufferWidth = 800;
     d3dpp.BackBufferHeight = 600;
     d3dpp.FullScreen_RefreshRateInHz = mSettings.GetFullScreen() ? 60 : 0;
+    d3dpp.EnableAutoDepthStencil = TRUE;                   // <-- Auto depth/stencil
+    d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 
     // Create the D3DDevice
     if( FAILED( mPD3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, mHWnd,
@@ -408,6 +388,29 @@ namespace Inv
       return E_FAIL;
 
     // Device state would normally be set here
+    mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, true );
+    mPd3dDevice->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
+    mPd3dDevice->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
+
+    //mPd3dDevice->SetRenderState( D3DRS_ZENABLE, D3DZB_TRUE );        // zapne z-buffer
+    mPd3dDevice->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );          // povolí zápis do Z bufferu
+    //mPd3dDevice->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );     // typ porovnání (LESS, LEQUAL, ...)
+
+
+    mPd3dDevice->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+    mPd3dDevice->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+    mPd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG1, D3DTA_DIFFUSE );
+    mPd3dDevice->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_TEXTURE );
+    mPd3dDevice->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE );
+
+    mPd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG1, D3DTA_DIFFUSE );
+    mPd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAARG2, D3DTA_TEXTURE );
+    mPd3dDevice->SetTextureStageState( 0, D3DTSS_ALPHAOP, D3DTOP_MODULATE );
+
+    mPd3dDevice->SetRenderState( D3DRS_LIGHTING, false );
+    //mPd3dDevice->SetTexture(0,NULL);
+    mPd3dDevice->SetRenderState( D3DRS_CULLMODE, D3DCULL_NONE );
+    mPd3dDevice->SetFVF( D3DFVF_CUSTOMVERTEX );
 
     return S_OK;
   } // CInvGame::InitD3D

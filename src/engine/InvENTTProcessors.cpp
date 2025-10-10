@@ -59,7 +59,7 @@ namespace Inv
         {
           status.isFiring = true;
           gph.diffTick.QuadPart = 0ul;
-          gph.firingAnimationEffect->Restore();
+          gph.specificAnimationEffect->Restore();
           return;       // Fire animation is started on random event. Effect is restored, runs once (as it is not
                         // continuous) and then suspends itself, sending event message by appropriate callback,
                         // which sets isFiring flag to false again.
@@ -176,8 +176,8 @@ namespace Inv
         mCanDamage.insert( entity );
     } );
 
-    auto viewHealth = reg.view<cpHealth, cpGraphics>();
-    viewHealth.each( [&]( entt::entity entity, const auto & hlt, const auto & )
+    auto viewHealth = reg.view<cpId, cpHealth, cpGraphics>();
+    viewHealth.each( [&]( entt::entity entity, const auto & id, const auto & hlt, const auto & )
     {
       auto [ bAlien, sAlien ] = reg.try_get<cpAlienBehave, cpAlienStatus>( entity );
       if( nullptr != bAlien && nullptr != sAlien && ! sAlien->isDying )
@@ -285,7 +285,8 @@ namespace Inv
 
   //****** processor: garbage collector ***************************************************************
 
-  procGarbageCollector::procGarbageCollector( LARGE_INTEGER refTick ):
+  procGarbageCollector::procGarbageCollector( LARGE_INTEGER refTick, FnEventCallbackEithEntityId_t pruneCallback ):
+    mPruneCallback( pruneCallback ),
     mRefTick( refTick )
   {
   }
@@ -311,7 +312,7 @@ namespace Inv
       {                 // Entity is marked as inactive and it will be remove from registry in short time.
                         // If it should send notification on pruning, it is done now.
         if( entId.noticeOnPruning && nullptr != mPruneCallback )
-          mPruneCallback( entity );
+          mPruneCallback( entity, entId.id );
         entities.push_back( entity );
       } // if
     }  // for
@@ -340,19 +341,31 @@ namespace Inv
   void procActorRender::update(
     entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
   {
+
     auto view = reg.view< cpGraphics, const cpPosition, const cpGeometry>();
 
     view.each( [=]( cpGraphics & gph, const cpPosition & pos, const cpGeometry & geo )
     {
-      gph.standardSprite->Draw(
-        pos.X, pos.Y,
-        geo.width, geo.height,
-        actTick, actTick, gph.diffTick,
-        gph.staticStandardImageIndex );
-      gph.diffTick.QuadPart++;
+        mZAxisSorting[gph.standardSprite->GetLevel()].emplace_back( gph.standardSprite, gph, pos, geo );
+        gph.diffTick.QuadPart++;
     } );                // Sprite animations are driven by tick count stored in cpGraphics component.
                         // It must not be dependent on global tick counter, because each entity starts
                         // its animations independently at random time.
+
+    for( auto & item : mZAxisSorting )
+    {
+      for( auto & item2 : item.second )
+      {
+        item2.sprite->Draw(
+          item2.pos.X, item2.pos.Y,
+          item2.geo.width, item2.geo.height,
+          actTick, actTick, item2.gph.diffTick,
+          item2.gph.staticStandardImageIndex );
+      } // for
+
+      item.second.clear();
+
+    } // for
 
   } // procActorRender::update
 

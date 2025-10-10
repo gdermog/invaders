@@ -70,6 +70,13 @@ namespace Inv
         Suspend();
       } // else
     } // if
+    else
+    {
+      if( mTicksLeft.QuadPart > 0 )
+        --mTicksLeft.QuadPart;
+      else
+        mTicksLeft.QuadPart = mTicksSpan.QuadPart;
+    }
 
     return true;
 

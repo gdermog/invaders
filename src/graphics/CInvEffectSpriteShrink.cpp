@@ -28,7 +28,8 @@ namespace Inv
 
     CInvEffect( settings, pd3dDevice, ePriority ),
     mPace( 1 ),
-    mFinalRatio{ 0.0f }
+    mFinalRatio{ 0.0f },
+    mTicksLeft( 0 )
   {}
 
   //----------------------------------------------------------------------------------------------
@@ -52,13 +53,7 @@ namespace Inv
 
     auto * sprite = static_cast<Inv::CInvSprite *>( obj );
 
-    LONGLONG idx = actualTick.QuadPart - referenceTick.QuadPart + diffTick.QuadPart;
-    if( idx < 0 )
-      idx = 0;
-    idx %= mPace;
-    idx++;
-
-    float actRatio = 1.0f - ( (float)idx / (float)mPace ) * ( 1.0f - mFinalRatio );
+    float actRatio = 1.0f - ( 1.0f - (float)mTicksLeft / (float)mPace ) * ( 1.0f - mFinalRatio );
 
     float xCentre = sprite->mTea2[0].x + sprite->mHalfSizeX;
     float yCentre = sprite->mTea2[0].y + sprite->mHalfSizeY;
@@ -76,11 +71,23 @@ namespace Inv
     sprite->mTea2[2].y =  yCentre + sprite->mHalfSizeY;
     sprite->mTea2[3].y =  yCentre + sprite->mHalfSizeY;
 
-    if( ! IsContinuous() && (uint32_t)idx == mPace )
+    if( ! IsContinuous() )
     {
+      if( 0 < mTicksLeft )
+        --mTicksLeft;
+      else
+      {
         if( nullptr != mFinalEventCallback )
-          mFinalEventCallback( (uint32_t)idx );
+          mFinalEventCallback( 0 );
         Suspend();
+      }
+    } // if
+    else
+    {
+      if( 0 < mTicksLeft )
+        --mTicksLeft;
+      else
+        mTicksLeft = mPace;
     } // if
 
     return true;
@@ -91,6 +98,7 @@ namespace Inv
 
   void CInvEffectSpriteShrink::Restore()
   {
+    mTicksLeft = mPace;
     CInvEffect::Restore();
   } // CInvEffectSpriteShrink::Restore
 

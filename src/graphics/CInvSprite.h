@@ -102,6 +102,14 @@ namespace Inv
          \param[in] imageIndex Index of image whose size is requested
          \return Pair of width and height in pixels */
 
+    void SetLevel( float lvl ) { mLvl = lvl; }
+    /*!< \brief Sets level of sprite, used for "sorting" sprites before drawing. Higher level
+          means the sprite is drawn on top of lower level sprites. */
+
+    float GetLevel() const { return mLvl; }
+    /*!< \brief Returns level of sprite, used for "sorting" sprites before drawing. Higher
+          level means the sprite is drawn on top of lower level sprites. */
+
     void GetResultingPosition(
       float & xTopLeft, float & yTopLeft,
       float & xBottomRight, float & yBottomRight,
@@ -118,6 +126,17 @@ namespace Inv
     void GetResultingBoundingBox(
       float & xMin, float & xMax,
       float & yMin, float & yMax ) const;
+
+    float GetResultingSizeX() const { return 2.0f * mHalfSizeX; }
+    /*!< \brief Returns resulting size of sprite in X direction, after all effects have been applied */
+
+    float GetResultingSizeY() const { return 2.0f * mHalfSizeY; }
+    /*!< \brief Returns resulting size of sprite in Y direction, after all effects have been applied¨*/
+
+#ifdef _DEBUG
+    void SetDebugId( uint32_t id ) { mDebugId = id; }
+#endif
+
 
   protected:
 
@@ -136,7 +155,13 @@ namespace Inv
     std::map<uint32_t, std::vector<std::shared_ptr<CInvEffect>>> mEffects;
     //!< Map of effects applied to the sprite, indexed by effect category
 
+#ifdef _DEBUG
+     uint32_t  mDebugId;
+#endif
+
   private:
+
+    float mLvl;
 
     const CInvSettings & mSettings;
     //<! Reference to settings object, to access global settings

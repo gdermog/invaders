@@ -19,7 +19,6 @@ namespace Inv
 
   struct cpId
   {
-    void Prune( uint32_t ) { active = false; }
 
     uint64_t id;        //!< Full entity identifier (index)
     std::string typeId; //!< Type identifier (for logging and debugging purposes)
@@ -75,11 +74,6 @@ namespace Inv
   /*! \brief This component determines the status of the alien computer-controlled element. */
   struct cpAlienStatus
   {
-    void AnimationDone( uint32_t ) { isAnimating = false; }
-
-    void FiringDone( uint32_t ) { isFiring = false; }
-
-    void ShootRequested( uint32_t ) { isShootRequested = true; }
 
     bool isAnimating;   //!< \b true if the alien shoul play its own basic animation.
 
@@ -104,7 +98,10 @@ namespace Inv
   /*! \brief This component determines the status of the player-controlled element. */
   struct cpPlayStatus
   {
-    void InvulnerabilityCanceled( uint32_t ) { isInvulnerable = false; }
+    void InvulnerabilityCanceled( uint32_t )
+    {
+      isInvulnerable = false;
+    }
 
     bool isInvulnerable;//!< \b true if the player is in invulnerable state, false otherwise.
                         //!  Invulnerability may be granted for short time after respawn or by
@@ -127,7 +124,9 @@ namespace Inv
 
     uint32_t maxHitPoints;
     //!< Maximum hit points of the entity, used for  displaying health bars,
-    //!< healing purposes and so on.
+    //!  healing purposes and so on.  Remark: this has nothing to do with number
+    //!  of player lives (ships), number of hitpoints defines how many hits the single
+    //!  ship can take before it is destroyed.
   };
 
   //****** component: entity damage ******************************************************************
@@ -150,7 +149,7 @@ namespace Inv
   //****** component: entity graphics *****************************************************************
 
   class CInvSprite;
-  class CInvEffectSpriteAnimation;
+  class CInvEffect;
 
   /*! \brief */
   struct cpGraphics
@@ -164,11 +163,12 @@ namespace Inv
     uint32_t staticStandardImageIndex;
     //!< Index of image in standard sprite to be used when no animation
 
-    std::shared_ptr<CInvEffectSpriteAnimation> standardAnimationEffect;
+    std::shared_ptr<CInvEffect> standardAnimationEffect;
     //!< Pointer to animation effect applied to standard sprite
 
-    std::shared_ptr<CInvEffectSpriteAnimation> firingAnimationEffect;
-    //!< Pointer to animation effect applied to firing sprite
+    std::shared_ptr<CInvEffect> specificAnimationEffect;
+    //!< Pointer to special animation effect applied, as firing invader sprite, dying
+    //!  entity and so on.
 
     LARGE_INTEGER diffTick;
     //!< Animation driver

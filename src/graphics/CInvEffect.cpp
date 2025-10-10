@@ -26,6 +26,9 @@ namespace Inv
     mIsSuspended( false ),
     mEffectPriority( ePriority ),
     mIsContinuous( true )
+#ifdef _DEBUG
+    , mDebugId( 0 )
+#endif
   {}
 
   //----------------------------------------------------------------------------------------------

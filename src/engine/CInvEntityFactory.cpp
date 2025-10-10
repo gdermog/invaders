@@ -11,6 +11,7 @@
 
 #include <engine/CInvEntityFactory.h>
 #include <engine/InvENTTComponents.h>
+#include <engine/CInvGameScene.h>
 
 #include <graphics/CInvEffectSpriteAnimation.h>
 #include <graphics/CInvEffectSpriteBlink.h>
@@ -26,6 +27,7 @@ namespace Inv
     const CInvSettings & settings,
     const CInvSpriteStorage & spriteStorage,
     entt::registry & enttRegistry,
+    CInvGameScene & gScene,
     LPDIRECT3D9 pD3D,
     LPDIRECT3DDEVICE9 pd3dDevice,
     LPDIRECT3DVERTEXBUFFER9 pVB ):
@@ -36,7 +38,7 @@ namespace Inv
     mPD3D( pD3D ),
     mPd3dDevice( pd3dDevice ),
     mPVB( pVB ),
-    mNextEntityId( 1ul )
+    mGameScene( gScene )
   {
   } // CInvEntityFactory::CInvEntityFactory
 
@@ -57,11 +59,12 @@ namespace Inv
       LOG << "Error: Sprite with ID '" << entityType << "' does not exist, cannot create entity.";
       return {};
     } // if
+    entitySprite->SetLevel( LVL_ALIEN );
 
     const auto invader = mEnTTRegistry.create();
 
 
-    mEnTTRegistry.emplace<cpId>( invader, mNextEntityId++, entityType, true, false );
+    mEnTTRegistry.emplace<cpId>( invader, (uint64_t)invader, entityType, true, false );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( invader, posX, posY, 0.0f );
@@ -89,7 +92,7 @@ namespace Inv
                         // not dying/removed on hit)
 
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
-/* There must be some diferentiation of animation indexex according to sprite type.   */
+/* There must be some diferentiation of animation indices according to sprite type.   */
 /* Now it is just "PINK", but later, with more enemies, it will be necessary to spe-  */
 /* different animation points of interest and so on.                                  */
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
@@ -103,7 +106,8 @@ namespace Inv
     standardAnimationEffect->SetImageRange( 16u, 23u );
     standardAnimationEffect->SetContinuous( false );
     standardAnimationEffect->Suspend();
-    standardAnimationEffect->AddEventCallback( BIND_MEMBER_EVENT_CALLBACK( &aStat, cpAlienStatus::AnimationDone ) );
+    standardAnimationEffect->AddEventCallback(
+      BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackAlienAnimationDone, invader )  );
     entitySprite->AddEffect( standardAnimationEffect );
                         // Standard animation effect starts suspended, it will be
                         // activated on random event.
@@ -114,8 +118,10 @@ namespace Inv
     firingAnimationEffect->SetImageRange( 0u, 23u );
     firingAnimationEffect->SetContinuous( false );
     firingAnimationEffect->Suspend();
-    firingAnimationEffect->AddEventCallback( BIND_MEMBER_EVENT_CALLBACK( &aStat, cpAlienStatus::FiringDone ) );
-    firingAnimationEffect->AddEventCallback( 8u, BIND_MEMBER_EVENT_CALLBACK( &aStat, cpAlienStatus::ShootRequested ) );
+    firingAnimationEffect->AddEventCallback(
+      BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackAlienFiringDone, invader ) );
+    firingAnimationEffect->AddEventCallback(
+      8u, BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackAlienShootRequested, invader ) );
     entitySprite->AddEffect( firingAnimationEffect );
                         // Firing animation effect starts suspended, it will be
                         // activated on random event.
@@ -142,10 +148,16 @@ namespace Inv
       LOG << "Error: Sprite with ID '" << entityType << "' does not exist, cannot create entity.";
       return {};
     } // if
+    entitySprite->SetLevel( LVL_PLAYER );
+
+
+#ifdef _DEBUG
+    entitySprite->SetDebugId( DEBUG_ID_FIGHTER );
+#endif
 
     const auto fighter = mEnTTRegistry.create();
 
-    mEnTTRegistry.emplace<cpId>( fighter, mNextEntityId++, entityType, true, true );
+    auto & pId = mEnTTRegistry.emplace<cpId>( fighter, (uint64_t)fighter, entityType, true, true );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( fighter, posX, posY, 0.0f );
@@ -160,38 +172,41 @@ namespace Inv
                         // component: geometry
 
     mEnTTRegistry.emplace<cpPlayBehave>( fighter, -1 );
-                        // component: ai behavior
+                        // component: player behavior is presently empty
 
-    mEnTTRegistry.emplace<cpPlayStatus>( fighter, true, false, false );
-                        // component: alien status (entering game invulnerable, shoot not requested, not dying )
+    auto & pStat = mEnTTRegistry.emplace<cpPlayStatus>( fighter, true, false, false );
+                        // component: player status (entering game invulnerable, shoot not requested, not dying )
 
     mEnTTRegistry.emplace<cpHealth>( fighter, 1u, 1u );
                         // component: health points (single hit will do)
 
-    auto & pStat = mEnTTRegistry.get<cpPlayStatus>( fighter );
-
-    auto blinkAnimationEffect = std::make_shared<CInvEffectSpriteBlink>(
-      mSettings, mPd3dDevice, 1u );
+    auto blinkAnimationEffect = std::make_shared<CInvEffectSpriteBlink>( mSettings, mPd3dDevice, 1u );
     blinkAnimationEffect->SetPace( 6 );
     blinkAnimationEffect->SetTicks( 150 );
     blinkAnimationEffect->SetContinuous( false );
-    blinkAnimationEffect->AddEventCallback( BIND_MEMBER_EVENT_CALLBACK( &pStat, cpPlayStatus::InvulnerabilityCanceled ) );
+    blinkAnimationEffect->AddEventCallback(
+      BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackPlayerInvulnerabilityCanceled, fighter ) );
     entitySprite->AddEffect( blinkAnimationEffect );
-                        // Standard animation effect starts suspended, it will be
-                        // activated on random event.
+                        // Blinking animation effect starts running, as player is invulnerable on spawn.
 
-/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
-auto shrinkAnimationEffect = std::make_shared<CInvEffectSpriteShrink>(
-  mSettings, mPd3dDevice, 21u );
-shrinkAnimationEffect->SetPace( 100 );
-shrinkAnimationEffect->SetContinuous( true );
-entitySprite->AddEffect( shrinkAnimationEffect );
-/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+   auto shrinkAnimationEffect = std::make_shared<CInvEffectSpriteShrink>( mSettings, mPd3dDevice, 11u );
+   shrinkAnimationEffect->SetPace( 6 );
+   shrinkAnimationEffect->SetContinuous( false );
+   shrinkAnimationEffect->Suspend();
+   shrinkAnimationEffect->AddEventCallback(
+     BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackUnsetActive, fighter ) );
+   entitySprite->AddEffect( shrinkAnimationEffect );
+                        // Shrink animation effect starts suspended (dying effect, not needed for now), it will
+                        //  be activated on external event.
+
+#ifdef _DEBUG
+   shrinkAnimationEffect->SetDebugId( DEBUG_ID_FIGHTER );
+#endif
 
     mEnTTRegistry.emplace<cpGraphics>( fighter,
-      entitySprite, 0u, nullptr, nullptr, LARGE_INTEGER{ 0 } );
-                        // component: graphics (sprite, no animation nor animation effects, animation driver
-                        // is zeroed )
+      entitySprite, 0u, blinkAnimationEffect, shrinkAnimationEffect, LARGE_INTEGER{ 0 } );
+                        // component: graphics (sprite, invulnerability and dying effects are stored, animation
+                        // driver is zeroed )
 
     return fighter;
 
@@ -213,11 +228,12 @@ entitySprite->AddEffect( shrinkAnimationEffect );
       LOG << "Error: Sprite with ID '" << entityType << "' does not exist, cannot create entity.";
       return {};
     } // if
+    entitySprite->SetLevel( LVL_MISSILE );
 
     const auto missile = mEnTTRegistry.create();
 
 
-    mEnTTRegistry.emplace<cpId>( missile, mNextEntityId++, entityType, true, false );
+    mEnTTRegistry.emplace<cpId>( missile, (uint64_t)missile, entityType, true, false );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( missile, posX, posY, 0.0f );
@@ -264,10 +280,15 @@ entitySprite->AddEffect( shrinkAnimationEffect );
       LOG << "Error: Sprite with ID '" << entityType << "' does not exist, cannot create entity.";
       return {};
     } // if
+    entitySprite->SetLevel( LVL_EXPLOSION );
+
+#ifdef _DEBUG
+    entitySprite->SetDebugId( DEBUG_ID_FIGHTER_EXPLODE );
+#endif
 
     const auto explosion = mEnTTRegistry.create();
 
-    auto & explosionId = mEnTTRegistry.emplace<cpId>( explosion, mNextEntityId++, entityType, true, false );
+    auto & explosionId = mEnTTRegistry.emplace<cpId>( explosion, (uint64_t)explosion, entityType, true, false );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( explosion, posX, posY, 0.0f );
@@ -285,9 +306,14 @@ entitySprite->AddEffect( shrinkAnimationEffect );
       mSettings, mPd3dDevice, 1u );
     standardAnimationEffect->SetPace( 6 );
     standardAnimationEffect->SetContinuous( false );
-    standardAnimationEffect->AddEventCallback( BIND_MEMBER_EVENT_CALLBACK ( &explosionId, cpId::Prune ) );
+    standardAnimationEffect->AddEventCallback(
+      BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackUnsetActive, explosion ) );
     entitySprite->AddEffect( standardAnimationEffect );
                         // Explosion is animated once. After animation is finished, it is removed from game.
+
+#ifdef _DEBUG
+    standardAnimationEffect->SetDebugId( DEBUG_ID_FIGHTER_EXPLODE );
+#endif
 
     mEnTTRegistry.emplace<cpGraphics>( explosion,
       entitySprite, 0u, standardAnimationEffect, nullptr, LARGE_INTEGER{ 0 } );

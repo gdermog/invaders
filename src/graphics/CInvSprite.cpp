@@ -30,7 +30,11 @@ namespace Inv
     mSettings( settings ),
     mPd3dDevice( pd3dDevice ),
     mTextures(),
-    mTextureSizes()
+    mTextureSizes(),
+    mLvl( 0.0f )
+#ifdef _DEBUG
+    , mDebugId( 0 )
+#endif
   {
   }
 
@@ -151,10 +155,10 @@ namespace Inv
     mHalfSizeX = xSize * 0.5f;
     mHalfSizeY = ySize * 0.5f;
 
-    mTea2[0] = { xCentre - mHalfSizeX, yCentre - mHalfSizeY, 0.5f, 1.0f, color, 0.0f, 0.0f, };
-    mTea2[1] = { xCentre + mHalfSizeX, yCentre - mHalfSizeY, 0.5f, 1.0f, color, 1.0f, 0.0f, };
-    mTea2[2] = { xCentre - mHalfSizeX, yCentre + mHalfSizeY, 0.5f, 1.0f, color, 0.0f, 1.0f, };
-    mTea2[3] = { xCentre + mHalfSizeX, yCentre + mHalfSizeY, 0.5f, 1.0f, color, 1.0f, 1.0f, };
+    mTea2[0] = { xCentre - mHalfSizeX, yCentre - mHalfSizeY, mLvl, 1.0f, color, 0.0f, 0.0f, };
+    mTea2[1] = { xCentre + mHalfSizeX, yCentre - mHalfSizeY, mLvl, 1.0f, color, 1.0f, 0.0f, };
+    mTea2[2] = { xCentre - mHalfSizeX, yCentre + mHalfSizeY, mLvl, 1.0f, color, 0.0f, 1.0f, };
+    mTea2[3] = { xCentre + mHalfSizeX, yCentre + mHalfSizeY, mLvl, 1.0f, color, 1.0f, 1.0f, };
 
     if( !mEffects.empty() )
     {
@@ -177,7 +181,6 @@ namespace Inv
 
     IDirect3DTexture9 * t = (IDirect3DTexture9 *)tex;
     mPd3dDevice->SetTexture( 0, t );
-
     mPd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, mTea2, sizeof( CUSTOMVERTEX ) );
 
   } // CInvSprite::Draw

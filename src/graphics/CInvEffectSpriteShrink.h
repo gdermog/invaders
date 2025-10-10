@@ -54,15 +54,15 @@ namespace Inv
     virtual void Restore() override;
     //!< \brief Restores effect, it will be applied again
 
-    void SetPace( uint32_t pace ) { mPace = pace; }
+    void SetPace( uint32_t pace ) { mPace = pace; mTicksLeft = pace;  }
     /*!< \brief Sets pace of Shrink, number of ticks in which final size is reached. Smaller
          number means faster Shrink.
 
          \param[in] pace Number of ticks between changing to next image. */
 
     uint32_t GetPace() const { return mPace; }
-    /*!< \brief Returns pace of Shrink, number of ticks between changing image state (shown
-         or hidden). */
+    /*!< \brief Returns pace of Shrink, number of ticks between changing image state (full size
+         to final size). */
 
     void SetFinalRatio( float ratio ) { mFinalRatio = ratio; }
     /*!< \brief Sets final ratio of size to original size, must be in range (0 - 1).
@@ -81,10 +81,14 @@ namespace Inv
   private:
 
     uint32_t mPace;
-    /*!< \brief Pace of Shrink, number of ticks between changing to next image.Smaller
-          number means faster Shrink. Default is 1, which means image changes every tick. */
+    /*!< \brief Number of ticks between changing image state (full size to final size). */
 
     float mFinalRatio;
+    /*!< \brief Final ratio of size to original size, must be in range (0 - 1). Default is 0.0f,
+         which means the sprite shrinks to a point. */
+
+    uint32_t mTicksLeft;
+    /*!< \brief Number of ticks left to effect autosuspend/reset. */
 
     FnEventCallback_t mFinalEventCallback;
     /*!< \brief Callback function that will be called when animation reaches last image

@@ -17,8 +17,13 @@
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvSpriteStorage.h>
 
+#define DEBUG_ID_FIGHTER  50
+#define DEBUG_ID_FIGHTER_EXPLODE 100
+
 namespace Inv
 {
+
+  class CInvGameScene;
 
   /*! \brief The class implements ... */
   class CInvEntityFactory
@@ -29,6 +34,7 @@ namespace Inv
       const CInvSettings & settings,
       const CInvSpriteStorage & spriteStorage,
       entt::registry & enttRegistry,
+      CInvGameScene & gScene,
       LPDIRECT3D9 pD3D,
       LPDIRECT3DDEVICE9 pd3dDevice,
       LPDIRECT3DVERTEXBUFFER9 pVB );
@@ -86,7 +92,8 @@ namespace Inv
     LPDIRECT3DVERTEXBUFFER9 mPVB;
     //!< \brief Pointer to Direct3D vertex buffer, used for rendering primitives.
 
-    uint64_t mNextEntityId;
+    CInvGameScene &mGameScene;
+    //!< \brief Reference to game scene, used to access game-wide callback functions.
 
   };
 
