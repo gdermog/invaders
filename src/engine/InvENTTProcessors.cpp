@@ -180,11 +180,11 @@ namespace Inv
     viewHealth.each( [&]( entt::entity entity, const auto & hlt, const auto & )
     {
       auto [ bAlien, sAlien ] = reg.try_get<cpAlienBehave, cpAlienStatus>( entity );
-      if( nullptr != bAlien && nullptr != sAlien && false == sAlien->isDying )
+      if( nullptr != bAlien && nullptr != sAlien && ! sAlien->isDying )
         mCanBeDamagedAlien.insert( entity );
 
       auto [ bPlayer, sPlayer ] = reg.try_get<cpPlayBehave, cpPlayStatus>( entity );
-      if( nullptr != bPlayer && nullptr != sPlayer && ! sPlayer->isDying && !sPlayer->isInvulnerable )
+      if( nullptr != bPlayer && nullptr != sPlayer && ! sPlayer->isDying && ! sPlayer->isInvulnerable )
         mCanBeDamagedPlayer.insert( entity );
     } );
 
@@ -307,8 +307,13 @@ namespace Inv
     for( auto entity : view )
     {
       auto & entId = view.get<cpId>( entity );
-      if( ! entId.active )
+      if( !entId.active )
+      {                 // Entity is marked as inactive and it will be remove from registry in short time.
+                        // If it should send notification on pruning, it is done now.
+        if( entId.noticeOnPruning && nullptr != mPruneCallback )
+          mPruneCallback( entity );
         entities.push_back( entity );
+      } // if
     }  // for
 
     for( auto entity : entities )

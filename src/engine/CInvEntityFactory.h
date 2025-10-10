@@ -62,6 +62,12 @@ namespace Inv
       float missileSizeX,
       float velocityX, float velocityY );
 
+    entt::entity AddExplosionEntity(
+      const std::string & entityType,
+      float posX, float posY,
+      float explosionSizeX,
+      float velocityX, float velocityY );
+
   private:
 
     const CInvSettings & mSettings;

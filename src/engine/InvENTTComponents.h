@@ -19,11 +19,14 @@ namespace Inv
 
   struct cpId
   {
+    void Prune( uint32_t ) { active = false; }
+
     uint64_t id;        //!< Full entity identifier (index)
     std::string typeId; //!< Type identifier (for logging and debugging purposes)
-    bool active;        //!< \b true if the entity is active. Inactive entity is not processed
-    //!  nor displayed in game loop and it will be pruned in nearest possible
-    //!  time.
+    bool active;        //!< \b true if the entity is active. Inactive entity is not processed nor
+                        //!  displayed in game loop and it will be pruned in nearest possiblev time.
+    bool noticeOnPruning;
+                        //!< \b true if the entity should send notification when it is pruned
   };
 
   //****** component: position ***********************************************************************

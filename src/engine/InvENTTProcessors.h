@@ -17,6 +17,8 @@
 
 namespace Inv
 {
+  using FnEventCallbackEntity_t = std::function<void( entt::entity & )>;
+
   //****** processor: setting of actors to specific states *******************************************
 
   struct procActorStateSelector
@@ -126,6 +128,8 @@ namespace Inv
     void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
 
     LARGE_INTEGER mRefTick;
+
+    FnEventCallbackEntity_t mPruneCallback;
 
   };
 

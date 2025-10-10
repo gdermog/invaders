@@ -78,9 +78,10 @@ namespace Inv
 
     bool EliminateEntity( entt::entity entity );
     /*!< \brief Eliminates given entity from the game scene, replacing it by appropriate explosion.
-         if the eliminated entiti is the player, starts sequence leading to respawn and reducing
+         if the eliminated entity is the player, starts sequence leading to respawn and reducing
          number of lives. */
 
+    void EntityJustPruned( entt::entity & entity );
 
     LARGE_INTEGER mTickReferencePoint;
     //!< \brief Reference tick point, used to calculate elapsed time during the game.

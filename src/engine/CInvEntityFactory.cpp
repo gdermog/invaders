@@ -14,6 +14,7 @@
 
 #include <graphics/CInvEffectSpriteAnimation.h>
 #include <graphics/CInvEffectSpriteBlink.h>
+#include <graphics/CInvEffectSpriteShrink.h>
 
 namespace Inv
 {
@@ -60,7 +61,7 @@ namespace Inv
     const auto invader = mEnTTRegistry.create();
 
 
-    mEnTTRegistry.emplace<cpId>( invader, mNextEntityId++, entityType, true );
+    mEnTTRegistry.emplace<cpId>( invader, mNextEntityId++, entityType, true, false );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( invader, posX, posY, 0.0f );
@@ -144,7 +145,7 @@ namespace Inv
 
     const auto fighter = mEnTTRegistry.create();
 
-    mEnTTRegistry.emplace<cpId>( fighter, mNextEntityId++, entityType, true );
+    mEnTTRegistry.emplace<cpId>( fighter, mNextEntityId++, entityType, true, true );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( fighter, posX, posY, 0.0f );
@@ -179,6 +180,14 @@ namespace Inv
                         // Standard animation effect starts suspended, it will be
                         // activated on random event.
 
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+auto shrinkAnimationEffect = std::make_shared<CInvEffectSpriteShrink>(
+  mSettings, mPd3dDevice, 21u );
+shrinkAnimationEffect->SetPace( 100 );
+shrinkAnimationEffect->SetContinuous( true );
+entitySprite->AddEffect( shrinkAnimationEffect );
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+
     mEnTTRegistry.emplace<cpGraphics>( fighter,
       entitySprite, 0u, nullptr, nullptr, LARGE_INTEGER{ 0 } );
                         // component: graphics (sprite, no animation nor animation effects, animation driver
@@ -208,7 +217,7 @@ namespace Inv
     const auto missile = mEnTTRegistry.create();
 
 
-    mEnTTRegistry.emplace<cpId>( missile, mNextEntityId++, entityType, true );
+    mEnTTRegistry.emplace<cpId>( missile, mNextEntityId++, entityType, true, false );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( missile, posX, posY, 0.0f );
@@ -240,6 +249,54 @@ namespace Inv
     return missile;
 
   } // CInvEntityFactory::AddMissileEntity
+
+  //-------------------------------------------------------------------------------------------------
+
+  entt::entity CInvEntityFactory::AddExplosionEntity(
+    const std::string & entityType,
+    float posX, float posY,
+    float explosionSizeX,
+    float velocityX, float velocityY )
+  {
+    std::shared_ptr<CInvSprite> entitySprite = mSpriteStorage.GetSprite( entityType );
+    if( nullptr == entitySprite )
+    {
+      LOG << "Error: Sprite with ID '" << entityType << "' does not exist, cannot create entity.";
+      return {};
+    } // if
+
+    const auto explosion = mEnTTRegistry.create();
+
+    auto & explosionId = mEnTTRegistry.emplace<cpId>( explosion, mNextEntityId++, entityType, true, false );
+                        // component: entity full identifier
+
+    mEnTTRegistry.emplace<cpPosition>( explosion, posX, posY, 0.0f );
+                        // component: position
+
+    mEnTTRegistry.emplace<cpVelocity>( explosion, velocityX, velocityY, 0.0f );
+                        // component: velocity
+
+    auto baseSize = entitySprite->GetImageSize( 0 );
+    auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
+    mEnTTRegistry.emplace<cpGeometry>( explosion, explosionSizeX, explosionSizeX * aspectRatio );
+                        // component: geometry
+
+    auto standardAnimationEffect = std::make_shared<CInvEffectSpriteAnimation>(
+      mSettings, mPd3dDevice, 1u );
+    standardAnimationEffect->SetPace( 6 );
+    standardAnimationEffect->SetContinuous( false );
+    standardAnimationEffect->AddEventCallback( BIND_MEMBER_EVENT_CALLBACK ( &explosionId, cpId::Prune ) );
+    entitySprite->AddEffect( standardAnimationEffect );
+                        // Explosion is animated once. After animation is finished, it is removed from game.
+
+    mEnTTRegistry.emplace<cpGraphics>( explosion,
+      entitySprite, 0u, standardAnimationEffect, nullptr, LARGE_INTEGER{ 0 } );
+                        // component: graphics (sprite, static image index, standard animation
+                        // sequence, no firing animation sequence, animation driver is zeroed )
+
+    return explosion;
+
+  } // CInvEntityFactory::AddExplosionEntity
 
 
 } // namespace Inv

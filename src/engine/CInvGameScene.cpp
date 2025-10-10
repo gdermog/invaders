@@ -12,6 +12,8 @@
 
 #include <graphics/CInvSprite.h>
 
+#include <CInvLogger.h>
+
 namespace Inv
 {
 
@@ -176,18 +178,24 @@ namespace Inv
   {
 
     mProcGarbageCollector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+                        // Removes entities marked as inactive from the registry, noticing
+                        // main scena class if demanded.
 
     mProcActorStateSelector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
     mProcEntitySpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
 
     mProcActorMover.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
     mProcActorOutOfSceneCheck.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+                        // All entities arfe moved according to their velocity, entities out of scene
+                        // are marked as inactive and will be removed by garbage collector in next loop.
 
     mProcActorRender.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+                        // All entities are rendered according to their graphics component and status
 
     mProcCollisionDetector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
-
-auto xxx = mProcCollisionDetector.mCollidedPairs.size();
+    for( auto & item: mProcCollisionDetector.mCollidedPairs )
+      EliminateEntity( item.second );
+                        // Missile hits and alien-player collisions are handled
 
     return true;
 
@@ -200,11 +208,25 @@ auto xxx = mProcCollisionDetector.mCollidedPairs.size();
     mTickReferencePoint = newTickRefPoint;
     mEnTTRegistry.clear();
 
+    mProcGarbageCollector.reset( newTickRefPoint );
+
     mProcActorStateSelector.reset( newTickRefPoint );
+    mProcEntitySpawner.reset( newTickRefPoint );
+
+    mProcActorMover.reset( newTickRefPoint );
+    mProcActorOutOfSceneCheck.reset(
+      newTickRefPoint,
+      0.0f, 0.0f,
+      (float)mSettings.GetWindowWidth(),
+      (float)mSettings.GetWindowHeight() );
+
     mProcActorRender.reset( newTickRefPoint );
+
+    mProcCollisionDetector.reset( newTickRefPoint );
 
     GenerateNewScene( mSceneTopLeftX, mSceneTopLeftY, mSceneBottomRightX, mSceneBottomRightY );
     SpawnPlayer();
+
   } // CInvGameScene::Reset
 
   //-------------------------------------------------------------------------------------------------
@@ -213,5 +235,24 @@ auto xxx = mProcCollisionDetector.mCollidedPairs.size();
   {
     return true;
   }
+
+  //-------------------------------------------------------------------------------------------------
+
+  void CInvGameScene::EntityJustPruned( entt::entity & entity )
+  {
+    auto [ entId, entBehave, entStatus ] = mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus>(entity);
+
+    if( nullptr == entId || entId->active )
+      return;
+
+    if( nullptr != entBehave && nullptr != entStatus )
+    {                   // Player entity elimination from game scene is done, appropriate measures¨
+                        // must be taken (respawn, reduce number of lives, end of game etc.)
+
+      LOG << lModLogId << "Player was pruned from game scene.";
+
+    } // if
+
+  } // CInvGameScene::EntityJustPruned
 
 } // namespace Inv

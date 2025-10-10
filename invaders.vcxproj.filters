@@ -96,6 +96,9 @@
     <ClCompile Include="src\graphics\CInvCollisionTest.cpp">
       <Filter>Source Files\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\CInvEffectSpriteShrink.cpp">
+      <Filter>Source Files\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InvGlobals.h">
@@ -168,6 +171,9 @@
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
     <ClInclude Include="src\graphics\CInvCollisionTest.h">
+      <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\CInvEffectSpriteShrink.h">
       <Filter>Header Files\graphics</Filter>
     </ClInclude>
   </ItemGroup>

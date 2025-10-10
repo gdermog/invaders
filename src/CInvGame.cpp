@@ -193,6 +193,7 @@ namespace Inv
     mSpriteStorage->AddSprite( "SPIT", "spit" );
 
     mSpriteStorage->AddSprite( "FIGHT", "fighter" );
+    mSpriteStorage->AddSprite( "FEXPL", "explosionFighter" );
 
     //------ Main structures initialization ----------------------------------------------------------
 
