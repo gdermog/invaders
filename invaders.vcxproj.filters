@@ -99,6 +99,9 @@
     <ClCompile Include="src\graphics\CInvEffectSpriteShrink.cpp">
       <Filter>Source Files\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\CInvSettingsRuntime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InvGlobals.h">
@@ -175,6 +178,9 @@
     </ClInclude>
     <ClInclude Include="src\graphics\CInvEffectSpriteShrink.h">
       <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CInvSettingsRuntime.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

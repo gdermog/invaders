@@ -12,6 +12,8 @@
 
 #include <d3d9.h>
 
+#include <CInvSettingsRuntime.h>
+
 #include <entity/registry.hpp>
 
 #include <graphics/CInvText.h>
@@ -34,6 +36,7 @@ namespace Inv
       const CInvText & textCreator,
       const CInvSpriteStorage & spriteStorage,
       CInvPrimitive & primitives,
+      CInvSettingsRuntime & settingsRuntime,
       LPDIRECT3D9 pD3D,
       LPDIRECT3DDEVICE9 pd3dDevice,
       LPDIRECT3DVERTEXBUFFER9 pVB,
@@ -61,7 +64,10 @@ namespace Inv
          there coud be a lot of "noise" around spawning the player ship (as decreasing of lives
          counter and others), so this special function is implemented. */
 
-    bool RenderActualScene( LARGE_INTEGER actualTickPoint );
+    bool RenderActualScene(
+      LARGE_INTEGER actualTickPoint,
+      ControlStateFlags_t controlState,
+      ControlValue_t controlValue );
     /*!< \brief Renders the actual game scene using EnTT processors chain.
 
          \param[in] actualTickPoint Current tick point, used to calculate game situation */
@@ -120,6 +126,8 @@ namespace Inv
     CInvPrimitive & mPrimitives;
     //!< \brief Reference to primitive drawer, used to draw basic shapes on screen
 
+    CInvSettingsRuntime & mSettingsRuntime;
+
     CInvCollisionTest mCollisionTest;
     //!< \brief Collision test object, used to detect collisions between entities
 
@@ -158,6 +166,7 @@ namespace Inv
     procGarbageCollector mProcGarbageCollector;
     procActorStateSelector mProcActorStateSelector;
     procEntitySpawner mProcEntitySpawner;
+    procPlayerSpeedUpdater mProcPlayerSpeedUpdater;
     procActorMover mProcActorMover;
     procActorOutOfSceneCheck mProcActorOutOfSceneCheck;
     procCollisionDetector mProcCollisionDetector;

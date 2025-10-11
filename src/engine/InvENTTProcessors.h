@@ -29,6 +29,9 @@ namespace Inv
   //!< Macro to simplify binding of member function as event callback, with expects entity passed as first argument
 
 
+  class CInvEntityFactory;
+  class CInvSettingsRuntime;
+
   //****** processor: setting of actors to specific states *******************************************
 
   struct procActorStateSelector
@@ -44,11 +47,12 @@ namespace Inv
 
   //****** processor: adding entities on request of special events ***********************************
 
-  class CInvEntityFactory;
-
   struct procEntitySpawner
   {
-    procEntitySpawner( LARGE_INTEGER refTick, CInvEntityFactory & entityFactory );
+    procEntitySpawner(
+      LARGE_INTEGER refTick,
+      CInvEntityFactory & entityFactory,
+      CInvSettingsRuntime & settingsRuntime );
 
     void reset( LARGE_INTEGER refTick );
 
@@ -56,6 +60,28 @@ namespace Inv
 
     LARGE_INTEGER mRefTick;
     CInvEntityFactory & mEntityFactory;
+    CInvSettingsRuntime & mSettingsRuntime;
+  };
+
+  //****** processor: updating speed of player actor ************************************************
+
+  struct procPlayerSpeedUpdater
+  {
+    procPlayerSpeedUpdater(
+      LARGE_INTEGER refTick,
+      CInvSettingsRuntime & settingsRuntime );
+
+    void reset( LARGE_INTEGER refTick );
+
+    void update(
+      entt::registry & reg,
+      LARGE_INTEGER actTick,
+      LARGE_INTEGER diffTick,
+      ControlStateFlags_t controlState,
+      ControlValue_t controlValue );
+
+    LARGE_INTEGER mRefTick;
+    CInvSettingsRuntime & mSettingsRuntime;
   };
 
   //****** processor: moving of actors ***************************************************************

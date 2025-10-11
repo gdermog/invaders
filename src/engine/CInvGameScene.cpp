@@ -27,6 +27,7 @@ namespace Inv
     const CInvText & textCreator,
     const CInvSpriteStorage & spriteStorage,
     CInvPrimitive & primitives,
+    CInvSettingsRuntime & settingsRuntime,
     LPDIRECT3D9 pD3D,
     LPDIRECT3DDEVICE9 pd3dDevice,
     LPDIRECT3DVERTEXBUFFER9 pVB,
@@ -38,9 +39,10 @@ namespace Inv
     mTextCreator( textCreator ),
     mSpriteStorage( spriteStorage ),
     mPrimitives( primitives ),
+    mSettingsRuntime( settingsRuntime ),
     mCollisionTest( settings, pd3dDevice ),
     mEnTTRegistry(),
-    mEntityFactory( settings, spriteStorage, mEnTTRegistry, *this, pD3D, pd3dDevice, pVB ),
+    mEntityFactory( settings, spriteStorage, mEnTTRegistry, *this, mSettingsRuntime, pD3D, pd3dDevice, pVB ),
     mPD3D( pD3D ),
     mPd3dDevice( pd3dDevice ),
     mPVB( pVB ),
@@ -55,8 +57,9 @@ namespace Inv
 
     mProcGarbageCollector( tickReferencePoint, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
     mProcActorStateSelector( tickReferencePoint ),
-    mProcEntitySpawner( tickReferencePoint, mEntityFactory ),
+    mProcEntitySpawner( tickReferencePoint, mEntityFactory, settingsRuntime ),
     mProcActorMover( tickReferencePoint ),
+    mProcPlayerSpeedUpdater( tickReferencePoint, settingsRuntime ),
     mProcActorOutOfSceneCheck( tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
     mProcCollisionDetector( tickReferencePoint, mCollisionTest ),
     mProcActorRender( tickReferencePoint )
@@ -177,8 +180,7 @@ namespace Inv
       "SPIT", false,
       mSceneTopLeftX + mSceneWidth * 0.5f,
       mSceneBottomRightY - 4 * playerHeight,
-      0.33f * playerWidth,
-      0.0f, 1.0f );
+      0.33f * playerWidth );
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
     return true;
@@ -186,7 +188,10 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
-  bool CInvGameScene::RenderActualScene( LARGE_INTEGER actualTickPoint )
+  bool CInvGameScene::RenderActualScene(
+    LARGE_INTEGER actualTickPoint,
+    ControlStateFlags_t controlState,
+    ControlValue_t controlValue )
   {
 
     mProcGarbageCollector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
@@ -196,6 +201,7 @@ namespace Inv
     mProcActorStateSelector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
     mProcEntitySpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
 
+    mProcPlayerSpeedUpdater.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, controlState, controlValue );
     mProcActorMover.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
     mProcActorOutOfSceneCheck.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // All entities arfe moved according to their velocity, entities out of scene

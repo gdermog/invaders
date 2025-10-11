@@ -20,6 +20,7 @@ namespace Inv
     const CInvText & textCreator,
     const CInvSpriteStorage & spriteStorage,
     CInvPrimitive & primitives,
+    CInvSettingsRuntime & settingsRuntime,
     LPDIRECT3D9 pD3D,
     LPDIRECT3DDEVICE9 pd3dDevice,
     LPDIRECT3DVERTEXBUFFER9 pVB,
@@ -30,7 +31,8 @@ namespace Inv
     mTextCreator( textCreator ),
     mSpriteStorage( spriteStorage ),
     mPrimitives( primitives ),
-    mGameScene( settings, textCreator, spriteStorage, primitives,
+    mSettingsRuntime( settingsRuntime ),
+    mGameScene( settings, textCreator, spriteStorage, primitives, settingsRuntime,
                 pD3D, pd3dDevice, pVB, tickReferencePoint ),
     mPD3D( pD3D ),
     mPd3dDevice( pd3dDevice ),
@@ -58,7 +60,7 @@ namespace Inv
 
     bool retVal = true;
 
-    retVal |= mGameScene.RenderActualScene( actualTickPoint );
+    retVal |= mGameScene.RenderActualScene( actualTickPoint, controlState, controlValue );
 
     return retVal;
 

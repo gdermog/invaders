@@ -28,6 +28,7 @@ namespace Inv
     const CInvSpriteStorage & spriteStorage,
     entt::registry & enttRegistry,
     CInvGameScene & gScene,
+    CInvSettingsRuntime & settingsRuntime,
     LPDIRECT3D9 pD3D,
     LPDIRECT3DDEVICE9 pd3dDevice,
     LPDIRECT3DVERTEXBUFFER9 pVB ):
@@ -38,7 +39,8 @@ namespace Inv
     mPD3D( pD3D ),
     mPd3dDevice( pd3dDevice ),
     mPVB( pVB ),
-    mGameScene( gScene )
+    mGameScene( gScene ),
+    mSettingsRuntime( settingsRuntime )
   {
   } // CInvEntityFactory::CInvEntityFactory
 
@@ -78,7 +80,8 @@ namespace Inv
     mEnTTRegistry.emplace<cpGeometry>( invader, alienSizeX, alienSizeX * aspectRatio );
                         // component: geometry
 
-    mEnTTRegistry.emplace<cpAlienBehave>( invader, 0.0025f, 0.001f );
+    mEnTTRegistry.emplace<cpAlienBehave>(
+      invader, mSettingsRuntime.mAlienAnimationProbability, mSettingsRuntime.mAlienShootProbability );
                         // component: ai behavior
 
     mEnTTRegistry.emplace<cpAlienStatus>( invader, false, false, false, false );
@@ -182,7 +185,7 @@ namespace Inv
 
     auto blinkAnimationEffect = std::make_shared<CInvEffectSpriteBlink>( mSettings, mPd3dDevice, 1u );
     blinkAnimationEffect->SetPace( 6 );
-    blinkAnimationEffect->SetTicks( 150 );
+    blinkAnimationEffect->SetTicks( mSettingsRuntime.mPlayerInvulnerabilityTicks );
     blinkAnimationEffect->SetContinuous( false );
     blinkAnimationEffect->AddEventCallback(
       BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackPlayerInvulnerabilityCanceled, fighter ) );
@@ -219,7 +222,8 @@ namespace Inv
     bool fromPlayer,
     float posX, float posY,
     float missileSizeX,
-    float velocityX, float velocityY )
+    float directionX,
+    float directionY )
   {
 
     std::shared_ptr<CInvSprite> entitySprite = mSpriteStorage.GetSprite( entityType );
@@ -239,7 +243,10 @@ namespace Inv
     mEnTTRegistry.emplace<cpPosition>( missile, posX, posY, 0.0f );
                         // component: position
 
-    mEnTTRegistry.emplace<cpVelocity>( missile, velocityX, velocityY, 0.0f );
+    float vDiv = std::sqrt( directionX * directionX + directionY * directionY );
+    vDiv = ( IsZero( vDiv ) ? 1.0f : 1.0f / vDiv );
+    float vSize = mSettingsRuntime.mMissileVelocity;
+    mEnTTRegistry.emplace<cpVelocity>( missile, directionX * vSize * vDiv, directionY * vSize * vDiv, 0.0f );
                         // component: velocity
 
     auto baseSize = entitySprite->GetImageSize( 0 );

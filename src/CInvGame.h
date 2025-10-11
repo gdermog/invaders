@@ -15,6 +15,8 @@
 
 #include <InvGlobals.h>
 #include <CInvSettings.h>
+#include <CInvSettingsRuntime.h>
+
 
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvSpriteStorage.h>
@@ -92,6 +94,10 @@ namespace Inv
 
     const CInvSettings & mSettings;
     //!< \brief Reference to global settings object, used to access configuration parameters.
+
+    CInvSettingsRuntime mSettingsRuntime;
+    //!< \brief Runtime settings object, used to access and modify parameters created and updated
+    //     by game engine.
 
     WNDCLASSEX mWindowClass;
     //<! \brief Window class structure, used to create the game window.

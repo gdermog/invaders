@@ -15,6 +15,7 @@
 //#include <d3dx9.h>
 
 #include <InvGlobals.h>
+#include <CInvSettingsRuntime.h>
 
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvSpriteStorage.h>
@@ -40,6 +41,7 @@ namespace Inv
       const CInvText & textCreator,
       const CInvSpriteStorage & spriteStorage,
       CInvPrimitive & primitives,
+      CInvSettingsRuntime &settingsRuntime,
       LPDIRECT3D9 pD3D,
       LPDIRECT3DDEVICE9 pd3dDevice,
       LPDIRECT3DVERTEXBUFFER9 pVB,
@@ -89,6 +91,10 @@ namespace Inv
 
     CInvPrimitive & mPrimitives;
     //!< \brief Reference to primitive drawer, used to draw basic shapes on screen
+
+    CInvSettingsRuntime & mSettingsRuntime;
+    //!< \brief Reference to runtime settings object, used to access and modify parameters
+    //!  created and updated by game engine.
 
     CInvGameScene mGameScene;
     //!< \brief Game scene object, used to manage the game entities and logic.

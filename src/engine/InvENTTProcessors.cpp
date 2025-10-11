@@ -13,6 +13,7 @@
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvCollisionTest.h>
 #include <engine/CInvEntityFactory.h>
+#include <CInvSettingsRuntime.h>
 
 namespace Inv
 {
@@ -72,9 +73,13 @@ namespace Inv
   //****** processor: adding entities on request of special events ***********************************
 
 
-  procEntitySpawner::procEntitySpawner( LARGE_INTEGER refTick, CInvEntityFactory & entityFactory ):
+  procEntitySpawner::procEntitySpawner(
+    LARGE_INTEGER refTick,
+    CInvEntityFactory & entityFactory,
+    CInvSettingsRuntime & settingsRuntime ):
     mRefTick( refTick ),
-    mEntityFactory( entityFactory )
+    mEntityFactory( entityFactory ),
+    mSettingsRuntime( settingsRuntime )
   {}
 
   //--------------------------------------------------------------------------------------------------
@@ -107,16 +112,66 @@ namespace Inv
           "SPIT", false,
           0.5f * ( xTopLeft + xBottomRight ),
           yBottomRight - 0.15f * ySize,
-          0.33f * xSize,
-          0.0f,
-          //(float)rand() / (float)RAND_MAX - 0.5f, // Random horizontal speed component
-          /*SPEED*/ 1.0f );
+          0.33f * xSize );
 
         stat.isShootRequested = false;
                         // Shoot request is processed
     } );
 
   } // procEntitySpawner::update
+
+  //****** processor: updating speed of player actor ************************************************
+
+  procPlayerSpeedUpdater::procPlayerSpeedUpdater(
+    LARGE_INTEGER refTick,
+    CInvSettingsRuntime & settingsRuntime ):
+    mRefTick( refTick ),
+    mSettingsRuntime( settingsRuntime )
+  {
+  }
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procPlayerSpeedUpdater::reset( LARGE_INTEGER refTick )
+  {
+    mRefTick = refTick;
+  } // procActorMover::reset
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procPlayerSpeedUpdater::update(
+    entt::registry & reg,
+    LARGE_INTEGER actTick,
+    LARGE_INTEGER diffTick,
+    ControlStateFlags_t controlState,
+    ControlValue_t controlValue )
+  {
+
+    auto view = reg.view<cpPlayBehave, cpPlayStatus, cpVelocity>();
+    view.each( [=]( cpPlayBehave & pos, cpPlayStatus & pstat, cpVelocity & vel )
+    {
+        if( pstat.isDying )
+          return;       // Player is dying, no control possible
+
+        vel.vX = 0.0f;
+        vel.vY = 0.0f;
+        vel.vZ = 0.0f;
+
+        if( ControlStateHave( controlState, ControlState_t::kLeft  ) )
+          vel.vX = -mSettingsRuntime.mPlayerVelocity;
+
+        if( ControlStateHave( controlState, ControlState_t::kRight ) )
+          vel.vX = mSettingsRuntime.mPlayerVelocity;
+
+        if( ControlStateHave( controlState, ControlState_t::kUp) )
+          vel.vY = -mSettingsRuntime.mPlayerVelocity;
+
+        if( ControlStateHave( controlState, ControlState_t::kDown ) )
+          vel.vY = mSettingsRuntime.mPlayerVelocity;
+
+    } );
+  } // procPlayerSpeedUpdater::update
+
 
   //****** processor: moving of actors ************************************************************
 
