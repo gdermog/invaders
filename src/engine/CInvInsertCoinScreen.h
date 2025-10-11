@@ -38,7 +38,6 @@ namespace Inv
 
       CInvInsertCoinScreen(
         const CInvSettings & settings,
-        const CInvText & textCreator,
         const CInvSpriteStorage & spriteStorage,
         CInvHiscoreList & hiscoreKeeper,
         CInvPrimitive & primitives,
@@ -187,7 +186,8 @@ namespace Inv
 
     const CInvSettings & mSettings;
     //!< \brief Reference to global settings object, used to access configuration parameters.
-    const CInvText & mTextCreator;
+
+    CInvText mTextCreator;
     //!< \brief Reference to text rendering object, used to draw text on screen.
 
     const CInvSpriteStorage & mSpriteStorage;

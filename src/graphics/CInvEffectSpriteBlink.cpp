@@ -28,8 +28,9 @@ namespace Inv
 
     CInvEffect( settings, pd3dDevice, ePriority ),
     mPace( 1 ),
-    mTicksSpan{ 0 },
-    mTicksLeft{ 0 }
+    mIgnoreDiffTick( false ),
+    mTicksSpan{ 1 },
+    mTicksLeft{ 1 }
   {}
 
   //----------------------------------------------------------------------------------------------
@@ -54,7 +55,9 @@ namespace Inv
     auto * sprite = static_cast<Inv::CInvSprite *>( obj );
 
 
-    LONGLONG idx = actualTick.QuadPart - referenceTick.QuadPart + diffTick.QuadPart;
+    LONGLONG idx = actualTick.QuadPart - referenceTick.QuadPart;
+    if( ! mIgnoreDiffTick )
+      idx += diffTick.QuadPart;
     idx /= mPace;
     if( ( 1 == ( idx % 2 ) ) )
       sprite->mImageIndex = SIZE_MAX;
@@ -70,13 +73,6 @@ namespace Inv
         Suspend();
       } // else
     } // if
-    else
-    {
-      if( mTicksLeft.QuadPart > 0 )
-        --mTicksLeft.QuadPart;
-      else
-        mTicksLeft.QuadPart = mTicksSpan.QuadPart;
-    }
 
     return true;
 

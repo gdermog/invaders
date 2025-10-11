@@ -74,9 +74,6 @@ namespace Inv
                                   values.
          \param[out] controlValue Value of key pressed */
 
-    std::unique_ptr<CInvText> mTextCreator;
-    //!< \brief Text rendering object, used to draw text on screen.
-
     std::unique_ptr<CInvHiscoreList> mHiscoreKeeper;
     //!< \brief High score list object, used to access and modify high scores.
 

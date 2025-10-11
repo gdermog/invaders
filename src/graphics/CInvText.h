@@ -32,16 +32,22 @@ namespace Inv
     public:
 
     CInvText(
+      const std::string & txt,
       const CInvSettings & settings,
-      LPDIRECT3DDEVICE9 pd3dDevice,
-      const std::string & lettersRelPath );
+      LPDIRECT3DDEVICE9 pd3dDevice  );
 
     CInvText( const CInvText & ) = delete;
     CInvText & operator=( const CInvText & ) = delete;
     ~CInvText();
 
+    void SetText( const std::string & txt ) { mText = txt; mLocalLetterMap.clear(); }
+
+    const std::string & GetText() const { return mText; }
+
+    size_t GetTextLength() const { return mText.length(); }
+
+
     void Draw(
-      const std::string &txt,
       float xTopLeft,
       float yTopLeft,
       float letterSize,
@@ -63,7 +69,6 @@ namespace Inv
          \param[in] color         Color to modulate the text with, default is white (no change) */
 
     void DrawFromRight(
-      const std::string & txt,
       float xTopLeft,
       float yTopLeft,
       float width,
@@ -87,15 +92,36 @@ namespace Inv
                                   results are required to differ somewhat from each other.
          \param[in] color         Color to modulate the text with, default is white (no change) */
 
+    void AddEffect( std::shared_ptr<CInvEffect> effect );
+    /*!< \brief Adds effect to text, if not already present
+
+         \param[in] effect Shared pointer to effect to be added */
+
+    void RemoveEffect( std::shared_ptr<CInvEffect> effect );
+    /*!< \brief Removes effect from text, if present */
+
+  protected:
+
+    std::string mText;
+
+    std::map<uint32_t, std::vector<std::shared_ptr<CInvEffect>>> mEffects;
+    //!< Map of effects applied to the text, indexed by effect priority
+
   private:
 
+    void RefillLocalLetterMap() const;
+
     const CInvSettings & mSettings;
-    //<! Reference to settings object, all parameters are taken from here
+    //!< Reference to settings object, all parameters are taken from here
 
     LPDIRECT3DDEVICE9 mPd3dDevice;
-    //<! Direct3D device, used to set and get scissor rectangle
+    //!< Direct3D device, used to set and get scissor rectangle
 
-    std::map<char, std::unique_ptr<CInvSprite>> mLetterMap;
+    mutable std::map<char, std::unique_ptr<CInvSprite>> mLocalLetterMap;
+    //!< Map of letters, each represented by a sprite, indexed by character, local to this instance.
+    //!  Possible effect are assigned to it.
+
+    static std::map<char, std::unique_ptr<CInvSprite>> mLetterMap;
     //<! Map of letters, each represented by a sprite, indexed by character
 
   };

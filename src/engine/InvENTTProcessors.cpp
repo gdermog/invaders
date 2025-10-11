@@ -173,6 +173,64 @@ namespace Inv
   } // procPlayerSpeedUpdater::update
 
 
+  //****** processor: bounds guard - player ************************************************
+
+  procPlayerBoundsGuard::procPlayerBoundsGuard(
+    LARGE_INTEGER refTick,
+    float sceneTopLeftX,
+    float sceneTopLeftY,
+    float sceneBottomRightX,
+    float sceneBottomRightY ):
+    mRefTick( refTick ),
+    mSceneTopLeftX( sceneTopLeftX ),
+    mSceneTopLeftY( sceneTopLeftY ),
+    mSceneBottomRightX( sceneBottomRightX ),
+    mSceneBottomRightY( sceneBottomRightY )
+  {}
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procPlayerBoundsGuard::reset(
+    LARGE_INTEGER refTick,
+    float sceneTopLeftX,
+    float sceneTopLeftY,
+    float sceneBottomRightX,
+    float sceneBottomRightY )
+  {
+    mRefTick = refTick;
+    mSceneTopLeftX = sceneTopLeftX;
+    mSceneTopLeftY = sceneTopLeftY;
+    mSceneBottomRightX = sceneBottomRightX;
+    mSceneBottomRightY = sceneBottomRightY;
+  } // procActorMover::reset
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procPlayerBoundsGuard::update(
+    entt::registry & reg,
+    LARGE_INTEGER actTick,
+    LARGE_INTEGER diffTick )
+  {
+
+    auto view = reg.view<cpPlayBehave, cpPlayStatus, cpPosition, cpVelocity, cpGeometry>();
+    view.each( [=]( cpPlayBehave & pBehave, cpPlayStatus & pStat, cpPosition & pPos, cpVelocity & pVel, cpGeometry &pGeo )
+    {
+        float xPosNext = pPos.X + pVel.vX;
+        if( xPosNext - 0.5*pGeo.width < mSceneTopLeftX )
+          pVel.vX = 0.0f;
+        else if( mSceneBottomRightX < xPosNext + 0.5*pGeo.width )
+          pVel.vX = 0.0f;
+
+        float yPosNext = pPos.Y + pVel.vY;
+        if( yPosNext - 0.5 * pGeo.height < mSceneTopLeftY )
+          pVel.vY = 0.0f;
+        else if( mSceneBottomRightY < yPosNext + 0.5 * pGeo.height )
+          pVel.vY = 0.0f;
+
+    } );
+
+  } // procPlayerBoundsGuard::update
+
   //****** processor: moving of actors ************************************************************
 
   procActorMover::procActorMover( LARGE_INTEGER refTick ):

@@ -84,17 +84,55 @@ namespace Inv
     CInvSettingsRuntime & mSettingsRuntime;
   };
 
+  //****** processor: bounds guard - player ************************************************
+
+  struct procPlayerBoundsGuard
+  {
+    procPlayerBoundsGuard(
+      LARGE_INTEGER refTick,
+      float sceneTopLeftX,
+      float sceneTopLeftY,
+      float sceneBottomRightX,
+      float sceneBottomRightY );
+
+    void reset(
+      LARGE_INTEGER refTick,
+      float sceneTopLeftX,
+      float sceneTopLeftY,
+      float sceneBottomRightX,
+      float sceneBottomRightY );
+
+    void update(
+      entt::registry & reg,
+      LARGE_INTEGER actTick,
+      LARGE_INTEGER diffTick );
+
+    LARGE_INTEGER mRefTick;
+
+    float mSceneTopLeftX;
+    //!< \brief X coordinate of top left corner of the game scene in pixels.
+    float mSceneTopLeftY;
+    //!< \brief Y coordinate of top left corner of the game scene in pixels.
+    float mSceneBottomRightX;
+    //!< \brief X coordinate of bottom right corner of the game scene in pixels.
+    float mSceneBottomRightY;
+    //!< \brief Y coordinate of bottom right corner of the game scene in pixels.
+  };
+
   //****** processor: moving of actors ***************************************************************
 
   struct procActorMover
   {
-    procActorMover( LARGE_INTEGER refTick );
+    procActorMover(
+      LARGE_INTEGER refTick);
 
     void reset( LARGE_INTEGER refTick );
 
     void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
 
     LARGE_INTEGER mRefTick;
+
+
   };
 
   //****** processor: colliding of actors ***************************************************************

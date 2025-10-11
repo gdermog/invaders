@@ -38,7 +38,6 @@ namespace Inv
 
     CInvPlayItScreen(
       const CInvSettings & settings,
-      const CInvText & textCreator,
       const CInvSpriteStorage & spriteStorage,
       CInvPrimitive & primitives,
       CInvSettingsRuntime &settingsRuntime,
@@ -82,9 +81,6 @@ namespace Inv
 
     const CInvSettings & mSettings;
     //!< \brief Reference to global settings
-
-    const CInvText & mTextCreator;
-    //!< \brief Reference to text creator, used to draw text on screen
 
     const CInvSpriteStorage & mSpriteStorage;
     //!< \brief Reference to sprite storage object, used to access sprites.

@@ -62,6 +62,8 @@ namespace Inv
     /*!< \brief Returns pace of blink, number of ticks between changing image state (shown
          or hidden). */
 
+    void SetIgnoreDiffTick( bool ignore ) { mIgnoreDiffTick = ignore; }
+
     void SetTicks( uint32_t ticks ) { mTicksSpan.QuadPart = ticks; mTicksLeft.QuadPart = ticks; }
     /*!< \brief Sets number of ticks left to effect autosuspend. */
 
@@ -82,6 +84,9 @@ namespace Inv
     uint32_t mPace;
     /*!< \brief Pace of Blink, number of ticks between changing to next image.Smaller
           number means faster Blink. Default is 1, which means image changes every tick. */
+
+    bool mIgnoreDiffTick;
+
 
     LARGE_INTEGER mTicksSpan;
     /*!< \brief Number of ticks in which the effect is active. */

@@ -39,7 +39,6 @@ namespace Inv
 
   CInvInsertCoinScreen::CInvInsertCoinScreen(
     const CInvSettings & settings,
-    const CInvText & textCreator,
     const CInvSpriteStorage & spriteStorage,
     CInvHiscoreList & hiscoreKeeper,
     CInvPrimitive & primitives,
@@ -73,7 +72,7 @@ namespace Inv
     mCallsignTopLeftY( 0.0f ),
     mRollState(0),
     mSettings( settings ),
-    mTextCreator( textCreator ),
+    mTextCreator( {}, settings, pd3dDevice ),
     mHiscoreKeeper( hiscoreKeeper ),
     mSpriteStorage( spriteStorage ),
     mCurrentCallsign(),
@@ -180,8 +179,8 @@ namespace Inv
 
     gameStart = false;
 
+    mTextCreator.SetText( mWelcomeHeader );
     mTextCreator.Draw(
-      mWelcomeHeader.c_str(),
       mHeaderXPos, mHeaderYPos, mLetterSize,
       mTickReferencePoint, actualTick, mDiffTick );
 
@@ -294,8 +293,8 @@ namespace Inv
 
           FormatHighScore( hs->first, hs->second );
 
+          mTextCreator.SetText( mHighScoreLineContent );
           mTextCreator.DrawFromRight(
-            mHighScoreLineContent,
             mHighScoreTopLeftX,
             lineYPos,
             mHighScoreWidth,
@@ -326,8 +325,8 @@ namespace Inv
       } // for
     } // if
 
+    mTextCreator.SetText( mPressToStart );
     mTextCreator.Draw(
-      mPressToStart.c_str(),
       mPressEnterTopLeftX, mPressEnterTopLeftY, mPressEnterLetterSize,
       mTickReferencePoint, actualTick, mDiffTick );
 
@@ -343,12 +342,14 @@ namespace Inv
   {
     isDone = false;
 
+    mTextCreator.SetText( mYouQualified );
     mTextCreator.Draw(
-      mYouQualified.c_str(), mQualifiedTopLeftX, mQualifiedTopLeftY, mQualifiedLetterSize,
+      mQualifiedTopLeftX, mQualifiedTopLeftY, mQualifiedLetterSize,
       mTickReferencePoint, actualTick, mDiffTick );
 
+    mTextCreator.SetText( mEnterCallsign );
     mTextCreator.Draw(
-      mEnterCallsign.c_str(), mEnterCallsignTopLeftX, mEnterCallsignTopLeftY, mQualifiedLetterSize,
+      mEnterCallsignTopLeftX, mEnterCallsignTopLeftY, mQualifiedLetterSize,
       mTickReferencePoint, actualTick, mDiffTick );
 
     if( 0 != mLastControlValue && 0 == controlValue )
@@ -375,8 +376,9 @@ namespace Inv
 
     if( 0 < letters )
     {
+      mTextCreator.SetText( mCurrentCallsign );
       mTextCreator.Draw(
-        mCurrentCallsign, mCallsignTopLeftX, mCallsignTopLeftY, mCallsignLetterSize,
+        mCallsignTopLeftX, mCallsignTopLeftY, mCallsignLetterSize,
         mTickReferencePoint, actualTick, mDiffTick );
     }
 

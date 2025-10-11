@@ -100,7 +100,6 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 namespace Inv
 {
   CInvGame::CInvGame( const CInvSettings & settings ):
-    mTextCreator( nullptr ),
     mHiscoreKeeper( nullptr ),
     mPrimitives( nullptr ),
     mInsertCoinScreen( nullptr ),
@@ -182,8 +181,6 @@ namespace Inv
 
     //------ Graphics initialization - custom --------------------------------------------------------
 
-    mTextCreator = std::make_unique<CInvText>( mSettings, mPd3dDevice, "/letters" );
-
     mPrimitives = std::make_unique<CInvPrimitive>( mSettings, mPd3dDevice );
 
     mSpriteStorage = std::make_unique<CInvSpriteStorage>( mSettings, mPd3dDevice );
@@ -200,7 +197,6 @@ namespace Inv
 
     mInsertCoinScreen = std::make_unique<CInvInsertCoinScreen>(
       mSettings,
-      *mTextCreator,
       *mSpriteStorage,
       *mHiscoreKeeper,
       *mPrimitives,
@@ -211,7 +207,6 @@ namespace Inv
 
     mPlayItScreen = std::make_unique<CInvPlayItScreen>(
       mSettings,
-      *mTextCreator,
       *mSpriteStorage,
       *mPrimitives,
       mSettingsRuntime,
@@ -232,12 +227,6 @@ namespace Inv
     if( nullptr == mPD3D || nullptr == mPd3dDevice || nullptr == mPVB )
     {
       LOG << "DirectX is not initialized properly.";
-      return false;
-    } // if
-
-    if( nullptr == mTextCreator )
-    {
-      LOG << "Text creator is not initialized properly.";
       return false;
     } // if
 

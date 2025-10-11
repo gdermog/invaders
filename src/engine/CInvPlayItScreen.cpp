@@ -17,7 +17,6 @@ namespace Inv
 
   CInvPlayItScreen::CInvPlayItScreen(
     const CInvSettings & settings,
-    const CInvText & textCreator,
     const CInvSpriteStorage & spriteStorage,
     CInvPrimitive & primitives,
     CInvSettingsRuntime & settingsRuntime,
@@ -28,11 +27,10 @@ namespace Inv
 
     mTickReferencePoint( tickReferencePoint ),
     mSettings( settings ),
-    mTextCreator( textCreator ),
     mSpriteStorage( spriteStorage ),
     mPrimitives( primitives ),
     mSettingsRuntime( settingsRuntime ),
-    mGameScene( settings, textCreator, spriteStorage, primitives, settingsRuntime,
+    mGameScene( settings, spriteStorage, primitives, settingsRuntime,
                 pD3D, pd3dDevice, pVB, tickReferencePoint ),
     mPD3D( pD3D ),
     mPd3dDevice( pd3dDevice ),
@@ -61,6 +59,7 @@ namespace Inv
     bool retVal = true;
 
     retVal |= mGameScene.RenderActualScene( actualTickPoint, controlState, controlValue );
+    retVal |= mGameScene.PlayerEntryProcessing( actualTickPoint );
 
     return retVal;
 

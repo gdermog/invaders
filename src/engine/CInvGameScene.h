@@ -20,6 +20,7 @@
 #include <graphics/CInvPrimitive.h>
 #include <graphics/CInvSpriteStorage.h>
 #include <graphics/CInvCollisionTest.h>
+#include <graphics/CInvEffectSpriteBlink.h>
 
 #include <engine/CInvEntityFactory.h>
 #include <engine/InvENTTProcessors.h>
@@ -33,7 +34,6 @@ namespace Inv
 
     CInvGameScene(
       const CInvSettings & settings,
-      const CInvText & textCreator,
       const CInvSpriteStorage & spriteStorage,
       CInvPrimitive & primitives,
       CInvSettingsRuntime & settingsRuntime,
@@ -71,6 +71,8 @@ namespace Inv
     /*!< \brief Renders the actual game scene using EnTT processors chain.
 
          \param[in] actualTickPoint Current tick point, used to calculate game situation */
+
+    bool PlayerEntryProcessing( LARGE_INTEGER actTick );
 
     void Reset( LARGE_INTEGER newTickRefPoint );
     /*!< \brief Resets the game state to initial conditions, ready for a new game.
@@ -117,9 +119,6 @@ namespace Inv
     const CInvSettings & mSettings;
     //!< \brief Reference to global settings
 
-    const CInvText & mTextCreator;
-    //!< \brief Reference to text creator, used to draw text on screen
-
     const CInvSpriteStorage & mSpriteStorage;
     //!< \brief Reference to sprite storage object, used to access sprites.
 
@@ -163,15 +162,34 @@ namespace Inv
     float mAlienStartingAreaCoefficient;
     //!< \brief Coefficient defining the area at the top of the scene where aliens can start
 
+
     procGarbageCollector mProcGarbageCollector;
     procActorStateSelector mProcActorStateSelector;
     procEntitySpawner mProcEntitySpawner;
     procPlayerSpeedUpdater mProcPlayerSpeedUpdater;
+    procPlayerBoundsGuard mProcPlayerBoundsGuard;
     procActorMover mProcActorMover;
     procActorOutOfSceneCheck mProcActorOutOfSceneCheck;
     procCollisionDetector mProcCollisionDetector;
     procActorRender mProcActorRender;
 
+    static const std::string mPlayerEntryTextAttention;
+    static const std::string mPlayerEntryTextReady;
+    static const std::string mPlayerEntryTextGo;
+
+    bool mPlayerEntryInProgress;
+    //!< \brief Flag indicating that player entity is entering the scene (after spawn or respawn).
+
+    LARGE_INTEGER mPlayerEntryTick;
+    //!< \brief Ticking when player entity started entering the scene.
+
+    std::unique_ptr<CInvText> mTAttention;
+    std::unique_ptr<CInvText> mTReady;
+    std::unique_ptr<CInvText> mTGo;
+
+    std::shared_ptr<CInvEffectSpriteBlink> mTBlinkEffect;
+
+    float mPlayerEntryTextSizeX;
 
   };
 

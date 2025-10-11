@@ -19,12 +19,14 @@ namespace Inv
 
   static const std::string lModLogId( "GAMESCENE" );
 
+  const std::string CInvGameScene::mPlayerEntryTextAttention = "ATTENTION";
+  const std::string CInvGameScene::mPlayerEntryTextReady = "READY";
+  const std::string CInvGameScene::mPlayerEntryTextGo = "GO";
 
   //**************************************************************************************************
 
   CInvGameScene::CInvGameScene(
     const CInvSettings & settings,
-    const CInvText & textCreator,
     const CInvSpriteStorage & spriteStorage,
     CInvPrimitive & primitives,
     CInvSettingsRuntime & settingsRuntime,
@@ -36,7 +38,6 @@ namespace Inv
     mTickReferencePoint( tickReferencePoint ),
     mDiffTickPoint{ 0 },
     mSettings( settings ),
-    mTextCreator( textCreator ),
     mSpriteStorage( spriteStorage ),
     mPrimitives( primitives ),
     mSettingsRuntime( settingsRuntime ),
@@ -60,9 +61,18 @@ namespace Inv
     mProcEntitySpawner( tickReferencePoint, mEntityFactory, settingsRuntime ),
     mProcActorMover( tickReferencePoint ),
     mProcPlayerSpeedUpdater( tickReferencePoint, settingsRuntime ),
+    mProcPlayerBoundsGuard( tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
     mProcActorOutOfSceneCheck( tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
     mProcCollisionDetector( tickReferencePoint, mCollisionTest ),
-    mProcActorRender( tickReferencePoint )
+    mProcActorRender( tickReferencePoint ),
+
+    mPlayerEntryInProgress( false ),
+    mPlayerEntryTick{ 0 },
+    mTAttention( nullptr ),
+    mTReady( nullptr ),
+    mTGo( nullptr ),
+    mTBlinkEffect( nullptr ),
+    mPlayerEntryTextSizeX( 40.0f )
   {
   } // CInvGameScene::CInvGameScene
 
@@ -101,6 +111,24 @@ namespace Inv
     mSceneBottomRightY = mSceneTopLeftY + mSceneHeight;
     if( (float)mSettings.GetWindowHeight() < mSceneBottomRightY )
       mSceneBottomRightY = (float)mSettings.GetWindowHeight();
+
+    auto maxLetters = max( max(
+      mPlayerEntryTextAttention.size(),
+      mPlayerEntryTextReady.size() ),
+      mPlayerEntryTextGo.size() );
+    mPlayerEntryTextSizeX = mSceneWidth * 0.5f / (float)maxLetters;
+
+    mTBlinkEffect = std::make_shared<CInvEffectSpriteBlink>( mSettings, mPd3dDevice, 1u );
+    mTBlinkEffect->SetPace( 18 );
+    mTBlinkEffect->SetIgnoreDiffTick( true );
+    mTBlinkEffect->SetContinuous( true );
+
+    mTAttention = std::make_unique<CInvText>( mPlayerEntryTextAttention, mSettings, mPd3dDevice );
+    mTAttention->AddEffect( mTBlinkEffect );
+    mTReady = std::make_unique<CInvText>( mPlayerEntryTextReady, mSettings, mPd3dDevice );
+    mTReady->AddEffect( mTBlinkEffect );
+    mTGo = std::make_unique<CInvText>( mPlayerEntryTextGo, mSettings, mPd3dDevice );
+    mTGo->AddEffect( mTBlinkEffect );
 
     std::vector<std::pair<uint32_t, std::string>> alienRows =
     {
@@ -202,6 +230,10 @@ namespace Inv
     mProcEntitySpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
 
     mProcPlayerSpeedUpdater.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, controlState, controlValue );
+
+    mProcPlayerBoundsGuard.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+                        // Player entity is kept within scene bounds
+
     mProcActorMover.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
     mProcActorOutOfSceneCheck.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // All entities arfe moved according to their velocity, entities out of scene
@@ -225,6 +257,60 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
+  bool CInvGameScene::PlayerEntryProcessing( LARGE_INTEGER actTick )
+  {
+    if( ! mPlayerEntryInProgress )
+      return true;      // Player is already in the scene, nothing to do.
+
+    LONGLONG textInterval = 100;
+
+     float posY = mSceneHeight * mAlienStartingAreaCoefficient +
+                  0.5f * ( mSceneHeight * ( 1.0f - mAlienStartingAreaCoefficient ) -
+                  0.5f * mPlayerEntryTextSizeX );
+
+    if( mPlayerEntryTick.QuadPart < textInterval )
+    {
+      auto width = mTAttention->GetTextLength() * mPlayerEntryTextSizeX;
+      mTAttention->Draw(
+        mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
+        posY,
+        mPlayerEntryTextSizeX,
+        mTickReferencePoint,
+        actTick, mDiffTickPoint );
+    } // if
+    else if( mPlayerEntryTick.QuadPart < 2*textInterval )
+    {
+      auto width = mTReady->GetTextLength() * mPlayerEntryTextSizeX;
+      mTReady->Draw(
+        mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
+        posY,
+        mPlayerEntryTextSizeX,
+        mTickReferencePoint,
+        actTick, mDiffTickPoint );
+    } // else if
+    else if( mPlayerEntryTick.QuadPart < 3 * textInterval )
+    {
+      auto width = mTGo->GetTextLength() * mPlayerEntryTextSizeX;
+      mTGo->Draw(
+        mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
+        posY,
+        mPlayerEntryTextSizeX,
+        mTickReferencePoint,
+        actTick, mDiffTickPoint );
+    } // else if
+    else
+    {
+      SpawnPlayer();
+      mPlayerEntryInProgress = false;
+    } // else
+
+    ++mPlayerEntryTick.QuadPart;
+
+    return true;
+  } // CInvGameScene::PlayerEntryProcessing
+
+  //-------------------------------------------------------------------------------------------------
+
   void CInvGameScene::Reset( LARGE_INTEGER newTickRefPoint )
   {
     mTickReferencePoint = newTickRefPoint;
@@ -235,19 +321,23 @@ namespace Inv
     mProcActorStateSelector.reset( newTickRefPoint );
     mProcEntitySpawner.reset( newTickRefPoint );
 
+    mProcPlayerBoundsGuard.reset(
+      newTickRefPoint,
+      mSceneTopLeftX, mSceneTopLeftY,
+      mSceneBottomRightX, mSceneBottomRightY );
+
     mProcActorMover.reset( newTickRefPoint );
     mProcActorOutOfSceneCheck.reset(
       newTickRefPoint,
-      0.0f, 0.0f,
-      (float)mSettings.GetWindowWidth(),
-      (float)mSettings.GetWindowHeight() );
+      mSceneTopLeftX, mSceneTopLeftY,
+      mSceneBottomRightX, mSceneBottomRightY );
 
     mProcActorRender.reset( newTickRefPoint );
 
     mProcCollisionDetector.reset( newTickRefPoint );
 
     GenerateNewScene( mSceneTopLeftX, mSceneTopLeftY, mSceneBottomRightX, mSceneBottomRightY );
-    SpawnPlayer();
+    mPlayerEntryInProgress = true; // SpawnPlayer();
 
   } // CInvGameScene::Reset
 
@@ -313,22 +403,18 @@ namespace Inv
 
   void CInvGameScene::EntityJustPruned( entt::entity entity, uint32_t nr )
   {
-    auto [ entId, entBehave, entStatus ] = mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus>(entity);
-
+     auto [ entId, entBehave, entStatus ] = mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus>(entity);
     if( nullptr == entId || entId->active )
       return;
-
     if( nullptr != entBehave && nullptr != entStatus )
     {                   // Player entity elimination from game scene is done, appropriate measures
                         // must be taken (respawn, reduce number of lives, end of game etc.)
 
       LOG << "Player was pruned from game scene.";
 
-/**//**//**//**//**//**//**//**//**//**//**//**/
-     // SpawnPlayer();
-/**//**//**//**//**//**//**//**//**//**//**//**/
-/* Player must not be simply spawned like this. There must be some "attention... ready... go! notice
-   displayed, number of lives must be substracted, player game stats reseted ... */
+      mPlayerEntryInProgress = true;
+      mPlayerEntryTick.QuadPart = 0;
+                        // Player is no more in the scene, new entry sequence must be started.
 
     } // if
 
