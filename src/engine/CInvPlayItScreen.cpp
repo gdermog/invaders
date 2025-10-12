@@ -69,7 +69,8 @@ namespace Inv
 
   void CInvPlayItScreen::Reset( LARGE_INTEGER newTickRefPoint )
   {
-
+    mSettingsRuntime.ResetToDefaults();
+    mSettingsRuntime.Preprint();
 
     mGameScene.Reset( newTickRefPoint );
 

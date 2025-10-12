@@ -30,6 +30,7 @@ namespace Inv
 
 
   class CInvEntityFactory;
+  class CInvSettings;
   class CInvSettingsRuntime;
 
   //****** processor: setting of actors to specific states *******************************************
@@ -69,6 +70,7 @@ namespace Inv
   {
     procPlayerSpeedUpdater(
       LARGE_INTEGER refTick,
+      const CInvSettings & settings,
       CInvSettingsRuntime & settingsRuntime );
 
     void reset( LARGE_INTEGER refTick );
@@ -81,6 +83,7 @@ namespace Inv
       ControlValue_t controlValue );
 
     LARGE_INTEGER mRefTick;
+    const CInvSettings & mSettings;
     CInvSettingsRuntime & mSettingsRuntime;
   };
 
@@ -152,12 +155,67 @@ namespace Inv
     //!< \brief Y coordinate of bottom right corner of the game scene in pixels.
   };
 
+  //****** processor: bounds guard - aliens ************************************************
+
+  struct procAlienBoundsGuard
+  {
+    procAlienBoundsGuard(
+      LARGE_INTEGER refTick,
+      float & vXGroup,
+      float & vYGroup,
+      float sceneTopLeftX,
+      float sceneTopLeftY,
+      float sceneBottomRightX,
+      float sceneBottomRightY,
+      const CInvSettings & settings,
+      CInvSettingsRuntime & settingsRuntime );
+
+    void reset(
+      LARGE_INTEGER refTick,
+      float sceneTopLeftX,
+      float sceneTopLeftY,
+      float sceneBottomRightX,
+      float sceneBottomRightY );
+
+    void update(
+      entt::registry & reg,
+      LARGE_INTEGER actTick,
+      LARGE_INTEGER diffTick,
+      float bottomGuardedArea );
+
+    LARGE_INTEGER mRefTick;
+
+    float & mVXGroup;
+    float & mVYGroup;
+
+    uint32_t mYGroupTranslationCounter;
+
+    bool mTranslatingDown;
+    float mNextVXGroup;
+
+    float mSceneTopLeftX;
+    //!< \brief X coordinate of top left corner of the game scene in pixels.
+    float mSceneTopLeftY;
+    //!< \brief Y coordinate of top left corner of the game scene in pixels.
+    float mSceneBottomRightX;
+    //!< \brief X coordinate of bottom right corner of the game scene in pixels.
+    float mSceneBottomRightY;
+    //!< \brief Y coordinate of bottom right corner of the game scene in pixels.
+
+    const CInvSettings & mSettings;
+    CInvSettingsRuntime & mSettingsRuntime;
+  };
+
+
   //****** processor: moving of actors ***************************************************************
 
   struct procActorMover
   {
     procActorMover(
-      LARGE_INTEGER refTick);
+      LARGE_INTEGER refTick,
+      float & vXGroup,
+      float & vYGroup,
+      CInvSettingsRuntime & settingsRuntime );
 
     void reset( LARGE_INTEGER refTick );
 
@@ -165,6 +223,10 @@ namespace Inv
 
     LARGE_INTEGER mRefTick;
 
+    float & mVXGroup;
+    float & mVYGroup;
+
+    CInvSettingsRuntime & mSettingsRuntime;
 
   };
 

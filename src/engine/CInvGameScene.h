@@ -12,6 +12,7 @@
 
 #include <d3d9.h>
 
+#include <CInvSettings.h>
 #include <CInvSettingsRuntime.h>
 
 #include <entity/registry.hpp>
@@ -110,6 +111,8 @@ namespace Inv
          registry. If the pruned entity is the player, appropriate measures are taken (chain of
          events that leads respawn, reduce number of lives, end of game etc. is initiated) */
 
+    void NewSwarm();
+
     LARGE_INTEGER mTickReferencePoint;
     //!< \brief Reference tick point, used to calculate elapsed time during the game.
 
@@ -163,12 +166,25 @@ namespace Inv
     //!< \brief Coefficient defining the area at the top of the scene where aliens can start
 
 
+    float mVXGroup;
+    float mVYGroup;
+
+    entt::entity mPlayerEntity;
+    float mPlayerWidth;
+    float mPlayerHeight;
+
+    bool mPlayerAlive;
+
+    uint32_t mAliensLeft;
+    //!< \brief Number of aliens still alive in the scene.
+
     procGarbageCollector mProcGarbageCollector;
     procActorStateSelector mProcActorStateSelector;
     procEntitySpawner mProcEntitySpawner;
     procPlayerFireUpdater mProcPlayerFireUpdater;
     procPlayerSpeedUpdater mProcPlayerSpeedUpdater;
     procPlayerBoundsGuard mProcPlayerBoundsGuard;
+    procAlienBoundsGuard mProcAlienBoundsGuard;
     procActorMover mProcActorMover;
     procActorOutOfSceneCheck mProcActorOutOfSceneCheck;
     procCollisionDetector mProcCollisionDetector;
@@ -193,6 +209,8 @@ namespace Inv
     std::shared_ptr<CInvEffectSpriteBlink> mTBlinkEffect;
 
     float mPlayerEntryLetterSize;
+
+    uint32_t mActualScore;
 
   };
 

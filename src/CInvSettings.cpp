@@ -30,7 +30,9 @@ namespace Inv
      mScreenHeight( 600 ),
      mImagePath(),
      mHiscorePath( "./hiscore.csv" ),
-     mZeroExplosionV( false )
+     mZeroExplosionV( false ),
+     mSpeedupPerKill( 0.05f ),
+     mDifficultyBuildup( 1.1f )
    {
 
    } // CInvSettings::CInvSettings
@@ -77,6 +79,8 @@ namespace Inv
 
        mHiscorePath = inCfg.GetValueStr( "game", "highscore", "./hiscore.csv" );
        mZeroExplosionV = inCfg.GetValueBool( "game", "ZeroExplosionV", false );
+       mSpeedupPerKill = (float)inCfg.GetValueDouble( "game", "SpeedupPerKill", 0.05f );
+       mDifficultyBuildup = (float)inCfg.GetValueDouble( "game", "DifficultyBuildup", 1.1f );
 
      }
      catch( std::exception& e )
@@ -115,6 +119,8 @@ namespace Inv
      PrpLine() << "ImagePath:" << mImagePath;
      PrpLine() << "HighscorePath:" << mHiscorePath;
      PrpLine() << "ZeroExplosionV:" << ( mZeroExplosionV ? gTrueName : gFalseName );
+     PrpLine() << "SpeedupPerKill:" << mSpeedupPerKill;
+     PrpLine() << "DifficultyBuildup:" << mDifficultyBuildup;
      LOG;
 
    } // CInvSettings::Preprint

@@ -45,6 +45,15 @@ namespace Inv
     /*!< \brief Resets all settings to default values */
 
     //@{}---------------------------------------------------------------------------------------------
+    //! @name Public data concerning game difficulty
+    //@{----------------------------------------------------------------------------------------------
+
+    uint32_t mSceneLevel;
+    //!< Current game level, starting from 1. Affects game difficulty.
+
+    float mSceneLevelMultiplicator;
+
+    //@{}---------------------------------------------------------------------------------------------
     //! @name Public data concerning aliens
     //@{----------------------------------------------------------------------------------------------
 
@@ -53,6 +62,22 @@ namespace Inv
 
     float mAlienShootProbability;
     //!< Probability of shooting in each game tick, usually a small. Affects game difficulty.
+
+    float mAlienRaidProbability;
+
+    float mAlienVelocity;
+    //!< Speed of aliens in pixels per second
+
+    float mAlienRaidShootProbability;
+
+    float mAlienRaidVelocity;
+    //!< Speed of aliens during raid in pixels per second
+
+    float mAlienDescendTime;
+    //!<Time period for alien group descend (when hit th scene edge)
+
+    float mAlienSpeedupFactor;
+    //!< Factor by which alien speed is increased
 
     //@{}---------------------------------------------------------------------------------------------
     //! @name Public data concerning player
@@ -69,10 +94,10 @@ namespace Inv
     //@{----------------------------------------------------------------------------------------------
 
     float mSpitVelocity;
-    //!< Speed of standard missiles (alien)
+    //!< Speed of standard missiles (alien) in pixels per second
 
     float mRocketVelocity;
-    //!< Speed of standard missiles (player)
+    //!< Speed of standard missiles (player) in pixels per second
 
     uint32_t mRocketSupply;
     //!< Number of rockets (player missiles) available to player. No more rockets can be fired when

@@ -47,6 +47,7 @@ namespace Inv
     entt::entity AddAlienEntity(
       const std::string & entityType,
       float posX, float posY,
+      float vXGroup, float vYGroup,
       float alienSizeX );
     /*!< \brief Adds a new alien entity of given type at given position.
 

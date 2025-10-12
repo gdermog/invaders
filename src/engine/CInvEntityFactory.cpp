@@ -54,6 +54,7 @@ namespace Inv
   entt::entity CInvEntityFactory::AddAlienEntity(
     const std::string & entityType,
     float posX, float posY,
+    float vXGroup, float vYGroup,
     float alienSizeX )
   {
     std::shared_ptr<CInvSprite> entitySprite = mSpriteStorage.GetSprite( entityType );
@@ -66,13 +67,13 @@ namespace Inv
 
     const auto invader = mEnTTRegistry.create();
 
-    mEnTTRegistry.emplace<cpId>( invader, (uint64_t)invader, entityType, true, false );
+    mEnTTRegistry.emplace<cpId>( invader, (uint64_t)invader, entityType, true, true );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( invader, posX, posY, 0.0f );
                         // component: position
 
-    mEnTTRegistry.emplace<cpVelocity>( invader, 0.0f, 0.0f, 0.0f );
+    mEnTTRegistry.emplace<cpVelocity>( invader, vXGroup, vYGroup, 0.0f);
                         // component: velocity
 
     auto baseSize = entitySprite->GetImageSize( 0 );
@@ -81,10 +82,14 @@ namespace Inv
                         // component: geometry
 
     mEnTTRegistry.emplace<cpAlienBehave>(
-      invader, mSettingsRuntime.mAlienAnimationProbability, mSettingsRuntime.mAlienShootProbability,
-      posX, posY );     // component: ai behavior
+      invader,
+      mSettingsRuntime.mAlienAnimationProbability,
+      mSettingsRuntime.mAlienShootProbability * mSettingsRuntime.mSceneLevelMultiplicator,
+      mSettingsRuntime.mAlienRaidProbability * mSettingsRuntime.mSceneLevelMultiplicator,
+      mSettingsRuntime.mAlienRaidShootProbability * mSettingsRuntime.mSceneLevelMultiplicator,
+      posX, posY, 100u );     // component: ai behavior /*??? SCORE ???*/
 
-    mEnTTRegistry.emplace<cpAlienStatus>( invader, false, false, false, false );
+    mEnTTRegistry.emplace<cpAlienStatus>( invader, false, false, false, false, false, false, posX, posY );
                         // component: alien status (not animating, not firing, shoot not requested, not dying )
 
     mEnTTRegistry.emplace<cpHealth>( invader, 1u, 1u );
@@ -186,7 +191,7 @@ namespace Inv
     mEnTTRegistry.emplace<cpPlayBehave>( fighter, -1 );
                         // component: player behavior is presently empty
 
-    auto & pStat = mEnTTRegistry.emplace<cpPlayStatus>( fighter, true, false, false );
+    auto & pStat = mEnTTRegistry.emplace<cpPlayStatus>( fighter, true, false );
                         // component: player status (entering game invulnerable, shoot not requested, not dying )
 
     mEnTTRegistry.emplace<cpHealth>( fighter, 1u, 1u );
@@ -255,6 +260,7 @@ namespace Inv
     float vDiv = std::sqrt( directionX * directionX + directionY * directionY );
     vDiv = ( IsZero( vDiv ) ? 1.0f : 1.0f / vDiv );
     float vSize = ( fromPlayer ? mSettingsRuntime.mRocketVelocity : mSettingsRuntime.mSpitVelocity );
+    vSize /= (float)mSettings.GetTickPerSecond();
     mEnTTRegistry.emplace<cpVelocity>( missile, directionX * vSize * vDiv, directionY * vSize * vDiv, 0.0f );
                         // component: velocity
 
@@ -319,7 +325,7 @@ namespace Inv
                         // component: geometry
 
     auto explosionTicks = (uint32_t)( mExplosionTime * (float)mSettings.GetTickPerSecond() );
-    auto explosionPace = explosionTicks / entitySprite->GetNumberOfImages();
+    auto explosionPace = (uint32_t)( explosionTicks / entitySprite->GetNumberOfImages() );
     if( 0u == explosionPace )
       explosionPace = 1u;
 

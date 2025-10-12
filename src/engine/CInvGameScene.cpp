@@ -57,14 +57,31 @@ namespace Inv
     mSceneBottomRightY( (float)settings.GetWindowHeight() ),
     mAlienStartingAreaCoefficient( 0.65f ),
 
-    mProcGarbageCollector( tickReferencePoint, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
+    mVXGroup( 0.0f ),
+    mVYGroup( 0.0f ),
+
+    mPlayerEntity{},
+    mPlayerWidth( 0.0f ),
+    mPlayerHeight( 0.0f ),
+
+    mPlayerAlive( false ),
+
+    mAliensLeft( 0 ),
+
+    mProcGarbageCollector(
+      tickReferencePoint, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
     mProcActorStateSelector( tickReferencePoint ),
     mProcEntitySpawner( tickReferencePoint, mEntityFactory, settingsRuntime ),
-    mProcActorMover( tickReferencePoint ),
+    mProcActorMover( tickReferencePoint, mVXGroup, mVYGroup, settingsRuntime ),
     mProcPlayerFireUpdater( tickReferencePoint, mEntityFactory, settingsRuntime ),
-    mProcPlayerSpeedUpdater( tickReferencePoint, settingsRuntime ),
-    mProcPlayerBoundsGuard( tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
-    mProcActorOutOfSceneCheck( tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
+    mProcPlayerSpeedUpdater( tickReferencePoint, settings, settingsRuntime ),
+    mProcPlayerBoundsGuard(
+      tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
+    mProcAlienBoundsGuard(
+      tickReferencePoint, mVXGroup, mVYGroup, 0.0f, 0.0f,
+      (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight(), settings, settingsRuntime ),
+    mProcActorOutOfSceneCheck(
+      tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
     mProcCollisionDetector( tickReferencePoint, mCollisionTest ),
     mProcActorRender( tickReferencePoint ),
 
@@ -74,7 +91,9 @@ namespace Inv
     mTReady( nullptr ),
     mTGo( nullptr ),
     mTBlinkEffect( nullptr ),
-    mPlayerEntryLetterSize( 40.0f )
+    mPlayerEntryLetterSize( 40.0f ),
+
+    mActualScore( 0 )
   {
   } // CInvGameScene::CInvGameScene
 
@@ -142,9 +161,9 @@ namespace Inv
     {
       { 10, "PINK" },
       {  9, "PINK" },
-      {  8, "PINK" },
-      {  7, "PINK" },
-      {  6, "PINK" },
+      { 10, "PINK" },
+      {  9, "PINK" },
+      { 10, "PINK" },
     };
 
     auto alienAreaHeight = mSceneHeight * mAlienStartingAreaCoefficient;
@@ -156,7 +175,13 @@ namespace Inv
         maxAliens = ar.first;
     } // for
 
-    auto alienWidth = mSceneWidth / ( 1.2f * (float)maxAliens );
+    auto alienWidth = mSceneWidth / ( 1.60f * (float)maxAliens );
+    auto spaceInBetween = 0.40f * alienWidth;
+
+    mVXGroup = 0.0f;
+    mVYGroup = 0.0f;
+
+    mAliensLeft = 0;
 
     uint32_t rowIndex = 0;
     for( auto & ar : alienRows )
@@ -171,13 +196,14 @@ namespace Inv
       auto yPos = mSceneTopLeftY + ( alienHeight * 1.2f ) * (float)rowIndex + alienHeight * 0.5f;
 
       auto spaceTakenByAliens = alienWidth * (float)ar.first;
-      auto spaceInBetween = ( mSceneWidth - spaceTakenByAliens ) / (float)( ar.first + 1 );
+      auto spaceTakenByRow = spaceTakenByAliens + spaceInBetween * ( (uint32_t)ar.first - 1u );
 
-      auto xPos = mSceneTopLeftX + spaceInBetween + alienWidth * 0.5f;
+      auto xPos = mSceneTopLeftX + ( mSceneWidth - spaceTakenByRow ) * 0.5f + alienWidth * 0.5f;
       for( uint32_t i = 0; i < ar.first; ++i )
       {
-        mEntityFactory.AddAlienEntity( ar.second, xPos, yPos, alienWidth );
+        mEntityFactory.AddAlienEntity( ar.second, xPos, yPos, 0.0f, 0.0f, alienWidth );
         xPos += alienWidth + spaceInBetween;
+        ++mAliensLeft;
       } // for
 
       ++rowIndex;
@@ -195,19 +221,19 @@ namespace Inv
     if( nullptr == baseSprite )
       return false;
 
-    float playerWidth = mSceneWidth * 0.1f;
+    mPlayerWidth = mSceneWidth * 0.1f;
 
     auto baseSize = baseSprite->GetImageSize( 0 );
     auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
-    auto playerHeight = playerWidth * aspectRatio;
+    mPlayerHeight = mPlayerWidth * aspectRatio;
 
-
-    mEntityFactory.AddPlayerEntity(
+    mPlayerEntity = mEntityFactory.AddPlayerEntity(
       "FIGHT",
       mSceneTopLeftX + mSceneWidth * 0.5f,
-      mSceneBottomRightY - playerHeight,
-      playerWidth );
+      mSceneBottomRightY - mPlayerHeight,
+      mPlayerWidth );
 
+    mPlayerAlive = true;
 
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 /* DOOMED! Player dies at the start of the game for debugging purposes    */
@@ -246,7 +272,12 @@ namespace Inv
                         // main scene class if demanded.
 
     mProcActorStateSelector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+                        // All entities are checked for state changes (firing, raid, etc.) according
+                        // to their behavior component and random events.
+
     mProcEntitySpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+                        // New entities are spawned according to spawn requests stored in the
+                        // registry by other processors (as missiles, for example).
 
     mProcPlayerSpeedUpdater.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, controlState, controlValue );
                         // Player velocity is updated according to control state (keyboard)
@@ -257,10 +288,18 @@ namespace Inv
     mProcPlayerBoundsGuard.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // Player entity is kept within scene bounds
 
+    mProcAlienBoundsGuard.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, mPlayerHeight * 1.25f );
+                        // Alien entities are kept within scene bounds, alien group velocity is
+                        // changed if needed. When first alien reaches left or right scene border,
+                        // whole alien group is moved down for a few moment ant then starts moving in
+                        // X-axis in opposite direction.
+
     mProcActorMover.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+                        // All entities are moved according to their velocity
+
     mProcActorOutOfSceneCheck.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
-                        // All entities arfe moved according to their velocity, entities out of scene
-                        // are marked as inactive and will be removed by garbage collector in next loop.
+                        // All entities out of scene are marked as inactive and will be removed by garbage
+                        // collector in next loop.
 
     mProcActorRender.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // All entities are rendered according to their graphics component and status
@@ -332,8 +371,23 @@ namespace Inv
     } // else if
     else
     {
-      SpawnPlayer();
+      if( !mPlayerAlive )
+        SpawnPlayer();
+      else
+      {
+        auto [pId, pBehave, pStatus, pGph] =
+          mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus, cpGraphics>( mPlayerEntity );
+        if( nullptr != pId && nullptr != pBehave && nullptr != pStatus && nullptr != pGph )
+        {
+          pStatus->isInvulnerable = true;
+          pGph->standardAnimationEffect->Restore();
+                        // Player is made invulnerable for a while, blinking effect is started on his sprite.
+        } // if
+      } // else
+
       mPlayerEntryInProgress = false;
+      if( IsZero( mVXGroup ) )
+        mVXGroup = mSettingsRuntime.mAlienVelocity * mSettingsRuntime.mSceneLevelMultiplicator / (float)mSettings.GetTickPerSecond();
     } // else
 
     ++mPlayerEntryTick.QuadPart;
@@ -358,6 +412,11 @@ namespace Inv
       mSceneTopLeftX, mSceneTopLeftY,
       mSceneBottomRightX, mSceneBottomRightY );
 
+    mProcAlienBoundsGuard.reset(
+      newTickRefPoint,
+      mSceneTopLeftX, mSceneTopLeftY,
+      mSceneBottomRightX, mSceneBottomRightY );
+
     mProcActorMover.reset( newTickRefPoint );
     mProcActorOutOfSceneCheck.reset(
       newTickRefPoint,
@@ -367,6 +426,9 @@ namespace Inv
     mProcActorRender.reset( newTickRefPoint );
 
     mProcCollisionDetector.reset( newTickRefPoint );
+
+    mActualScore = 0;
+    mPlayerAlive = false;
 
     GenerateNewScene( mSceneTopLeftX, mSceneTopLeftY, mSceneBottomRightX, mSceneBottomRightY );
                         // Aliens swarm is placed in the scene.
@@ -495,22 +557,74 @@ namespace Inv
 
   void CInvGameScene::EntityJustPruned( entt::entity entity, uint32_t nr )
   {
-     auto [ entId, entBehave, entStatus ] = mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus>(entity);
-    if( nullptr == entId || entId->active )
-      return;
-    if( nullptr != entBehave && nullptr != entStatus )
+    auto [ entId, entBehave, entStatus ] = mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus>(entity);
+    if( nullptr != entId && nullptr != entBehave && nullptr != entStatus )
     {                   // Player entity elimination from game scene is done, appropriate measures
                         // must be taken (respawn, reduce number of lives, end of game etc.)
+
+      if( entId->active )
+      {
+        LOG << "Trying to prune active player!";
+        return;         // Player entity is still active, this is probably a bug.
+      }
 
       LOG << "Player was pruned from game scene.";
 
       mPlayerEntryInProgress = true;
       mPlayerEntryTick.QuadPart = 0;
+      mPlayerAlive = false;
                         // Player is no more in the scene, new entry sequence must be started.
+
+      return;
 
     } // if
 
+    auto [aId, aBehave, aStatus] = mEnTTRegistry.try_get<cpId, cpAlienBehave, cpAlienStatus>( entity );
+    if( nullptr != aId && nullptr != aBehave && nullptr != aStatus )
+    {
+      if( entId->active )
+      {
+        LOG << "Trying to prune active alien!";
+        return;         // Player entity is still active, this is probably a bug.
+      }
+
+      mActualScore += aBehave->scoreToAdd;
+      mSettingsRuntime.mAlienSpeedupFactor += mSettings.GetSpeedupPerKill();
+
+      LOG << "Alien was pruned from game scene, " << aBehave->scoreToAdd
+          << " points added, speed upscaled to " << mSettingsRuntime.mAlienSpeedupFactor;
+
+      --mAliensLeft;
+    }
+
+    if( 0 == mAliensLeft )
+      NewSwarm();       // All aliens are dead, new swarm must be generated.
+
   } // CInvGameScene::EntityJustPruned
+
+  //-------------------------------------------------------------------------------------------------
+
+  void CInvGameScene::NewSwarm()
+  {
+
+    mPlayerEntryInProgress = true;
+    mPlayerEntryTick.QuadPart = 0;
+
+    GenerateNewScene( mSceneTopLeftX, mSceneTopLeftY, mSceneBottomRightX, mSceneBottomRightY );
+
+    mSettingsRuntime.mSceneLevelMultiplicator *= mSettings.GetDifficultyBuildup();
+    ++mSettingsRuntime.mSceneLevel;
+    mSettingsRuntime.mAlienSpeedupFactor = 1.0f;
+
+    LOG;
+    LOG << "New alien swarm generated, level " << mSettingsRuntime.mSceneLevel
+        << ", speed factor reset to 1.0, level multiplicator is now "
+        << mSettingsRuntime.mSceneLevelMultiplicator;
+    LOG;
+
+    mSettingsRuntime.Preprint();
+
+  } // CInvGameScene::NewSwarm
 
   //-------------------------------------------------------------------------------------------------
 

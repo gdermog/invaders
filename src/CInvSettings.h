@@ -82,6 +82,11 @@ namespace Inv
     bool GetZeroExplosionV() const { return mZeroExplosionV; }
     //!< \brief Returns true if actor should stop moving when destroyed
 
+    float GetSpeedupPerKill() const { return mSpeedupPerKill; }
+    //!< \brief Returns factor by which alien speed is increased after each killed alien
+
+    float GetDifficultyBuildup() const { return mDifficultyBuildup; }
+    //!< \brief Returns internal parameter, used to increase game difficulty with each level
 
   protected:
 
@@ -112,6 +117,12 @@ namespace Inv
 
     bool mZeroExplosionV;
                         //!< If true, actor stops moving when destroyed
+
+    float mSpeedupPerKill;
+                        //!< Factor by which alien speed is increased after each killed alien
+
+    float mDifficultyBuildup;
+    //!< Internal parameter, used to increase game difficulty with each level
 
     std::ostream & PrpLine();
     /*!< \brief Helper for formatting output in Preprint method */

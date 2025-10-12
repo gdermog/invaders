@@ -13,6 +13,7 @@
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvCollisionTest.h>
 #include <engine/CInvEntityFactory.h>
+#include <CInvSettings.h>
 #include <CInvSettingsRuntime.h>
 
 namespace Inv
@@ -41,29 +42,43 @@ namespace Inv
     view.each( [=]( const cpAlienBehave & behave, cpAlienStatus & status, cpGraphics &gph )
     {                   // Updating status for alien actors
 
-        if( status.isAnimating || status.isFiring || status.isDying )
-          return;       // Previous status must be resolved before any other is set
+        if( status.isDying )
+          return;       // Alien is dying, no other status is possible
 
-        auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-        if( probRoll < behave.animationProbability )
-        {
-          status.isAnimating = true;
-          gph.diffTick.QuadPart = 0ul;
-          gph.standardAnimationEffect->Restore();
-          return;       // Animation is started on random event. Effect is restored, runs once (as it is not
+        if( !( status.isAnimating || status.isFiring ) )
+        {               // Previous status must be resolved before any other is set
+
+          auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+          if( probRoll < behave.animationProbability )
+          {
+            status.isAnimating = true;
+            gph.diffTick.QuadPart = 0ul;
+            gph.standardAnimationEffect->Restore();
+                        // Animation is started on random event. Effect is restored, runs once (as it is not
                         // continuous) and then suspends itself, sending event message by appropriate callback,
                         // which sets isAnimating flag to false again.
-        } // if
-
-        probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-        if( probRoll < behave.shootProbability )
-        {
-          status.isFiring = true;
-          gph.diffTick.QuadPart = 0ul;
-          gph.specificAnimationEffect->Restore();
-          return;       // Fire animation is started on random event. Effect is restored, runs once (as it is not
+          } // if
+          else
+          {
+            probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+            if( probRoll < ( status.isInRaid ? behave.raidShootProbability : behave.shootProbability ) )
+            {
+              status.isFiring = true;
+              gph.diffTick.QuadPart = 0ul;
+              gph.specificAnimationEffect->Restore();
+                        // Fire animation is started on random event. Effect is restored, runs once (as it is not
                         // continuous) and then suspends itself, sending event message by appropriate callback,
                         // which sets isFiring flag to false again.
+            } // if
+          } // else
+        } // if
+
+        if( !( status.isInRaid || status.isReturningToFormation ) )
+        {
+//           auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+//           if( probRoll < behave.raidProbability )
+//             status.isInRaid = true;
+//                         // Alien enters raid mode on random event.
         } // if
 
     } );
@@ -124,8 +139,10 @@ namespace Inv
 
   procPlayerSpeedUpdater::procPlayerSpeedUpdater(
     LARGE_INTEGER refTick,
+    const CInvSettings & settings,
     CInvSettingsRuntime & settingsRuntime ):
     mRefTick( refTick ),
+    mSettings( settings ),
     mSettingsRuntime( settingsRuntime )
   { }
 
@@ -156,17 +173,19 @@ namespace Inv
         vel.vY = 0.0f;
         vel.vZ = 0.0f;
 
+        float deltaV = mSettingsRuntime.mPlayerVelocity / mSettings.GetTickPerSecond();
+
         if( ControlStateHave( controlState, ControlState_t::kLeft  ) )
-          vel.vX = -mSettingsRuntime.mPlayerVelocity;
+          vel.vX = -deltaV;
 
         if( ControlStateHave( controlState, ControlState_t::kRight ) )
-          vel.vX = mSettingsRuntime.mPlayerVelocity;
+          vel.vX = deltaV;
 
         if( ControlStateHave( controlState, ControlState_t::kUp) )
-          vel.vY = -mSettingsRuntime.mPlayerVelocity;
+          vel.vY = -deltaV;
 
         if( ControlStateHave( controlState, ControlState_t::kDown ) )
-          vel.vY = mSettingsRuntime.mPlayerVelocity;
+          vel.vY = deltaV;
 
     } );
   } // procPlayerSpeedUpdater::update
@@ -297,10 +316,129 @@ namespace Inv
 
   } // procPlayerBoundsGuard::update
 
+
+  //****** processor: bounds guard - aliens ************************************************
+
+
+  procAlienBoundsGuard::procAlienBoundsGuard(
+    LARGE_INTEGER refTick,
+    float & vXGroup,
+    float & vYGroup,
+    float sceneTopLeftX,
+    float sceneTopLeftY,
+    float sceneBottomRightX,
+    float sceneBottomRightY,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime ):
+
+    mRefTick( refTick ),
+    mVXGroup( vXGroup ),
+    mVYGroup( vYGroup ),
+    mYGroupTranslationCounter( 0 ),
+    mTranslatingDown( false ),
+    mNextVXGroup( 0.0f ),
+    mSceneTopLeftX( sceneTopLeftX ),
+    mSceneTopLeftY( sceneTopLeftY ),
+    mSceneBottomRightX( sceneBottomRightX ),
+    mSceneBottomRightY( sceneBottomRightY ),
+    mSettings( settings ),
+    mSettingsRuntime( settingsRuntime )
+  {}
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procAlienBoundsGuard::reset(
+    LARGE_INTEGER refTick,
+    float sceneTopLeftX,
+    float sceneTopLeftY,
+    float sceneBottomRightX,
+    float sceneBottomRightY )
+  {
+    mRefTick = refTick;
+    mSceneTopLeftX = sceneTopLeftX;
+    mSceneTopLeftY = sceneTopLeftY;
+    mSceneBottomRightX = sceneBottomRightX;
+    mSceneBottomRightY = sceneBottomRightY;
+  } // procAlienBoundsGuard::reset
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procAlienBoundsGuard::update(
+    entt::registry & reg,
+    LARGE_INTEGER actTick,
+    LARGE_INTEGER diffTick,
+    float bottomGuardedArea )
+  {
+
+    bool xChangeNeeded = false;
+    bool yAtTheBottom = false;
+
+    auto view = reg.view<cpAlienBehave, cpAlienStatus, cpPosition, cpGeometry>();
+    view.each( [&]( cpAlienBehave & pBehave, cpAlienStatus & pStat, cpPosition & pPos, cpGeometry & pGeo )
+    {
+        if( pStat.isInRaid || pStat.isReturningToFormation || pStat.isDying )
+          return;       // Alien is in raid or dying, no group bounds guard possible or necessary
+
+        float xPosNext = pPos.X + mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
+        xChangeNeeded |=
+          ( xPosNext - 0.5 * pGeo.width < mSceneTopLeftX ) ||
+          ( mSceneBottomRightX < xPosNext + 0.5 * pGeo.width );
+
+        float yPosNext = pPos.Y + mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
+        yAtTheBottom |=
+          ( yPosNext - 0.5 * pGeo.height < mSceneTopLeftY ) ||
+          ( mSceneBottomRightY - bottomGuardedArea < yPosNext + 0.5 * pGeo.height );
+
+    } );
+
+    if( ! IsZero( mVXGroup ) )
+      mNextVXGroup = -mVXGroup;
+
+    if( xChangeNeeded )
+    {
+      if( yAtTheBottom )
+      {                 // If aliens are at the bottom of the scene, they just change horizontal direction
+        mVXGroup = mNextVXGroup;
+        mTranslatingDown = false;
+        mVYGroup = 0.0f;
+      } // if
+      else
+      {                 // Aliens stops change horizontal direction and starts to move down
+        mVXGroup = 0.0f;
+        mYGroupTranslationCounter = (uint32_t)( mSettingsRuntime.mAlienDescendTime * (float)mSettings.GetTickPerSecond() );
+        mTranslatingDown = true;
+      } // else
+    } // if
+
+    if( mTranslatingDown )
+    {
+      if( ! yAtTheBottom && 0 < mYGroupTranslationCounter )
+      {                 // Aliens are moving down
+        --mYGroupTranslationCounter;
+        mVYGroup = mSettingsRuntime.mAlienVelocity / mSettings.GetTickPerSecond();
+      }
+      else
+      {                 // Aliens finished moving down, continue horizontal movement in opposite direction
+        mVYGroup = 0.0f;
+        mVXGroup = mNextVXGroup;
+        mTranslatingDown = false;
+      } // else
+    } // if
+
+  } // procAlienBoundsGuard::update
+
   //****** processor: moving of actors ************************************************************
 
-  procActorMover::procActorMover( LARGE_INTEGER refTick ):
-    mRefTick( refTick )
+  procActorMover::procActorMover(
+    LARGE_INTEGER refTick,
+    float & vXGroup,
+    float & vYGroup,
+    CInvSettingsRuntime & settingsRuntime ):
+
+    mRefTick( refTick ),
+    mVXGroup( vXGroup ),
+    mVYGroup( vYGroup ),
+    mSettingsRuntime( settingsRuntime )
   {}
 
   //--------------------------------------------------------------------------------------------------
@@ -315,11 +453,32 @@ namespace Inv
   void procActorMover::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
   {
     auto view = reg.view<cpPosition, const cpVelocity>();
-    view.each( [=]( cpPosition & pos, const cpVelocity & vel )
+    view.each( [&]( entt::entity entity, cpPosition & pos, const cpVelocity & vel )
     {
-        pos.X += vel.vX;
-        pos.Y += vel.vY;
-        pos.Z += vel.vZ;
+        auto [ aBehave, aStat ] = reg.try_get<cpAlienBehave, cpAlienStatus>( entity );
+        if( nullptr != aBehave && nullptr != aStat )
+        {               // Alien entity
+
+          aStat->formationX += mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
+          aStat->formationY += mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
+                        // Position in formation where alien belongs is updated by group velocity.
+
+          if( aStat->isInRaid || aStat->isReturningToFormation )
+          {             // Alien is in raid or returning to formation, moves by its own velocity
+            pos.X += vel.vX * mSettingsRuntime.mAlienSpeedupFactor;
+            pos.Y += vel.vY * mSettingsRuntime.mAlienSpeedupFactor;
+          } // if
+          else
+          {             // Alien is in formation, moves by group velocity
+            pos.X += mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
+            pos.Y += mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
+          } // else
+        } // if
+        else
+        {
+          pos.X += vel.vX;
+          pos.Y += vel.vY;
+        } // else
     } );
 
   } // procActorMover::update
@@ -456,7 +615,7 @@ namespace Inv
            ( mSceneBottomRightY < pos.Y - 0.5f * geo.height ) )
        {
          id.active = false;
-                      // Entity is out of scene, remove it from registry later
+                        // Entity is out of scene, remove it from registry later
        } // if
 
     } );

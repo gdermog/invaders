@@ -62,14 +62,20 @@ namespace Inv
   struct cpAlienBehave
   {
     float animationProbability;
-                        //!< Speed of basic animation, usually a small positive number
+                        //!< Probability of basic animation
 
     float shootProbability;
-                        //!< Probability of shooting in each game tick, usually a small
+                        //!< Probability of shooting in each game tick
 
-    float startX;       //!< Starting X position (of centre of alien object) [px]
-    float startY;       //!< Starting Y position (of centre of alien object) [px]
+    float raidProbability;
+                        //!< Probability of entering raid mode in each game tick
 
+    float raidShootProbability;
+
+    float startingX;
+    float startingY;
+
+    uint32_t scoreToAdd;//!< Score added to player when this alien is destroyed
   };
 
   //****** component: alien status *******************************************************************
@@ -86,6 +92,14 @@ namespace Inv
                         //!< \b true if the alien requested to shoot in current tick.
 
     bool isDying;       //!< \b true if the alien is in dying state, false otherwise.
+
+    bool isInRaid;      //!< \b true if the alien is in raid state, false otherwise.
+
+    bool isReturningToFormation;
+                        //!< \b true if the alien is returning to formation after raid, false otherwise.
+
+    float formationX;   //!< X position in formation (of centre of alien object) [px]
+    float formationY;   //!< Y position in formation (of centre of alien object) [px]
   };
 
   //****** component: player behavior ****************************************************************
@@ -101,17 +115,10 @@ namespace Inv
   /*! \brief This component determines the status of the player-controlled element. */
   struct cpPlayStatus
   {
-    void InvulnerabilityCanceled( uint32_t )
-    {
-      isInvulnerable = false;
-    }
 
     bool isInvulnerable;//!< \b true if the player is in invulnerable state, false otherwise.
                         //!  Invulnerability may be granted for short time after respawn or by
                         //!  picking up special power-up.
-
-    bool isShootRequested;
-                        //!< \b true if the player requested to shoot in current tick.
 
     bool isDying;       //!< \b true if the player is in dying state, false otherwise.
   };
