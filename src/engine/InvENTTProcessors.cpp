@@ -127,8 +127,7 @@ namespace Inv
     CInvSettingsRuntime & settingsRuntime ):
     mRefTick( refTick ),
     mSettingsRuntime( settingsRuntime )
-  {
-  }
+  { }
 
   //--------------------------------------------------------------------------------------------------
 
@@ -172,6 +171,73 @@ namespace Inv
     } );
   } // procPlayerSpeedUpdater::update
 
+    //****** processor: updating demads for offensive actions of player actor ****************
+
+
+  procPlayerFireUpdater::procPlayerFireUpdater(
+    LARGE_INTEGER refTick,
+    CInvEntityFactory & entityFactory,
+    CInvSettingsRuntime & settingsRuntime ):
+    mRefTick( refTick ),
+    mEntityFactory( entityFactory ),
+    mSettingsRuntime( settingsRuntime ),
+    mShootCommenced( false ),
+    mCanShoot( true )
+  { }
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procPlayerFireUpdater::reset( LARGE_INTEGER refTick )
+  {
+    mRefTick = refTick;
+  } // procPlayerFireUpdater::reset
+
+  //--------------------------------------------------------------------------------------------------
+
+
+  void procPlayerFireUpdater::update(
+    entt::registry & reg,
+    LARGE_INTEGER actTick,
+    LARGE_INTEGER diffTick,
+    ControlStateFlags_t controlState,
+    ControlValue_t controlValue )
+  {
+
+    if( ControlStateHave( controlState, ControlState_t::kFire ) )
+    {
+      if( ! mShootCommenced && mCanShoot )
+      {
+
+        float xTopLeft, yTopLeft;
+        float xBottomRight, yBottomRight;
+        float xSize, ySize;
+        size_t imageIndex;
+
+        auto view = reg.view<cpPlayStatus, const cpPosition, const cpGeometry, const cpGraphics>();
+        view.each( [&]( cpPlayStatus & stat, const cpPosition & pos, const cpGeometry & geo, const cpGraphics & gph )
+        {               // This should work as there is only one player entity. If there are more, all would shoot
+                        // simultaneously, which is probably not desired. In such case more complex logic would be
+                        // needed.
+
+            gph.standardSprite->GetResultingPosition(
+              xTopLeft, yTopLeft, xBottomRight, yBottomRight, xSize, ySize, imageIndex );
+
+            mEntityFactory.AddMissileEntity(
+              "ROCKET", true,
+              0.5f * ( xTopLeft + xBottomRight ),
+              yBottomRight - 0.75f * ySize,
+              0.1f * xSize,
+              0.0f, -1.0f );
+        } );
+
+        mShootCommenced = true;
+      } // if
+
+    }
+    else
+      mShootCommenced = false;
+
+  } // procPlayerFireUpdater::update
 
   //****** processor: bounds guard - player ************************************************
 

@@ -61,6 +61,7 @@ namespace Inv
     mProcActorStateSelector( tickReferencePoint ),
     mProcEntitySpawner( tickReferencePoint, mEntityFactory, settingsRuntime ),
     mProcActorMover( tickReferencePoint ),
+    mProcPlayerFireUpdater( tickReferencePoint, mEntityFactory, settingsRuntime ),
     mProcPlayerSpeedUpdater( tickReferencePoint, settingsRuntime ),
     mProcPlayerBoundsGuard( tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
     mProcActorOutOfSceneCheck( tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
@@ -211,11 +212,22 @@ namespace Inv
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 /* DOOMED! Player dies at the start of the game for debugging purposes    */
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
-   mEntityFactory.AddMissileEntity(
-     "SPIT", false,
-     mSceneTopLeftX + mSceneWidth * 0.5f - 0.25*playerWidth,
-     mSceneBottomRightY - 4 * playerHeight,
-     0.33f * playerWidth );
+// mEntityFactory.AddMissileEntity(
+//   "SPIT", false,
+//   mSceneTopLeftX + mSceneWidth * 0.5f - 0.25*playerWidth,
+//   mSceneBottomRightY - 4 * playerHeight,
+//   0.33f * playerWidth );
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+/* QUICKSHOT! Player fires at the start of the game for debugging purposes*/
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+//  mEntityFactory.AddMissileEntity(
+//    "ROCKET", true,
+//    mSceneTopLeftX + mSceneWidth * 0.5f ,
+//    mSceneBottomRightY - playerHeight,
+//    0.1f * playerWidth,
+//    0.0f, -1.0f );
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
     return true;
@@ -238,6 +250,9 @@ namespace Inv
 
     mProcPlayerSpeedUpdater.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, controlState, controlValue );
                         // Player velocity is updated according to control state (keyboard)
+
+    mProcPlayerFireUpdater.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, controlState, controlValue );
+                        // Player shoot requests are processed, new missiles are created if possible
 
     mProcPlayerBoundsGuard.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // Player entity is kept within scene bounds
@@ -414,14 +429,62 @@ namespace Inv
                         // Explosion is created at player position, moving with the player. Explosion entity
                         // is automatically pruned from game scene when its animation finishes.
 
-      if( nullptr != playGph && nullptr != playGph->specificAnimationEffect )
-      {                 // Dying effect is started on player sprite. When the effect finishes, player entity
+      if( nullptr != playGph && nullptr != playGph->dyingAnimationEffect )
+        playGph->dyingAnimationEffect->Restore();
+                        // Dying effect is started on player sprite. When the effect finishes, player entity
                         // is marked for pruning and removed from game scene by garbage collector. This
                         // then triggers EntityJustPruned() method, which notifies main game scene about
                         // player elimination.
-        if( nullptr != playGph->specificAnimationEffect )
-          playGph->specificAnimationEffect->Restore();
-      } // if
+
+    } // if
+
+    auto [alienBehave, alienStatus, alienHealth, alienGph] =
+      mEnTTRegistry.try_get<cpAlienBehave, cpAlienStatus, cpHealth, cpGraphics>( entity );
+    if( nullptr != alienBehave && nullptr != alienStatus )
+    {                   // Alien entity elimination from game scene is commenced (hit by player missile).
+                        // Alien entity is marked as dying, explosion is created at alien position and
+                        // special "dying" effect is started on alien sprite.
+
+      if( nullptr == alienHealth || nullptr == alienGph )
+        return false;   // Alien has no health or graphics component - this is probably a bug.
+
+      if( alienStatus->isDying )
+        return false;   // Alien is already dying, ignore the hit.
+
+      if( 0 < alienHealth->hitPoints )
+        --alienHealth->hitPoints;
+                        // Alien looses one health point.
+
+      if( 0 < alienHealth->hitPoints )
+        return true;    // Alien still has some health points and continues to fight.
+
+      alienStatus->isDying = true;
+                        // Welcome to the graveard, bastard ...
+
+      auto [ pPos, pVel, pGeo] = mEnTTRegistry.try_get<cpPosition, cpVelocity, cpGeometry>( entity );
+
+      if( mSettings.GetZeroExplosionV() )
+      {                // If demanded, destroyed alien stops and explosion does not inherit his velocity.
+        pVel->vX = 0.0f;
+        pVel->vY = 0.0f;
+        pVel->vZ = 0.0f;
+      }  // if
+
+      auto explosionSize = ( nullptr == pGeo ? 150.0f : alienGph->standardSprite->GetResultingSizeX() * 1.5f );
+      auto xplX = ( nullptr == pPos ? 0.0f : pPos->X );
+      auto xplY = ( nullptr == pPos ? 0.0f : pPos->Y );
+      auto xplVx = ( nullptr == pVel ? 0.0f : pVel->vX );
+      auto xplVy = ( nullptr == pVel ? 0.0f : pVel->vY );
+      mEntityFactory.AddExplosionEntity( "PINKEXPL", xplX, xplY, explosionSize, xplVx, xplVy );
+                        // Explosion is created at alien position, moving with the invader. Explosion entity
+                        // is automatically pruned from game scene when its animation finishes.
+
+      if( nullptr != alienGph && nullptr != alienGph->dyingAnimationEffect )
+        alienGph->dyingAnimationEffect->Restore();
+                        // Dying effect is started on invader sprite. When the effect finishes, entity
+                        // is marked for pruning and removed from game scene by garbage collector. This
+                        // then triggers EntityJustPruned() method, which notifies main game scene about
+                        // invader elimination.
 
     } // if
 

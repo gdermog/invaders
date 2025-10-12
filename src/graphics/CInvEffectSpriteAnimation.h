@@ -1,7 +1,7 @@
 //****************************************************************************************************
 //! \file CInvEffectSpriteAnimation.h
 //! Module contains class CInvEffectSpriteAnimation, which declares effect that animates sprite by
-//! changing its image in given pace
+//! changing its image in given pace.
 //****************************************************************************************************
 //
 //****************************************************************************************************

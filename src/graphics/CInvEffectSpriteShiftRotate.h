@@ -1,6 +1,7 @@
 //****************************************************************************************************
 //! \file CInvEffectSpriteShiftRotate.h
-//! Module contains class CInvEffectSpriteShiftRotate, which ..
+//! Module contains class CInvEffectSpriteShiftRotate, which makes sprite circling around a center
+//! position.
 //****************************************************************************************************
 //
 //****************************************************************************************************

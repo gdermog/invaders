@@ -1,6 +1,7 @@
 //****************************************************************************************************
 //! \file CInvEffectSpriteShiftRotate.cpp
-//! Module contains class CInvEffectSpriteShiftRotate, which implements singleton pattern for global logging
+//! Module contains class CInvEffectSpriteShiftRotate, which makes sprite circling around a center
+//! position.
 //****************************************************************************************************
 //
 //****************************************************************************************************

@@ -44,6 +44,12 @@ namespace Inv
     //bool CheckBoundingBoxCollision( const CInvSprite & sprite1, const CInvSprite & sprite2 ) const;
 
     bool CheckPixelPerfectCollision( const CInvSprite & sprite1, const CInvSprite & sprite2 ) const;
+    /*!< \brief Tests whether two sprites are in pixel-perfect collision, i.e. whether any non-transparent
+               pixel of the first sprite overlaps with any non-transparent pixel of the second sprite.
+
+         \param[in] sprite1   First sprite to be tested
+         \param[in] sprite2   Second sprite to be tested
+         \return \b true if the sprites are in pixel-perfect collision, false otherwise. */
 
     static void CalculateUV( int x, int y, RECT boundRect, const CUSTOMVERTEX vertices[], float * u, float * v );
     /*!< \brief Calculates texture coordinates (u,v) for given pixel (x,y) on the game scene.
@@ -71,7 +77,7 @@ namespace Inv
 
     static constexpr BYTE mAlphaThreshold = 10;
     //!< Alpha threshold for pixel-perfect collision detection, pixels with alpha below this
-    //!  value are considered transparent
+    //!  value are considered transparent and do not contribute to collision.
 
     const CInvSettings & mSettings;
     //<! Reference to settings object, to access global settings

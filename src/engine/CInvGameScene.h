@@ -166,6 +166,7 @@ namespace Inv
     procGarbageCollector mProcGarbageCollector;
     procActorStateSelector mProcActorStateSelector;
     procEntitySpawner mProcEntitySpawner;
+    procPlayerFireUpdater mProcPlayerFireUpdater;
     procPlayerSpeedUpdater mProcPlayerSpeedUpdater;
     procPlayerBoundsGuard mProcPlayerBoundsGuard;
     procActorMover mProcActorMover;

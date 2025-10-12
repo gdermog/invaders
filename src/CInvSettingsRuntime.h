@@ -1,7 +1,7 @@
 //****************************************************************************************************
 //! \file CInvSettingsRuntime.h
-//! Module contains declaration of CInvSettingsRuntime class, which contains all parameters created and
-//! updated by game engine
+//! Module contains declaration of CInvSettingsRuntime class, which contains all parameters created
+//! and updated by game engine
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -68,8 +68,24 @@ namespace Inv
     //! @name Public data concerning missiles
     //@{----------------------------------------------------------------------------------------------
 
-    float mMissileVelocity;
-    //!< Speed of standard missiles (both alien and player)
+    float mSpitVelocity;
+    //!< Speed of standard missiles (alien)
+
+    float mRocketVelocity;
+    //!< Speed of standard missiles (player)
+
+    uint32_t mRocketSupply;
+    //!< Number of rockets (player missiles) available to player. No more rockets can be fired when
+    //!  supply is zero.
+
+    float mRocketSupplyReplenishRate;
+    //!< Rate at which rocket supply is replenished - one rocket is added to supply every
+    //!  given number of seconds, until maximum supply is reached.
+
+    uint32_t mRocketSupplyReplenishTicks;
+    //!< Rate at which rocket supply is replenished - one rocket is added to supply every
+    //!  given number of ticks, until maximum supply is reached. This value is calculated
+    //!  from mRocketSupplyReplenishRate and CInvSettings::mTickPerSecond.
 
   private:
 

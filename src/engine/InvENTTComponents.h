@@ -170,8 +170,10 @@ namespace Inv
     //!< Pointer to animation effect applied to standard sprite
 
     std::shared_ptr<CInvEffect> specificAnimationEffect;
-    //!< Pointer to special animation effect applied, as firing invader sprite, dying
-    //!  entity and so on.
+    //!< Pointer to special animation effect applied, as firing invader sprite or similar
+
+    std::shared_ptr<CInvEffect> dyingAnimationEffect;
+    //!< Pointer to special animation effect applied,of entity is dying.
 
     LARGE_INTEGER diffTick;
     //!< Animation driver

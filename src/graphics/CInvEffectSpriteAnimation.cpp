@@ -1,7 +1,7 @@
 //****************************************************************************************************
 //! \file CInvEffectSpriteAnimation.cpp
 //! Module contains class CInvEffectSpriteAnimation, which defines effect that animates sprite by
-//! changing its image in given pace
+//! changing its image in given pace.
 //****************************************************************************************************
 //
 //****************************************************************************************************

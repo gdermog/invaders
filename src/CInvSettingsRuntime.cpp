@@ -25,8 +25,11 @@ namespace Inv
      mAlienShootProbability( 0.001f ),
      mPlayerInvulnerabilityTicks( 150 ),
      mPlayerVelocity( 2.0f ),
-     mMissileVelocity( 1.0f )
-
+     mSpitVelocity( 1.0f ),
+     mRocketVelocity( 3.0f ),
+     mRocketSupply( 3 ),
+     mRocketSupplyReplenishRate( 1.0f ),
+     mRocketSupplyReplenishTicks( 60 )
    {
 
    } // CInvSettingsRuntime::CInvSettingsRuntime
@@ -60,8 +63,13 @@ namespace Inv
       LOG;
 
       PrpLine() << "------ MISSILE PARAMETERS -------------------------";
-      PrpLine() << "Velocity:" << mMissileVelocity;
+      PrpLine() << "SpitVelocity:" << mSpitVelocity;
+      PrpLine() << "RocketVelocity:" << mRocketVelocity;
+      PrpLine() << "RocketSupply:" << mRocketSupply;
+      PrpLine() << "RocketSupplyReplenishRate:" << mRocketSupplyReplenishRate;
+      PrpLine() << "RocketSupplyReplenishTicks:" << mRocketSupplyReplenishTicks;
       LOG;
+
    } // CInvSettingsRuntime::Preprint
 
    //-------------------------------------------------------------------------------------------------
@@ -74,7 +82,10 @@ namespace Inv
      mPlayerInvulnerabilityTicks = 150;
      mPlayerVelocity = 2.0f;
 
-     mMissileVelocity = 1.0f;
+     mSpitVelocity = 1.0f;
+     mRocketVelocity = 3.0f;
+     mRocketSupplyReplenishRate = 1.0f;
+     mRocketSupplyReplenishTicks = 60;
 
    } // CInvSettingsRuntime::ResetToDefaults
 

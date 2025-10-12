@@ -113,7 +113,10 @@ namespace Inv
     mPD3D( nullptr ),
     mPd3dDevice( nullptr ),
     mPVB( nullptr ),
-    mClearColor( D3DCOLOR_XRGB( 0, 0, 0 ) )
+    mClearColor( D3DCOLOR_XRGB( 0, 0, 0 ) ),
+    mLoopElapsedMicrosecondsMax( 0 ),
+    mLoopElapsedMicrosecondsAvg( 0.0f ),
+    mLoopElapsedMicrosecondsAvgCount( 0 )
   {}
 
   //-------------------------------------------------------------------------------------------------
@@ -184,11 +187,13 @@ namespace Inv
 
     //------ Graphics initialization - sprites ----------------------------------------------------------
 
-    mSpriteStorage->AddSprite( "PINK", "invader_pink" );
+    mSpriteStorage->AddSprite( "PINK", "invaderPink" );
+    mSpriteStorage->AddSprite( "PINKEXPL", "explosionPink" );
     mSpriteStorage->AddSprite( "SPIT", "spit" );
 
     mSpriteStorage->AddSprite( "FIGHT", "fighter" );
     mSpriteStorage->AddSprite( "FEXPL", "explosionFighter" );
+    mSpriteStorage->AddSprite( "ROCKET", "rocket" );
 
     //------ Main structures initialization ----------------------------------------------------------
 
@@ -317,7 +322,7 @@ namespace Inv
           if( !mPlayItScreen->MainLoop(
             newScoreToEnter, gameEndRequest, controlState, controlValue, mReferenceTick ) )
           {
-            LOG << "Insert coin screen loop failed, quitting";
+            LOG << "Play the game screen loop failed, quitting";
             stillInLoop = false;
           } // if
         } // if
@@ -346,13 +351,24 @@ namespace Inv
                         // We now have the elapsed number of ticks, along with the number
                         // of ticks-per-second. We use these values to convert to the number
                         // of elapsed microseconds. To guard against loss-of-precision, we
-                        // convert to microseconds *before* dividing by ticks-per-second.
+                        // convert to microseconds before dividing by ticks-per-second.
 
       auto ElapsedMilliseconds = (uint32_t)( ElapsedMicroseconds.QuadPart / 1000 );
       if( ElapsedMilliseconds < mMillisecondsPerTick )
         Sleep( mMillisecondsPerTick - ElapsedMilliseconds );
                         // Now we calculate how many millisecond left to demanded tick length
                         // and sleep this time if necessary.
+
+      if( gameInProgress )
+      {                 // Performance statistics are being collected only in game
+                        // mode, not in insert-coin mode.
+        if( mLoopElapsedMicrosecondsMax < ElapsedMicroseconds.QuadPart )
+          mLoopElapsedMicrosecondsMax = ElapsedMicroseconds.QuadPart;
+
+        mLoopElapsedMicrosecondsAvg =
+          ( mLoopElapsedMicrosecondsAvg * mLoopElapsedMicrosecondsAvgCount +
+            (float)ElapsedMicroseconds.QuadPart ) / ( mLoopElapsedMicrosecondsAvgCount + 1 );
+      } // if
 
       mReferenceTick.QuadPart++;
 
@@ -365,6 +381,10 @@ namespace Inv
 
   bool CInvGame::Cleanup()
   {
+    LOG << "Maximal loop time: " << mLoopElapsedMicrosecondsMax << " us";
+    LOG << "Average loop time: " << mLoopElapsedMicrosecondsAvg << " us";
+    LOG << "Demanded tick time: " << mMillisecondsPerTick * 1000 << " us";
+
     return true;
   } // CInvGame::Cleanup
 

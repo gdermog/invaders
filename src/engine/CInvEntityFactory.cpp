@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvEntityFactory.cpp
-//! Module defines class CInvEntityFactory, which implements
+//! Module defines class CInvEntityFactory, which implements generator of in-game actors and objects.
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -13,6 +13,7 @@
 #include <engine/InvENTTComponents.h>
 #include <engine/CInvGameScene.h>
 
+#include <graphics/CInvSprite.h>
 #include <graphics/CInvEffectSpriteAnimation.h>
 #include <graphics/CInvEffectSpriteBlink.h>
 #include <graphics/CInvEffectSpriteShrink.h>
@@ -65,7 +66,6 @@ namespace Inv
 
     const auto invader = mEnTTRegistry.create();
 
-
     mEnTTRegistry.emplace<cpId>( invader, (uint64_t)invader, entityType, true, false );
                         // component: entity full identifier
 
@@ -96,12 +96,11 @@ namespace Inv
 
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 /* There must be some diferentiation of animation indices according to sprite type.   */
-/* Now it is just "PINK", but later, with more enemies, it will be necessary to spe-  */
-/* different animation points of interest and so on.                                  */
+/* Now it is just "PINK", but later, with more enemies, it will be necessary to       */
+/* specify different animation points of interest and so on.                          */
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
     auto &aStat = mEnTTRegistry.get<cpAlienStatus>( invader );
-
 
     auto standardAnimationEffect = std::make_shared<CInvEffectSpriteAnimation>(
       mSettings, mPd3dDevice, 1u );
@@ -129,8 +128,18 @@ namespace Inv
                         // Firing animation effect starts suspended, it will be
                         // activated on random event.
 
+    auto shrinkAnimationEffect = std::make_shared<CInvEffectSpriteShrink>( mSettings, mPd3dDevice, 11u );
+    shrinkAnimationEffect->SetPace( 6 );
+    shrinkAnimationEffect->SetContinuous( false );
+    shrinkAnimationEffect->Suspend();
+    shrinkAnimationEffect->AddEventCallback(
+      BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackUnsetActive, invader ) );
+    entitySprite->AddEffect( shrinkAnimationEffect );
+                        // Shrink animation effect starts suspended (dying effect, not needed for now), it will
+                        //  be activated on external event.
+
     mEnTTRegistry.emplace<cpGraphics>( invader,
-      entitySprite, 0u, standardAnimationEffect, firingAnimationEffect, LARGE_INTEGER{0} );
+      entitySprite, 0u, standardAnimationEffect, firingAnimationEffect, shrinkAnimationEffect, LARGE_INTEGER{0} );
                         // component: graphics (sprite, static image index, standard animation
                         // sequence, firing animation sequence, animation driver is zeroed )
 
@@ -207,7 +216,7 @@ namespace Inv
 #endif
 
     mEnTTRegistry.emplace<cpGraphics>( fighter,
-      entitySprite, 0u, blinkAnimationEffect, shrinkAnimationEffect, LARGE_INTEGER{ 0 } );
+      entitySprite, 0u, blinkAnimationEffect, nullptr, shrinkAnimationEffect, LARGE_INTEGER{ 0 } );
                         // component: graphics (sprite, invulnerability and dying effects are stored, animation
                         // driver is zeroed )
 
@@ -245,7 +254,7 @@ namespace Inv
 
     float vDiv = std::sqrt( directionX * directionX + directionY * directionY );
     vDiv = ( IsZero( vDiv ) ? 1.0f : 1.0f / vDiv );
-    float vSize = mSettingsRuntime.mMissileVelocity;
+    float vSize = ( fromPlayer ? mSettingsRuntime.mRocketVelocity : mSettingsRuntime.mSpitVelocity );
     mEnTTRegistry.emplace<cpVelocity>( missile, directionX * vSize * vDiv, directionY * vSize * vDiv, 0.0f );
                         // component: velocity
 
@@ -265,7 +274,7 @@ namespace Inv
                         // Missile is animated continuously and have no event bound to animation
 
     mEnTTRegistry.emplace<cpGraphics>( missile,
-      entitySprite, 0u, standardAnimationEffect,  nullptr, LARGE_INTEGER{ 0 } );
+      entitySprite, 0u, standardAnimationEffect,  nullptr, nullptr, LARGE_INTEGER{ 0 } );
                         // component: graphics (sprite, static image index, standard animation
                         // sequence, no firing animation sequence, animation driver is zeroed )
 
@@ -309,9 +318,14 @@ namespace Inv
     mEnTTRegistry.emplace<cpGeometry>( explosion, explosionSizeX, explosionSizeX * aspectRatio );
                         // component: geometry
 
+    auto explosionTicks = (uint32_t)( mExplosionTime * (float)mSettings.GetTickPerSecond() );
+    auto explosionPace = explosionTicks / entitySprite->GetNumberOfImages();
+    if( 0u == explosionPace )
+      explosionPace = 1u;
+
     auto standardAnimationEffect = std::make_shared<CInvEffectSpriteAnimation>(
       mSettings, mPd3dDevice, 1u );
-    standardAnimationEffect->SetPace( 6 );
+    standardAnimationEffect->SetPace( explosionPace );
     standardAnimationEffect->SetContinuous( false );
     standardAnimationEffect->AddEventCallback(
       BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackUnsetActive, explosion ) );
@@ -323,7 +337,7 @@ namespace Inv
 #endif
 
     mEnTTRegistry.emplace<cpGraphics>( explosion,
-      entitySprite, 0u, standardAnimationEffect, nullptr, LARGE_INTEGER{ 0 } );
+      entitySprite, 0u, standardAnimationEffect, nullptr, nullptr, LARGE_INTEGER{ 0 } );
                         // component: graphics (sprite, static image index, standard animation
                         // sequence, no firing animation sequence, animation driver is zeroed )
 

@@ -1,7 +1,7 @@
 //****************************************************************************************************
 //! \file CInvEffectSpriteBlink.cpp
 //! Module contains class CInvEffectSpriteBlink, which defines effect that animates sprite by
-//! showing and hiding its image in given pace
+//! showing and hiding its image in given pace.
 //****************************************************************************************************
 //
 //****************************************************************************************************

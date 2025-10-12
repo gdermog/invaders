@@ -84,6 +84,39 @@ namespace Inv
     CInvSettingsRuntime & mSettingsRuntime;
   };
 
+  //****** processor: updating demads for offensive actions of player actor ****************
+
+  struct procPlayerFireUpdater
+  {
+    procPlayerFireUpdater(
+      LARGE_INTEGER refTick,
+      CInvEntityFactory & entityFactory,
+      CInvSettingsRuntime & settingsRuntime );
+
+    void reset( LARGE_INTEGER refTick );
+
+    void update(
+      entt::registry & reg,
+      LARGE_INTEGER actTick,
+      LARGE_INTEGER diffTick,
+      ControlStateFlags_t controlState,
+      ControlValue_t controlValue );
+
+    LARGE_INTEGER mRefTick;
+    CInvEntityFactory & mEntityFactory;
+    CInvSettingsRuntime & mSettingsRuntime;
+
+    bool mShootCommenced;
+    //!< \brief True if shoot command was given in the last update. If the player holds fire button,
+    //!  the ship must not fire again until the button is released and pressed again. This flag is
+    //!  set to false when fire button is released.
+
+    bool mCanShoot;
+    //!< \brief True if player can shoot now, false if not. It is set to true by game scene
+    //!  according to available rockets (ammo).
+
+  }; // procPlayerFireUpdater
+
   //****** processor: bounds guard - player ************************************************
 
   struct procPlayerBoundsGuard

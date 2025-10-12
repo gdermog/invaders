@@ -118,6 +118,12 @@ namespace Inv
     DWORD mClearColor;
     //<! Color used to clear the screen each frame
 
+    LONGLONG mLoopElapsedMicrosecondsMax;
+
+    float mLoopElapsedMicrosecondsAvg;
+
+    uint64_t mLoopElapsedMicrosecondsAvgCount;
+
     static const std::wstring mWindiwClassId;
     //<! Identifier of window class
 
