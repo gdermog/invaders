@@ -61,6 +61,9 @@ namespace Inv
     int32_t GetSeed() const { return mSeed; }
     //!< \brief Returns seed for random number generator, if -1, current time is used
 
+    uint32_t GetTickPerSecond() const { return mTickPerSecond; }
+    //!< \brief Returns number of ticks per second (updates of game logic and rendering)
+
     bool GetFullScreen() const { return mFullScreen; }
     //!< \brief Returns true if the game should run in fullscreen mode
 
@@ -76,6 +79,10 @@ namespace Inv
     const std::string & GetHiscorePath() const { return mHiscorePath; }
     //!< \brief Returns path to hiscore file
 
+    bool GetZeroExplosionV() const { return mZeroExplosionV; }
+    //!< \brief Returns true if actor should stop moving when destroyed
+
+
   protected:
 
     //@}----------------------------------------------------------------------------------------------
@@ -86,6 +93,9 @@ namespace Inv
                         //!< Game identifier
 
     int32_t mSeed;      //!< Seed for random number generator, if -1, current time is used
+
+    uint32_t mTickPerSecond;
+                        //!< Number of ticks per second (updates of game logic and rendering)
 
     bool mFullScreen;   //!< If true, game runs in fullscreen mode
 
@@ -99,6 +109,9 @@ namespace Inv
 
     std::string mHiscorePath;
                         //!< Path to hiscore file
+
+    bool mZeroExplosionV;
+                        //!< If true, actor stops moving when destroyed
 
     std::ostream & PrpLine();
     /*!< \brief Helper for formatting output in Preprint method */

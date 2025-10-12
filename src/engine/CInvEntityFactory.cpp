@@ -81,8 +81,8 @@ namespace Inv
                         // component: geometry
 
     mEnTTRegistry.emplace<cpAlienBehave>(
-      invader, mSettingsRuntime.mAlienAnimationProbability, mSettingsRuntime.mAlienShootProbability );
-                        // component: ai behavior
+      invader, mSettingsRuntime.mAlienAnimationProbability, mSettingsRuntime.mAlienShootProbability,
+      posX, posY );     // component: ai behavior
 
     mEnTTRegistry.emplace<cpAlienStatus>( invader, false, false, false, false );
                         // component: alien status (not animating, not firing, shoot not requested, not dying )

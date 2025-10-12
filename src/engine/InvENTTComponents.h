@@ -67,6 +67,9 @@ namespace Inv
     float shootProbability;
                         //!< Probability of shooting in each game tick, usually a small
 
+    float startX;       //!< Starting X position (of centre of alien object) [px]
+    float startY;       //!< Starting Y position (of centre of alien object) [px]
+
   };
 
   //****** component: alien status *******************************************************************

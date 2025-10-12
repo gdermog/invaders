@@ -105,8 +105,8 @@ namespace Inv
     LARGE_INTEGER mReferenceTick;
     //<! \brief Reference tick, used for timing and animations and actions.
 
-    LARGE_INTEGER mFreq;
-    //<! \brief Frequency of the high-resolution performance counter.
+    uint32_t mMillisecondsPerTick;
+    //<! Demanded number of milliseconds per tick
 
     LPDIRECT3D9             mPD3D;
     //<! Direct3D interface, used to create device

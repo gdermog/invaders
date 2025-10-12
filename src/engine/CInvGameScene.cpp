@@ -22,6 +22,7 @@ namespace Inv
   const std::string CInvGameScene::mPlayerEntryTextAttention = "ATTENTION";
   const std::string CInvGameScene::mPlayerEntryTextReady = "READY";
   const std::string CInvGameScene::mPlayerEntryTextGo = "GO";
+  const float CInvGameScene::mPlayerEntryTextSecond = 1.5f;
 
   //**************************************************************************************************
 
@@ -72,7 +73,7 @@ namespace Inv
     mTReady( nullptr ),
     mTGo( nullptr ),
     mTBlinkEffect( nullptr ),
-    mPlayerEntryTextSizeX( 40.0f )
+    mPlayerEntryLetterSize( 40.0f )
   {
   } // CInvGameScene::CInvGameScene
 
@@ -116,12 +117,16 @@ namespace Inv
       mPlayerEntryTextAttention.size(),
       mPlayerEntryTextReady.size() ),
       mPlayerEntryTextGo.size() );
-    mPlayerEntryTextSizeX = mSceneWidth * 0.5f / (float)maxLetters;
+    mPlayerEntryLetterSize = mSceneWidth * 0.5f / (float)maxLetters;
+                        // Attention-ready-go text size is set in such way that the longest text
+                        // ("attention" by default) takes half of the scene width.
 
+    uint32_t textBlinkPace = (uint32_t)( (float)mSettings.GetTickPerSecond() * ( mPlayerEntryTextSecond / 6.0f ) ) + 1;
     mTBlinkEffect = std::make_shared<CInvEffectSpriteBlink>( mSettings, mPd3dDevice, 1u );
-    mTBlinkEffect->SetPace( 18 );
+    mTBlinkEffect->SetPace( textBlinkPace );
     mTBlinkEffect->SetIgnoreDiffTick( true );
     mTBlinkEffect->SetContinuous( true );
+                        // Each text from attention-ready-go will blink 3 times during its display time
 
     mTAttention = std::make_unique<CInvText>( mPlayerEntryTextAttention, mSettings, mPd3dDevice );
     mTAttention->AddEffect( mTBlinkEffect );
@@ -129,6 +134,8 @@ namespace Inv
     mTReady->AddEffect( mTBlinkEffect );
     mTGo = std::make_unique<CInvText>( mPlayerEntryTextGo, mSettings, mPd3dDevice );
     mTGo->AddEffect( mTBlinkEffect );
+                        // Attention-ready-go texts are created with blinking effect on them. Texts will
+                        // be displayed during player entity entry into the scene.
 
     std::vector<std::pair<uint32_t, std::string>> alienRows =
     {
@@ -204,11 +211,11 @@ namespace Inv
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 /* DOOMED! Player dies at the start of the game for debugging purposes    */
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
-    mEntityFactory.AddMissileEntity(
-      "SPIT", false,
-      mSceneTopLeftX + mSceneWidth * 0.5f,
-      mSceneBottomRightY - 4 * playerHeight,
-      0.33f * playerWidth );
+   mEntityFactory.AddMissileEntity(
+     "SPIT", false,
+     mSceneTopLeftX + mSceneWidth * 0.5f - 0.25*playerWidth,
+     mSceneBottomRightY - 4 * playerHeight,
+     0.33f * playerWidth );
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
     return true;
@@ -224,12 +231,13 @@ namespace Inv
 
     mProcGarbageCollector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // Removes entities marked as inactive from the registry, noticing
-                        // main scena class if demanded.
+                        // main scene class if demanded.
 
     mProcActorStateSelector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
     mProcEntitySpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
 
     mProcPlayerSpeedUpdater.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, controlState, controlValue );
+                        // Player velocity is updated according to control state (keyboard)
 
     mProcPlayerBoundsGuard.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // Player entity is kept within scene bounds
@@ -246,9 +254,16 @@ namespace Inv
     for( auto & item : mProcCollisionDetector.mCollidedPairs )
     {                   // Missile hits and alien-player collisions are handled
       auto [ id1, dmg1 ] = mEnTTRegistry.try_get<cpId, cpDamage>( item.first );
+
       if( nullptr != id1 && nullptr != dmg1 && dmg1->removeOnHit )
         id1->active = false;
+                        // Missile is being removed by simple pruning and garbage collecting (it simply
+                        // disappears). Alien that rams into the player, on other hand, is not eliminated
+                        // at all (as its removeOnHit flag is set to false).
+
       EliminateEntity( item.second );
+                        // Player or alien hit by missile is eliminated from the scene by much more complex
+                        // procedure, involving explosion creation (and possible player respawn).
     } // for
 
     return true;
@@ -262,39 +277,41 @@ namespace Inv
     if( ! mPlayerEntryInProgress )
       return true;      // Player is already in the scene, nothing to do.
 
-    LONGLONG textInterval = 100;
+    LONGLONG textInterval = (LONGLONG)( (float)mSettings.GetTickPerSecond() * mPlayerEntryTextSecond );
+                        // Each text from attention-ready-go is shown for mPlayerEntryTextSecond seconds
 
      float posY = mSceneHeight * mAlienStartingAreaCoefficient +
                   0.5f * ( mSceneHeight * ( 1.0f - mAlienStartingAreaCoefficient ) -
-                  0.5f * mPlayerEntryTextSizeX );
+                  0.5f * mPlayerEntryLetterSize );
+                        // Attention-ready-go text is drawn in the middle of the area below aliens
 
     if( mPlayerEntryTick.QuadPart < textInterval )
     {
-      auto width = mTAttention->GetTextLength() * mPlayerEntryTextSizeX;
+      auto width = mTAttention->GetTextLength() * mPlayerEntryLetterSize;
       mTAttention->Draw(
         mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
         posY,
-        mPlayerEntryTextSizeX,
+        mPlayerEntryLetterSize,
         mTickReferencePoint,
         actTick, mDiffTickPoint );
     } // if
     else if( mPlayerEntryTick.QuadPart < 2*textInterval )
     {
-      auto width = mTReady->GetTextLength() * mPlayerEntryTextSizeX;
+      auto width = mTReady->GetTextLength() * mPlayerEntryLetterSize;
       mTReady->Draw(
         mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
         posY,
-        mPlayerEntryTextSizeX,
+        mPlayerEntryLetterSize,
         mTickReferencePoint,
         actTick, mDiffTickPoint );
     } // else if
     else if( mPlayerEntryTick.QuadPart < 3 * textInterval )
     {
-      auto width = mTGo->GetTextLength() * mPlayerEntryTextSizeX;
+      auto width = mTGo->GetTextLength() * mPlayerEntryLetterSize;
       mTGo->Draw(
         mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
         posY,
-        mPlayerEntryTextSizeX,
+        mPlayerEntryLetterSize,
         mTickReferencePoint,
         actTick, mDiffTickPoint );
     } // else if
@@ -337,7 +354,11 @@ namespace Inv
     mProcCollisionDetector.reset( newTickRefPoint );
 
     GenerateNewScene( mSceneTopLeftX, mSceneTopLeftY, mSceneBottomRightX, mSceneBottomRightY );
-    mPlayerEntryInProgress = true; // SpawnPlayer();
+                        // Aliens swarm is placed in the scene.
+
+    mPlayerEntryInProgress = true;
+    mPlayerEntryTick.QuadPart = 0;
+                        // Player entry sequence is started.
 
   } // CInvGameScene::Reset
 
@@ -376,6 +397,14 @@ namespace Inv
                         // Welcome to the scrapyard, pal ...
 
       auto [ pPos, pVel, pGeo] = mEnTTRegistry.try_get<cpPosition, cpVelocity, cpGeometry>( entity );
+
+      if( mSettings.GetZeroExplosionV() )
+      {                // If demanded, destroyed player stops and explosion does not inherit his velocity.
+        pVel->vX = 0.0f;
+        pVel->vY = 0.0f;
+        pVel->vZ = 0.0f;
+      }  // if
+
       auto explosionSize = ( nullptr == pGeo ? 150.0f : playGph->standardSprite->GetResultingSizeX() * 1.5f );
       auto xplX = ( nullptr == pPos ? 0.0f : pPos->X );
       auto xplY = ( nullptr == pPos ? 0.0f : pPos->Y );

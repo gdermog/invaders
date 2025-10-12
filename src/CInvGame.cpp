@@ -109,7 +109,7 @@ namespace Inv
     mWindowClass{},
     mHWnd{},
     mReferenceTick{},
-    mFreq{},
+    mMillisecondsPerTick( 1000 / settings.GetTickPerSecond() ),
     mPD3D( nullptr ),
     mPd3dDevice( nullptr ),
     mPVB( nullptr ),
@@ -161,9 +161,6 @@ namespace Inv
     mHWnd = CreateWindow( mWindiwClassId.c_str(), mWindiwName.c_str(),
       style, 0, 0, r.right - r.left, r.bottom - r.top,
       GetDesktopWindow(), NULL, mWindowClass.hInstance, NULL );
-
-    QueryPerformanceCounter( &mReferenceTick );
-    QueryPerformanceFrequency( &mFreq );
 
     if( !SUCCEEDED( InitD3D() ) )
       return false;
@@ -257,11 +254,17 @@ namespace Inv
     ControlStateFlags_t controlState = 0;
     ControlValue_t controlValue = 0;
 
-    QueryPerformanceCounter( &mReferenceTick );
+    LARGE_INTEGER StartingTime, EndingTime, ElapsedMicroseconds;
+    LARGE_INTEGER Frequency;
+
+    mReferenceTick.QuadPart = 0;
     mInsertCoinScreen->Reset( mReferenceTick );
 
     while( stillInLoop )
     {
+      QueryPerformanceCounter( &StartingTime );
+      QueryPerformanceFrequency( &Frequency );
+
       MSG msg;
       while( PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
       {
@@ -304,7 +307,6 @@ namespace Inv
         {               // New game requested, initialization of hte game engine is necessary
           LOG << "Game start requested";
 
-          QueryPerformanceCounter( &mReferenceTick );
           mPlayItScreen->Reset( mReferenceTick );
           gameInProgress = true;
           gameStartRequest = false;
@@ -323,7 +325,6 @@ namespace Inv
         if( gameEndRequest && gameInProgress )
         {
           LOG << "Game ended";
-          QueryPerformanceCounter( &mReferenceTick );
           mInsertCoinScreen->Reset( mReferenceTick );
           gameInProgress = false;
           gameEndRequest = false;
@@ -334,10 +335,25 @@ namespace Inv
 
       } // if
 
-      // Present the backbuffer contents to the display
-      mPd3dDevice->Present( NULL, NULL, NULL, NULL );
 
-      Sleep( 10 );
+      mPd3dDevice->Present( NULL, NULL, NULL, NULL );
+                        // Present the backbuffer contents to the display
+
+      QueryPerformanceCounter( &EndingTime );
+      ElapsedMicroseconds.QuadPart = EndingTime.QuadPart - StartingTime.QuadPart;
+      ElapsedMicroseconds.QuadPart *= 1000000;
+      ElapsedMicroseconds.QuadPart /= Frequency.QuadPart;
+                        // We now have the elapsed number of ticks, along with the number
+                        // of ticks-per-second. We use these values to convert to the number
+                        // of elapsed microseconds. To guard against loss-of-precision, we
+                        // convert to microseconds *before* dividing by ticks-per-second.
+
+      auto ElapsedMilliseconds = (uint32_t)( ElapsedMicroseconds.QuadPart / 1000 );
+      if( ElapsedMilliseconds < mMillisecondsPerTick )
+        Sleep( mMillisecondsPerTick - ElapsedMilliseconds );
+                        // Now we calculate how many millisecond left to demanded tick length
+                        // and sleep this time if necessary.
+
       mReferenceTick.QuadPart++;
 
     } // while

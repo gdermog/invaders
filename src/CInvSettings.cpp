@@ -24,11 +24,13 @@ namespace Inv
    CInvSettings::CInvSettings():
      mGameIdentifier( "Invaders"),
      mSeed( -1 ),
+     mTickPerSecond( 60 ),
      mFullScreen( true ),
      mScreenWidth( 800 ),
      mScreenHeight( 600 ),
      mImagePath(),
-     mHiscorePath( "./hiscore.csv" )
+     mHiscorePath( "./hiscore.csv" ),
+     mZeroExplosionV( false )
    {
 
    } // CInvSettings::CInvSettings
@@ -64,6 +66,7 @@ namespace Inv
        } // else
 
        mSeed = (int32_t)inCfg.GetValueInteger( {}, "Seed", -1 );
+       mTickPerSecond = (uint32_t)inCfg.GetValueInteger( {}, "TickPerSecond", 60 );
 
        mFullScreen = inCfg.GetValueBool( "graphics", "fullscreen", false );
 
@@ -73,6 +76,7 @@ namespace Inv
        mImagePath = inCfg.GetValueStr( "graphics", "images", "./images" );
 
        mHiscorePath = inCfg.GetValueStr( "game", "highscore", "./hiscore.csv" );
+       mZeroExplosionV = inCfg.GetValueBool( "game", "ZeroExplosionV", false );
 
      }
      catch( std::exception& e )
@@ -100,6 +104,7 @@ namespace Inv
    {
      PrpLine() << "GameIdentifier:" << mGameIdentifier;
      PrpLine() << "Seed:" << mSeed;
+     PrpLine() << "TickPerSecond:" << mTickPerSecond;
      LOG;
 
      PrpLine() << "FullScreen:" << ( mFullScreen ? gTrueName : gFalseName );
@@ -109,6 +114,7 @@ namespace Inv
 
      PrpLine() << "ImagePath:" << mImagePath;
      PrpLine() << "HighscorePath:" << mHiscorePath;
+     PrpLine() << "ZeroExplosionV:" << ( mZeroExplosionV ? gTrueName : gFalseName );
      LOG;
 
    } // CInvSettings::Preprint

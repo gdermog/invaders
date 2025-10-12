@@ -177,6 +177,8 @@ namespace Inv
     static const std::string mPlayerEntryTextReady;
     static const std::string mPlayerEntryTextGo;
 
+    static const float mPlayerEntryTextSecond;
+
     bool mPlayerEntryInProgress;
     //!< \brief Flag indicating that player entity is entering the scene (after spawn or respawn).
 
@@ -189,7 +191,7 @@ namespace Inv
 
     std::shared_ptr<CInvEffectSpriteBlink> mTBlinkEffect;
 
-    float mPlayerEntryTextSizeX;
+    float mPlayerEntryLetterSize;
 
   };
 

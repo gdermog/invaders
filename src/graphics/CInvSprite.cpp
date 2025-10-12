@@ -179,6 +179,12 @@ namespace Inv
     if( nullptr == tex )
       return;
 
+    for( auto & teaItem: mTea2 )
+    {
+      teaItem.x -= 0.5f;
+      teaItem.y -= 0.5f;
+    } // for
+
     IDirect3DTexture9 * t = (IDirect3DTexture9 *)tex;
     mPd3dDevice->SetTexture( 0, t );
     mPd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, mTea2, sizeof( CUSTOMVERTEX ) );

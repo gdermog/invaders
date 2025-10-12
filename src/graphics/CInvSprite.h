@@ -110,6 +110,13 @@ namespace Inv
     /*!< \brief Returns level of sprite, used for "sorting" sprites before drawing. Higher
           level means the sprite is drawn on top of lower level sprites. */
 
+    IDirect3DTexture9 * GetResultingTexture() const
+    { return mTextures.size() <= mImageIndex ? mTextures[0] : mTextures[mImageIndex]; }
+    /*!< \brief Returns resulting texture of the sprite after all effects have been applied. */
+
+    auto GetResultingVertices() const { return mTea2; }
+
+
     void GetResultingPosition(
       float & xTopLeft, float & yTopLeft,
       float & xBottomRight, float & yBottomRight,
