@@ -319,4 +319,45 @@ namespace Inv
 
   //****************************************************************************************************
 
+  std::string FormatScoreNumber( uint32_t inScore )
+  {
+    uint32_t ones = inScore % 1000;
+    uint32_t thousands = ( inScore / 1000 ) % 1000;
+    uint32_t millions = ( inScore / 1000000 ) % 1000;
+
+    if( 999999999 < inScore )
+      return { "999 999 999" };
+    else if( inScore == 0 )
+      return { "0" };
+
+    std::string retVal;
+
+    if( 0 < millions )
+      retVal += FormatStr( "%3u", millions );
+    else
+      retVal += "   ";
+
+    retVal += " ";
+
+    if( 0 == thousands && 0 == millions )
+      retVal += "   ";
+    else if( 0 < thousands && 0 == millions )
+      retVal += FormatStr( "%3u", thousands );
+    else
+      retVal += FormatStr( "%03u", thousands );
+
+    retVal += " ";
+
+    if( 0 == thousands && 0 == millions && 0 == ones )
+      retVal += "   ";
+    else if( 0 < ones && 0 == thousands && 0 == millions )
+      retVal += FormatStr( "%3u", ones );
+    else
+      retVal += FormatStr( "%03u", ones );
+
+    return retVal;
+  } // FormatScoreNumber
+
+  //****************************************************************************************************
+
 } // namespace Inv

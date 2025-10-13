@@ -131,6 +131,15 @@ namespace Inv
        \param[in] glue      Glue string to be inserted between elements
        \return Joined string */
 
+  std::string FormatScoreNumber( uint32_t inScore );
+  /*!< \brief Formats given score number into a string with leading spaces, so that the resulting
+       string is always 11 characters long. If the score is higher than 999999999, it is capped to
+       "999999999". Thousands and millions are separated by space.
+
+       \param[in] inScore Score number to be formatted
+       \param[in] formatRight If <b>true</b>, the score is right-aligned, otherwise left-aligned
+       \return Formatted score string */
+
   //****************************************************************************************************
 
   inline char format_argument_typecast( char value ) noexcept { return value; }

@@ -25,6 +25,7 @@
 
 #include <engine/CInvEntityFactory.h>
 #include <engine/InvENTTProcessors.h>
+#include <engine/InvENTTProcessorsAI.h>
 
 namespace Inv
 {
@@ -35,9 +36,9 @@ namespace Inv
 
     CInvGameScene(
       const CInvSettings & settings,
+      CInvSettingsRuntime & settingsRuntime,
       const CInvSpriteStorage & spriteStorage,
       CInvPrimitive & primitives,
-      CInvSettingsRuntime & settingsRuntime,
       LPDIRECT3D9 pD3D,
       LPDIRECT3DDEVICE9 pd3dDevice,
       LPDIRECT3DVERTEXBUFFER9 pVB,
@@ -47,16 +48,10 @@ namespace Inv
     CInvGameScene & operator=( const CInvGameScene & ) = delete;
     ~CInvGameScene();
 
-    bool GenerateNewScene(
-      float sceneTopLeftX, float sceneTopLeftY,
-      float sceneBottomRightX, float sceneBottomRightY );
+    bool GenerateNewScene();
     /*!< \brief Generates a new game scene, with aliens and possible other entities placed at their
          starting positions.
 
-         \param[in] sceneTopLeftX     X coordinate of top left corner of the game scene [px]
-         \param[in] sceneTopLeftY     Y coordinate of top left corner of the game scene [px]
-         \param[in] sceneBottomRightX X coordinate of bottom right corner of the game scene [px]
-         \param[in] sceneBottomRightY Y coordinate of bottom right corner of the game scene [px]
          \returns true if the scene was generated successfully, false otherwise. */
 
     bool SpawnPlayer();
@@ -65,15 +60,35 @@ namespace Inv
          there coud be a lot of "noise" around spawning the player ship (as decreasing of lives
          counter and others), so this special function is implemented. */
 
+    bool GameOver() const { return 0u == mPlayerLivesLeft; }
+    /*!< \brief Returns true if the game is over (no lives left), false otherwise. */
+
+    uint32_t GetCurrentScore() const { return mActualScore; }
+    /*!< \brief Returns current score. */
+
     bool RenderActualScene(
       LARGE_INTEGER actualTickPoint,
       ControlStateFlags_t controlState,
       ControlValue_t controlValue );
     /*!< \brief Renders the actual game scene using EnTT processors chain.
 
-         \param[in] actualTickPoint Current tick point, used to calculate game situation */
+         \param[in] actualTickPoint Current tick point, used to calculate game situation
+         \returns false in case of error.  */
 
     bool PlayerEntryProcessing( LARGE_INTEGER actTick );
+    /*!< \brief Processes player entry sequence, when player entity is entering the scene
+         (after spawn or respawn). During this sequence, player cannot control the ship, aliens
+         should not shoot at the player and special text is displayed on the screen.
+
+         \param[in] actTick Current tick point, used to calculate game situation
+         \returns false in case of error. */
+
+    bool RenderStatusBar( LARGE_INTEGER actualTickPoint );
+    /*!< \brief Renders status bar at the bottom of the scene, containing information about
+          current score, number of lives left, current level etc.
+
+          \param[in] actualTickPoint Current tick point, used to calculate game situation
+          \returns false in case of error. */
 
     void Reset( LARGE_INTEGER newTickRefPoint );
     /*!< \brief Resets the game state to initial conditions, ready for a new game.
@@ -112,15 +127,25 @@ namespace Inv
          events that leads respawn, reduce number of lives, end of game etc. is initiated) */
 
     void NewSwarm();
+    /*!< \brief Generates new alien swarm, increases level counter and speedup factor. It is called
+         when all aliens are destroyed. */
+
+    //------ Timing parameters --------------------------------------------------------------------------
 
     LARGE_INTEGER mTickReferencePoint;
     //!< \brief Reference tick point, used to calculate elapsed time during the game.
 
     LARGE_INTEGER mDiffTickPoint;
+    //!<\brief Dummy tick difference, usually zero. It used for satisfying of arbitrary diff tick
+    //!  parameter in some methods.
 
+    //------ References to superior global objects (DI) and owned general objects ----------------------
 
     const CInvSettings & mSettings;
-    //!< \brief Reference to global settings
+    //!< \brief Reference to global user settings
+
+    CInvSettingsRuntime & mSettingsRuntime;
+    //!< \brief Reference to global runtime settings, used to store current game state
 
     const CInvSpriteStorage & mSpriteStorage;
     //!< \brief Reference to sprite storage object, used to access sprites.
@@ -128,10 +153,8 @@ namespace Inv
     CInvPrimitive & mPrimitives;
     //!< \brief Reference to primitive drawer, used to draw basic shapes on screen
 
-    CInvSettingsRuntime & mSettingsRuntime;
-
     CInvCollisionTest mCollisionTest;
-    //!< \brief Collision test object, used to detect collisions between entities
+    //!< \brief Class used to detect collisions between entities
 
     entt::registry mEnTTRegistry;
     //!< EnTT registry containing all entities and components of the current game scene
@@ -139,44 +162,176 @@ namespace Inv
     CInvEntityFactory mEntityFactory;
     //<! \brief Entity factory, used to create game actors
 
-    LPDIRECT3D9             mPD3D;
+    LPDIRECT3D9 mPD3D;
     //<! Direct3D interface, used to create device
 
-    LPDIRECT3DDEVICE9       mPd3dDevice;
+    LPDIRECT3DDEVICE9 mPd3dDevice;
     //<! Direct3D device, used to draw on screen
 
     LPDIRECT3DVERTEXBUFFER9 mPVB;
     //<! Vertex buffer, used to draw primitives
 
+    //------ Game scene parameters and state -----------------------------------------------------------
+
     float mSceneWidth;
     //!< \brief Width of the whole game scene in pixels.
+
     float mSceneHeight;
     //!< \brief Height of the whole game scene in pixels.
 
     float mSceneTopLeftX;
     //!< \brief X coordinate of top left corner of the game scene in pixels.
+
     float mSceneTopLeftY;
     //!< \brief Y coordinate of top left corner of the game scene in pixels.
+
     float mSceneBottomRightX;
     //!< \brief X coordinate of bottom right corner of the game scene in pixels.
+
     float mSceneBottomRightY;
     //!< \brief Y coordinate of bottom right corner of the game scene in pixels.
 
-    float mAlienStartingAreaCoefficient;
+    static const float mStatusLineAreaCoefficient;
+    //!< \brief Coefficient defining the area at the bottom of the scene where status line is placed
+
+    float mStatusLineTopLeftX;
+    //!< \brief X coordinate of top left corner of the status line in pixels.
+
+    float mStatusLineTopLeftY;
+    //!< \brief Y coordinate of top left corner of the status line in pixels.
+
+    float mStatusLineBottomRightX;
+    //!< \brief X coordinate of bottom right corner of the status line in pixels.
+
+    float mStatusLineBottomRightY;
+    //!< \brief Y coordinate of bottom right corner of the status line in pixels.
+
+    float mStatusLineHeight;
+    //!< \brief Height of the status line in pixels.
+
+    float mOneLiveIconWidth;
+    //!< \brief Width of one icon representing one player life (ship) in the status line
+
+    float mOneLiveIconHeight;
+    //!< \brief Height of one icon representing one player life (ship) in the status line
+
+    float mLivesIconsStartX;
+    //!< \brief X coordinate where the lives icons start in the status line
+
+    std::shared_ptr<CInvSprite> mLiveSprite;
+    //!< \brief Sprite used to render one icon representing one player life (ship) in the
+
+    float mAmmoIconWidth;
+    //!< \brief Width of one icon representing one ammo (rocket) in the status line
+
+    float mAmmoIconHeight;
+    //!< \brief Height of one icon representing one ammo (rocket) in the status line
+
+    float mAmmoIconsStartX;
+    //!< \brief X coordinate where the ammo icons start in the status line
+
+    std::shared_ptr<CInvSprite> mAmmoSprite;
+    //!< \brief Sprite used to render one icon representing one ammo (rocket) in the status
+
+    static const float mAlienStartingAreaCoefficient;
     //!< \brief Coefficient defining the area at the top of the scene where aliens can start
 
+    static const std::string mPlayerEntryTextAttention;
+    //<! \brief Texts shown during player entry sequence (1. part)
 
-    float mVXGroup;
-    float mVYGroup;
+    static const std::string mPlayerEntryTextReady;
+    //!< \brief Texts shown during player entry sequence (2. part)
+
+    static const std::string mPlayerEntryTextGo;
+    //!< \brief Texts shown during player entry sequence (3. part)
+
+    static const float mPlayerEntryTextSecond;
+    //!< \brief Time in seconds during which each of the entry texts is shown
+
+    std::unique_ptr<CInvText> mTAttention;
+    //<! \brief Text objects for player entry sequence (1. part)
+
+    std::unique_ptr<CInvText> mTReady;
+    //<! \brief Text objects for player entry sequence (2. part)
+
+    std::unique_ptr<CInvText> mTGo;
+    //<! \brief Text objects for player entry sequence (3. part)
+
+    std::shared_ptr<CInvEffectSpriteBlink> mTBlinkEffect;
+    //<! \brief Blinking effect applied to entry texts
+
+    float mPlayerEntryLetterSize;
+    //<! \brief Size of letters in entry texts, calculated according to scene width
+
+    //------ Player global state ---------------------------------------------------------------
 
     entt::entity mPlayerEntity;
+    //<! \brief EnTT entity handle of the player ship. Used to quickly access the player's ECS
+    //!  entity outside of EnTT processors.
+
+    static const float mPlayerWidthCoefficient;
+    //<! \brief Coefficient defining the width of the player ship in relation to scene width.
+
     float mPlayerWidth;
+    //<! \brief Width of the player ship in pixels.
+
     float mPlayerHeight;
+    //<! \brief Height of the player ship in pixels.
+
+    float mPlayerStartX;
+    //<! \brief X coordinate of the player ship starting position (bottom center of the scene)
+
+    float mPlayerStartY;
+    //<! \brief Y coordinate of the player ship starting position (bottom center of the scene)
 
     bool mPlayerAlive;
+    //!< \brief Flag indicating whether player entity is alive (true) or dead (false).
+
+    bool mPlayerEntryInProgress;
+    //!< \brief Flag indicating that player entity is entering the scene (after spawn or respawn).
+
+    LARGE_INTEGER mPlayerEntryTick;
+    //!< \brief Ticking when player entity started entering the scene.
+
+    uint32_t mActualScore;
+    //<! \brief Actual score of the player in the current game.
+
+    uint32_t mPlayerLivesLeft;
+    //<! \brief Number of player lives (ships) left in the current game.
+
+    uint32_t mPlayerAmmoLeft;
+    //<! \brief Number of ammo (rockets) left for the player in the current
+
+    LONGLONG mReloadingTicks;
+    //<! \brief Number of ticks needed to reload player weapon after firing.
+
+    LONGLONG mTickLeftToReload;
+    //<! \brief Number of ticks left to reload player weapon after firing.
+
+    CInvText mScoreLabel;
+    //<! \brief Text object for "SCORE" label in status line
+
+    static const std::string mScoreText;
+    //<! \brief "SCORE" label text
+
+    float mScoreLabelTextSize;
+    //<! \brief Size of letters in "SCORE" label text, calculated according to status line height
+
+    std::string mScoreLabelBuffer;
+    //<! \brief Buffer used to create "SCORE" label text
+
+    //------ Alien (group) global state ---------------------------------------------------------------
+
+    float mVXGroup;
+    //<! \brief Current velocity of alien group in X-axis [px/tick].
+
+    float mVYGroup;
+    //<! \brief Current velocity of alien group in Y-axis [px/tick].
 
     uint32_t mAliensLeft;
     //!< \brief Number of aliens still alive in the scene.
+
+    //------ EnTT processors --------------------------------------------------------------------------
 
     procGarbageCollector mProcGarbageCollector;
     procActorStateSelector mProcActorStateSelector;
@@ -189,28 +344,6 @@ namespace Inv
     procActorOutOfSceneCheck mProcActorOutOfSceneCheck;
     procCollisionDetector mProcCollisionDetector;
     procActorRender mProcActorRender;
-
-    static const std::string mPlayerEntryTextAttention;
-    static const std::string mPlayerEntryTextReady;
-    static const std::string mPlayerEntryTextGo;
-
-    static const float mPlayerEntryTextSecond;
-
-    bool mPlayerEntryInProgress;
-    //!< \brief Flag indicating that player entity is entering the scene (after spawn or respawn).
-
-    LARGE_INTEGER mPlayerEntryTick;
-    //!< \brief Ticking when player entity started entering the scene.
-
-    std::unique_ptr<CInvText> mTAttention;
-    std::unique_ptr<CInvText> mTReady;
-    std::unique_ptr<CInvText> mTGo;
-
-    std::shared_ptr<CInvEffectSpriteBlink> mTBlinkEffect;
-
-    float mPlayerEntryLetterSize;
-
-    uint32_t mActualScore;
 
   };
 

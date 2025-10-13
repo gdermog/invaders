@@ -156,7 +156,7 @@ namespace Inv
                       mWindiwClassId.c_str(), NULL };
     RegisterClassEx( &mWindowClass );
 
-    RECT r = { 0, 0, mSettings.GetWindowWidth(), mSettings.GetWindowHeight() };
+    RECT r = { 0, 0, mSettings.GetWidth(), mSettings.GetHeight() };
     int style = mSettings.GetFullScreen() ? WS_POPUP : WS_OVERLAPPEDWINDOW;
     style |= WS_VISIBLE;
     AdjustWindowRect( &r, style, false );
@@ -192,8 +192,10 @@ namespace Inv
     mSpriteStorage->AddSprite( "SPIT", "spit" );
 
     mSpriteStorage->AddSprite( "FIGHT", "fighter" );
+    mSpriteStorage->AddSprite( "LIVE", "fighter" );
     mSpriteStorage->AddSprite( "FEXPL", "explosionFighter" );
     mSpriteStorage->AddSprite( "ROCKET", "rocket" );
+    mSpriteStorage->AddSprite( "AMMO", "rocketAmmo" );
 
     //------ Main structures initialization ----------------------------------------------------------
 
@@ -381,6 +383,7 @@ namespace Inv
 
   bool CInvGame::Cleanup()
   {
+    LOG;
     LOG << "Maximal loop time: " << mLoopElapsedMicrosecondsMax << " us";
     LOG << "Average loop time: " << mLoopElapsedMicrosecondsAvg << " us";
     LOG << "Demanded tick time: " << mMillisecondsPerTick * 1000 << " us";

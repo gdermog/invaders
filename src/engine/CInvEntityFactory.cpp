@@ -221,7 +221,7 @@ namespace Inv
 #endif
 
     mEnTTRegistry.emplace<cpGraphics>( fighter,
-      entitySprite, 0u, blinkAnimationEffect, nullptr, shrinkAnimationEffect, LARGE_INTEGER{ 0 } );
+      entitySprite, 0u, blinkAnimationEffect, nullptr, shrinkAnimationEffect, LARGE_INTEGER{ 0 }, false );
                         // component: graphics (sprite, invulnerability and dying effects are stored, animation
                         // driver is zeroed )
 
@@ -280,7 +280,7 @@ namespace Inv
                         // Missile is animated continuously and have no event bound to animation
 
     mEnTTRegistry.emplace<cpGraphics>( missile,
-      entitySprite, 0u, standardAnimationEffect,  nullptr, nullptr, LARGE_INTEGER{ 0 } );
+      entitySprite, 0u, standardAnimationEffect,  nullptr, nullptr, LARGE_INTEGER{ 0 }, false );
                         // component: graphics (sprite, static image index, standard animation
                         // sequence, no firing animation sequence, animation driver is zeroed )
 
@@ -343,7 +343,7 @@ namespace Inv
 #endif
 
     mEnTTRegistry.emplace<cpGraphics>( explosion,
-      entitySprite, 0u, standardAnimationEffect, nullptr, nullptr, LARGE_INTEGER{ 0 } );
+      entitySprite, 0u, standardAnimationEffect, nullptr, nullptr, LARGE_INTEGER{ 0 }, false );
                         // component: graphics (sprite, static image index, standard animation
                         // sequence, no firing animation sequence, animation driver is zeroed )
 

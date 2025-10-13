@@ -87,12 +87,11 @@ namespace Inv
     } // if
 
     std::pair<size_t, size_t> texSize( 0, 0 );
-    D3DSURFACE_DESC desc;
-    HRESULT hr = tex->GetLevelDesc( 0, &desc );
-    if( SUCCEEDED( hr ) )
+    D3DXIMAGE_INFO info{};
+    if( SUCCEEDED( D3DXGetImageInfoFromFile( imagePath.wstring().c_str(), &info ) ) )
     {
-      texSize.first = desc.Width;
-      texSize.second = desc.Height;
+      texSize.first = info.Width;    // original width of the image on disk
+      texSize.second = info.Height;  // original height of the image on disk
     } // if
 
     mTextures.push_back( tex );

@@ -30,8 +30,7 @@ namespace Inv
     mSpriteStorage( spriteStorage ),
     mPrimitives( primitives ),
     mSettingsRuntime( settingsRuntime ),
-    mGameScene( settings, spriteStorage, primitives, settingsRuntime,
-                pD3D, pd3dDevice, pVB, tickReferencePoint ),
+    mGameScene( settings, settingsRuntime, spriteStorage, primitives, pD3D, pd3dDevice, pVB, tickReferencePoint ),
     mPD3D( pD3D ),
     mPd3dDevice( pd3dDevice ),
     mPVB( pVB ),
@@ -59,7 +58,14 @@ namespace Inv
     bool retVal = true;
 
     retVal |= mGameScene.RenderActualScene( actualTickPoint, controlState, controlValue );
+    retVal |= mGameScene.RenderStatusBar( actualTickPoint );
     retVal |= mGameScene.PlayerEntryProcessing( actualTickPoint );
+
+    if( mGameScene.GameOver() )
+    {
+      newScoreToEnter = mGameScene.GetCurrentScore();
+      gameEnd = true;
+    } // if
 
     return retVal;
 

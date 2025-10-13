@@ -82,6 +82,10 @@ namespace Inv
        mSpeedupPerKill = (float)inCfg.GetValueDouble( "game", "SpeedupPerKill", 0.05f );
        mDifficultyBuildup = (float)inCfg.GetValueDouble( "game", "DifficultyBuildup", 1.1f );
 
+       mInitialLives = (uint32_t)inCfg.GetValueInteger( "player", "InitialLives", 3 );
+       mAmmo = (uint32_t)inCfg.GetValueInteger( "player", "Ammo", 3 );
+       mReloadTime = (float)inCfg.GetValueDouble( "player", "reloadTime", 1.0f );
+
      }
      catch( std::exception& e )
      {

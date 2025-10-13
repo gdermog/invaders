@@ -185,6 +185,8 @@ namespace Inv
     LARGE_INTEGER diffTick;
     //!< Animation driver
 
+    bool isHidden;      //!< \b true if the entity is temporarily hidden (not rendered and not interacting)
+
   };
 
 

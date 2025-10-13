@@ -102,6 +102,9 @@
     <ClCompile Include="src\CInvSettingsRuntime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\engine\InvENTTProcessorsAI.cpp">
+      <Filter>Source Files\engine</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InvGlobals.h">
@@ -181,6 +184,9 @@
     </ClInclude>
     <ClInclude Include="src\CInvSettingsRuntime.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\engine\InvENTTProcessorsAI.h">
+      <Filter>Header Files\engine</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

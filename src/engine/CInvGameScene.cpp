@@ -13,35 +13,45 @@
 #include <graphics/CInvSprite.h>
 
 #include <CInvLogger.h>
+#include <InvStringTools.h>
 
 namespace Inv
 {
 
   static const std::string lModLogId( "GAMESCENE" );
 
+  const float CInvGameScene::mStatusLineAreaCoefficient = 0.925f;
+  const float CInvGameScene::mAlienStartingAreaCoefficient = 0.65f;
   const std::string CInvGameScene::mPlayerEntryTextAttention = "ATTENTION";
   const std::string CInvGameScene::mPlayerEntryTextReady = "READY";
   const std::string CInvGameScene::mPlayerEntryTextGo = "GO";
   const float CInvGameScene::mPlayerEntryTextSecond = 1.5f;
+  const float CInvGameScene::mPlayerWidthCoefficient = 0.1f;
+  const std::string CInvGameScene::mScoreText = "SCORE ";
 
   //**************************************************************************************************
 
   CInvGameScene::CInvGameScene(
     const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime,
     const CInvSpriteStorage & spriteStorage,
     CInvPrimitive & primitives,
-    CInvSettingsRuntime & settingsRuntime,
     LPDIRECT3D9 pD3D,
     LPDIRECT3DDEVICE9 pd3dDevice,
     LPDIRECT3DVERTEXBUFFER9 pVB,
     LARGE_INTEGER tickReferencePoint ):
 
+    //------ Timing parameters --------------------------------------------------------------------------
+
     mTickReferencePoint( tickReferencePoint ),
     mDiffTickPoint{ 0 },
+
+    //------ References to superior global objects (DI) and owned genral objects -----------------------
+
     mSettings( settings ),
+    mSettingsRuntime( settingsRuntime ),
     mSpriteStorage( spriteStorage ),
     mPrimitives( primitives ),
-    mSettingsRuntime( settingsRuntime ),
     mCollisionTest( settings, pd3dDevice ),
     mEnTTRegistry(),
     mEntityFactory( settings, spriteStorage, mEnTTRegistry, *this, mSettingsRuntime, pD3D, pd3dDevice, pVB ),
@@ -49,90 +59,82 @@ namespace Inv
     mPd3dDevice( pd3dDevice ),
     mPVB( pVB ),
 
-    mSceneWidth( (float)settings.GetWindowWidth() ),
-    mSceneHeight( (float)settings.GetWindowHeight() ),
+    //------ Game scene parameters and state -----------------------------------------------------------
+
+    mSceneWidth( (float)settings.GetWidth() ),
+    mSceneHeight( (float)settings.GetHeight() * mStatusLineAreaCoefficient ),
     mSceneTopLeftX( 0.0f ),
     mSceneTopLeftY( 0.0f ),
-    mSceneBottomRightX( (float)settings.GetWindowWidth() ),
-    mSceneBottomRightY( (float)settings.GetWindowHeight() ),
-    mAlienStartingAreaCoefficient( 0.65f ),
-
-    mVXGroup( 0.0f ),
-    mVYGroup( 0.0f ),
-
-    mPlayerEntity{},
-    mPlayerWidth( 0.0f ),
-    mPlayerHeight( 0.0f ),
-
-    mPlayerAlive( false ),
-
-    mAliensLeft( 0 ),
-
-    mProcGarbageCollector(
-      tickReferencePoint, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
-    mProcActorStateSelector( tickReferencePoint ),
-    mProcEntitySpawner( tickReferencePoint, mEntityFactory, settingsRuntime ),
-    mProcActorMover( tickReferencePoint, mVXGroup, mVYGroup, settingsRuntime ),
-    mProcPlayerFireUpdater( tickReferencePoint, mEntityFactory, settingsRuntime ),
-    mProcPlayerSpeedUpdater( tickReferencePoint, settings, settingsRuntime ),
-    mProcPlayerBoundsGuard(
-      tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
-    mProcAlienBoundsGuard(
-      tickReferencePoint, mVXGroup, mVYGroup, 0.0f, 0.0f,
-      (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight(), settings, settingsRuntime ),
-    mProcActorOutOfSceneCheck(
-      tickReferencePoint, 0.0f, 0.0f, (float)settings.GetWindowWidth(), (float)settings.GetWindowHeight() ),
-    mProcCollisionDetector( tickReferencePoint, mCollisionTest ),
-    mProcActorRender( tickReferencePoint ),
-
-    mPlayerEntryInProgress( false ),
-    mPlayerEntryTick{ 0 },
+    mSceneBottomRightX( (float)settings.GetWidth() ),
+    mSceneBottomRightY( (float)settings.GetHeight() * mStatusLineAreaCoefficient ),
+    mStatusLineTopLeftX( 0.0f ),
+    mStatusLineTopLeftY( (float)settings.GetHeight() * mStatusLineAreaCoefficient ),
+    mStatusLineBottomRightX( (float)settings.GetWidth() ),
+    mStatusLineBottomRightY( (float)settings.GetHeight() ),
+    mStatusLineHeight( (float)settings.GetHeight() * ( 1.0 - mStatusLineAreaCoefficient ) ),
+    mOneLiveIconWidth( 0.0f ),
+    mOneLiveIconHeight( 0.0f ),
+    mLivesIconsStartX( 0.0f ),
+    mLiveSprite( spriteStorage.GetSprite( "LIVE" ) ),
+    mAmmoIconWidth( 0.0f ),
+    mAmmoIconHeight( 0.0f ),
+    mAmmoIconsStartX( 0.0f ),
+    mAmmoSprite( spriteStorage.GetSprite( "AMMO" ) ),
     mTAttention( nullptr ),
     mTReady( nullptr ),
     mTGo( nullptr ),
     mTBlinkEffect( nullptr ),
     mPlayerEntryLetterSize( 40.0f ),
+    mScoreLabel( {}, settings, pd3dDevice ),
+    mScoreLabelBuffer(),
 
-    mActualScore( 0 )
-  {
-  } // CInvGameScene::CInvGameScene
+    //------ Player global state ---------------------------------------------------------------
+
+    mPlayerEntity{},
+    mPlayerWidth( 0.0f ),
+    mPlayerHeight( 0.0f ),
+    mPlayerStartX( 0.0f ),
+    mPlayerStartY( 0.0f ),
+    mPlayerEntryInProgress( false ),
+    mPlayerEntryTick{ 0 },
+    mActualScore( 0 ),
+    mPlayerAlive( false ),
+    mPlayerLivesLeft( 0 ),
+    mPlayerAmmoLeft( 0 ),
+    mReloadingTicks( 0 ),
+    mTickLeftToReload( 0 ),
+
+    //------ Alien (group) global state ---------------------------------------------------------------
+
+    mVXGroup( 0.0f ),
+    mVYGroup( 0.0f ),
+    mAliensLeft( 0 ),
+
+    //------ EnTT processors --------------------------------------------------------------------------
+
+#define PROCCMN  tickReferencePoint, settings, settingsRuntime
+
+    mProcGarbageCollector     ( PROCCMN, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
+    mProcActorStateSelector   ( PROCCMN ),
+    mProcEntitySpawner        ( PROCCMN, mEntityFactory ),
+    mProcActorMover           ( PROCCMN, mVXGroup, mVYGroup ),
+    mProcPlayerFireUpdater    ( PROCCMN, mEntityFactory, mPlayerAmmoLeft ),
+    mProcPlayerSpeedUpdater   ( PROCCMN ),
+    mProcPlayerBoundsGuard    ( PROCCMN, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight() ),
+    mProcAlienBoundsGuard     ( PROCCMN, mVXGroup, mVYGroup, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight() ),
+    mProcActorOutOfSceneCheck ( PROCCMN, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight() ),
+    mProcCollisionDetector    ( PROCCMN, mCollisionTest ),
+    mProcActorRender          ( PROCCMN )
+  {}
 
   //-------------------------------------------------------------------------------------------------
 
-  CInvGameScene::~CInvGameScene()
-  {
-
-  } // CInvGameScene::~CInvGameScene
+  CInvGameScene::~CInvGameScene() = default;
 
   //-------------------------------------------------------------------------------------------------
 
-  bool CInvGameScene::GenerateNewScene(
-    float sceneTopLeftX, float sceneTopLeftY,
-    float sceneBottomRightX, float sceneBottomRightY )
+  bool CInvGameScene::GenerateNewScene()
   {
-    mSceneWidth = min( (float)mSettings.GetWindowWidth(), sceneBottomRightX - sceneTopLeftX );
-    mSceneHeight = min( (float)mSettings.GetWindowHeight(), sceneBottomRightY - sceneTopLeftY );
-
-    mSceneTopLeftX = sceneTopLeftX;
-    if( mSceneTopLeftX < 0.0f )
-      mSceneTopLeftX = 0.0f;
-    if( (float)mSettings.GetWindowWidth() < mSceneTopLeftX + mSceneWidth )
-      mSceneTopLeftX = (float)mSettings.GetWindowWidth() - mSceneWidth;
-
-    mSceneTopLeftY = sceneTopLeftY;
-    if( mSceneTopLeftY < 0.0f )
-      mSceneTopLeftY = 0.0f;
-    if( (float)mSettings.GetWindowHeight() < mSceneTopLeftY + mSceneHeight )
-      mSceneTopLeftY = (float)mSettings.GetWindowHeight() - mSceneHeight;
-
-    mSceneBottomRightX = mSceneTopLeftX + mSceneWidth;
-    if( (float)mSettings.GetWindowWidth() < mSceneBottomRightX )
-      mSceneBottomRightX = (float)mSettings.GetWindowWidth();
-
-    mSceneBottomRightY = mSceneTopLeftY + mSceneHeight;
-    if( (float)mSettings.GetWindowHeight() < mSceneBottomRightY )
-      mSceneBottomRightY = (float)mSettings.GetWindowHeight();
-
     auto maxLetters = max( max(
       mPlayerEntryTextAttention.size(),
       mPlayerEntryTextReady.size() ),
@@ -158,7 +160,8 @@ namespace Inv
                         // be displayed during player entity entry into the scene.
 
     std::vector<std::pair<uint32_t, std::string>> alienRows =
-    {
+    {                   // Default alien setup. THis can be changed in future versions, generated randomly,
+                        // prescribed as series of defferent scenes and so on.
       { 10, "PINK" },
       {  9, "PINK" },
       { 10, "PINK" },
@@ -167,25 +170,28 @@ namespace Inv
     };
 
     auto alienAreaHeight = mSceneHeight * mAlienStartingAreaCoefficient;
+                        // Space for placing the alien swarm is limited to upper part of the scene
 
     uint32_t maxAliens = 0;
     for( const auto & ar : alienRows )
-    {
+    {                   // Find the maximum number of aliens in a single row
       if( maxAliens < ar.first )
         maxAliens = ar.first;
     } // for
 
     auto alienWidth = mSceneWidth / ( 1.60f * (float)maxAliens );
     auto spaceInBetween = 0.40f * alienWidth;
+                        // Alien width is set in such way that the maximum number of aliens in a row
+                        // fits into specific part of the scene width, rest is space in between aliens
+                        // and white space at the sides of the scene.
 
     mVXGroup = 0.0f;
     mVYGroup = 0.0f;
-
-    mAliensLeft = 0;
+    mAliensLeft = 0;    // No aliens on the scene yet and alien group is not moving
 
     uint32_t rowIndex = 0;
     for( auto & ar : alienRows )
-    {
+    {                   // Generate aliens row by row
       auto baseSprite = mSpriteStorage.GetSprite( ar.second );
       if( nullptr == baseSprite )
         continue;
@@ -210,7 +216,30 @@ namespace Inv
 
     } // for
 
+    if( nullptr != mLiveSprite )
+    {
+      auto baseSize = mLiveSprite->GetImageSize( 0 );
+      auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
+      mOneLiveIconHeight = mStatusLineHeight * 0.9f;
+      mOneLiveIconWidth = mOneLiveIconHeight / aspectRatio;
+      mLivesIconsStartX = mStatusLineBottomRightX - mOneLiveIconWidth * mSettings.GetInitialLives() * 1.05f;
+    } // if
+
+    if( nullptr != mAmmoSprite )
+    {
+      auto baseSize = mAmmoSprite->GetImageSize( 0 );
+      auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
+      mAmmoIconHeight = mStatusLineHeight * 0.9f;
+      mAmmoIconWidth = mStatusLineHeight / aspectRatio;
+      mAmmoIconsStartX =
+        ( IsZero( mLivesIconsStartX ) ? mStatusLineBottomRightX : mLivesIconsStartX ) -
+        mAmmoIconWidth * 0.5f * mSettings.GetAmmo() - mOneLiveIconWidth;
+    } // if
+
+    mScoreLabelTextSize = mStatusLineHeight * 0.6f;
+
     return true;
+
   } // CInvGameScene::GenerateNewScene
 
   //-------------------------------------------------------------------------------------------------
@@ -221,17 +250,17 @@ namespace Inv
     if( nullptr == baseSprite )
       return false;
 
-    mPlayerWidth = mSceneWidth * 0.1f;
+    mPlayerWidth = mSceneWidth * mPlayerWidthCoefficient;
 
     auto baseSize = baseSprite->GetImageSize( 0 );
     auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
     mPlayerHeight = mPlayerWidth * aspectRatio;
 
-    mPlayerEntity = mEntityFactory.AddPlayerEntity(
-      "FIGHT",
-      mSceneTopLeftX + mSceneWidth * 0.5f,
-      mSceneBottomRightY - mPlayerHeight,
-      mPlayerWidth );
+    mPlayerStartX = mSceneTopLeftX + mSceneWidth * 0.5f;
+    mPlayerStartY = mSceneBottomRightY - mPlayerHeight * 0.5f;
+
+    mPlayerEntity =
+      mEntityFactory.AddPlayerEntity( "FIGHT", mPlayerStartX, mPlayerStartY, mPlayerWidth );
 
     mPlayerAlive = true;
 
@@ -240,8 +269,8 @@ namespace Inv
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 // mEntityFactory.AddMissileEntity(
 //   "SPIT", false,
-//   mSceneTopLeftX + mSceneWidth * 0.5f - 0.25*playerWidth,
-//   mSceneBottomRightY - 4 * playerHeight,
+//   mPlayerStartX - 0.25f * playerWidth,
+//   mPlayerStartY - 3.0f * playerHeight,
 //   0.33f * playerWidth );
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
@@ -249,14 +278,11 @@ namespace Inv
 /* QUICKSHOT! Player fires at the start of the game for debugging purposes*/
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 //  mEntityFactory.AddMissileEntity(
-//    "ROCKET", true,
-//    mSceneTopLeftX + mSceneWidth * 0.5f ,
-//    mSceneBottomRightY - playerHeight,
-//    0.1f * playerWidth,
-//    0.0f, -1.0f );
+//    "ROCKET", true, mPlayerStartX, mPlayerStartY, 0.1f * playerWidth, 0.0f, -1.0f );
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
     return true;
+
   } // CInvGameScene::SpawnPlayer
 
   //-------------------------------------------------------------------------------------------------
@@ -328,19 +354,33 @@ namespace Inv
 
   bool CInvGameScene::PlayerEntryProcessing( LARGE_INTEGER actTick )
   {
-    if( ! mPlayerEntryInProgress )
+    if( !mPlayerEntryInProgress )
       return true;      // Player is already in the scene, nothing to do.
 
     LONGLONG textInterval = (LONGLONG)( (float)mSettings.GetTickPerSecond() * mPlayerEntryTextSecond );
                         // Each text from attention-ready-go is shown for mPlayerEntryTextSecond seconds
 
-     float posY = mSceneHeight * mAlienStartingAreaCoefficient +
-                  0.5f * ( mSceneHeight * ( 1.0f - mAlienStartingAreaCoefficient ) -
-                  0.5f * mPlayerEntryLetterSize );
+    float posY = mSceneHeight * mAlienStartingAreaCoefficient +
+                 0.5f * ( mSceneHeight * ( 1.0f - mAlienStartingAreaCoefficient ) -
+                 0.5f * mPlayerEntryLetterSize );
                         // Attention-ready-go text is drawn in the middle of the area below aliens
 
-    if( mPlayerEntryTick.QuadPart < textInterval )
+    if( 0 == mPlayerEntryTick.QuadPart )
     {
+      mProcActorStateSelector.mIsSuspended = true;
+      mProcPlayerSpeedUpdater.mIsSuspended = true;
+      mProcActorMover.mFormationFreeze = true;
+                        // During player entry sequence, aliens are not moving and player cannot
+                        // control his ship (which is not visible at all).
+      auto view = mEnTTRegistry.view<cpPlayBehave, cpPlayStatus, cpGraphics>();
+      view.each( [=]( cpPlayBehave & pBehave, cpPlayStatus & pStat, cpGraphics & pGph )
+      {
+          pGph.isHidden = true;
+      } );
+    } // if
+
+    if( mPlayerEntryTick.QuadPart < textInterval )
+    {                   // "Attention" text is displayed
       auto width = mTAttention->GetTextLength() * mPlayerEntryLetterSize;
       mTAttention->Draw(
         mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
@@ -349,8 +389,8 @@ namespace Inv
         mTickReferencePoint,
         actTick, mDiffTickPoint );
     } // if
-    else if( mPlayerEntryTick.QuadPart < 2*textInterval )
-    {
+    else if( mPlayerEntryTick.QuadPart < 2 * textInterval )
+    {                   // "Ready" text is displayed
       auto width = mTReady->GetTextLength() * mPlayerEntryLetterSize;
       mTReady->Draw(
         mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
@@ -360,7 +400,7 @@ namespace Inv
         actTick, mDiffTickPoint );
     } // else if
     else if( mPlayerEntryTick.QuadPart < 3 * textInterval )
-    {
+    {                   // "Go" text is displayed
       auto width = mTGo->GetTextLength() * mPlayerEntryLetterSize;
       mTGo->Draw(
         mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
@@ -370,15 +410,18 @@ namespace Inv
         actTick, mDiffTickPoint );
     } // else if
     else
-    {
+    {                   // Player entity is spawned or respawned and made invulnerable for a while.
+                        // Aliens start moving and player can control his ship again.
       if( !mPlayerAlive )
         SpawnPlayer();
       else
       {
-        auto [pId, pBehave, pStatus, pGph] =
-          mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus, cpGraphics>( mPlayerEntity );
-        if( nullptr != pId && nullptr != pBehave && nullptr != pStatus && nullptr != pGph )
+        auto [pId, pBehave, pStatus, pPos, pGph] =
+          mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus, cpPosition, cpGraphics>( mPlayerEntity );
+        if( nullptr != pId && nullptr != pBehave && nullptr != pStatus && nullptr != pPos && nullptr != pGph )
         {
+          pPos->X = mPlayerStartX;
+          pPos->Y = mPlayerStartY;
           pStatus->isInvulnerable = true;
           pGph->standardAnimationEffect->Restore();
                         // Player is made invulnerable for a while, blinking effect is started on his sprite.
@@ -388,6 +431,18 @@ namespace Inv
       mPlayerEntryInProgress = false;
       if( IsZero( mVXGroup ) )
         mVXGroup = mSettingsRuntime.mAlienVelocity * mSettingsRuntime.mSceneLevelMultiplicator / (float)mSettings.GetTickPerSecond();
+
+      mProcActorStateSelector.mIsSuspended = false;
+      mProcPlayerSpeedUpdater.mIsSuspended = false;
+      mProcActorMover.mFormationFreeze = false;
+                        // Aliens start moving and player can control his ship again.
+
+      auto view = mEnTTRegistry.view<cpPlayBehave, cpPlayStatus, cpGraphics>();
+      view.each( [=]( cpPlayBehave & pBehave, cpPlayStatus & pStat, cpGraphics & pGph )
+      {                 // If (alive) player was hidden during entry sequence, he is made visible now.
+        pGph.isHidden = false;
+      } );
+
     } // else
 
     ++mPlayerEntryTick.QuadPart;
@@ -430,8 +485,14 @@ namespace Inv
     mActualScore = 0;
     mPlayerAlive = false;
 
-    GenerateNewScene( mSceneTopLeftX, mSceneTopLeftY, mSceneBottomRightX, mSceneBottomRightY );
-                        // Aliens swarm is placed in the scene.
+    mPlayerLivesLeft = mSettings.GetInitialLives();
+    mPlayerAmmoLeft = mSettings.GetAmmo();
+                        // Player lives and ammo are reset to initial values.
+
+    mReloadingTicks = (LONGLONG)( (float)mSettings.GetTickPerSecond() * mSettings.GetReloadTime() );
+    mTickLeftToReload = mReloadingTicks;
+
+    GenerateNewScene(); // Aliens swarm is placed in the scene.
 
     mPlayerEntryInProgress = true;
     mPlayerEntryTick.QuadPart = 0;
@@ -575,6 +636,9 @@ namespace Inv
       mPlayerAlive = false;
                         // Player is no more in the scene, new entry sequence must be started.
 
+      if( 0 < mPlayerLivesLeft )
+        --mPlayerLivesLeft;
+
       return;
 
     } // if
@@ -610,7 +674,7 @@ namespace Inv
     mPlayerEntryInProgress = true;
     mPlayerEntryTick.QuadPart = 0;
 
-    GenerateNewScene( mSceneTopLeftX, mSceneTopLeftY, mSceneBottomRightX, mSceneBottomRightY );
+    GenerateNewScene();
 
     mSettingsRuntime.mSceneLevelMultiplicator *= mSettings.GetDifficultyBuildup();
     ++mSettingsRuntime.mSceneLevel;
@@ -625,6 +689,47 @@ namespace Inv
     mSettingsRuntime.Preprint();
 
   } // CInvGameScene::NewSwarm
+
+  //-------------------------------------------------------------------------------------------------
+
+  bool CInvGameScene::RenderStatusBar( LARGE_INTEGER actualTickPoint )
+  {
+    float topLine = mStatusLineTopLeftY * 1.04f;
+
+    if( nullptr != mLiveSprite && 1u < mPlayerLivesLeft )
+    {
+      float posX = mLivesIconsStartX;
+      for( uint32_t i = 0; i < (mPlayerLivesLeft - 1u); ++i )
+      {
+        mLiveSprite->Draw(
+          posX, topLine, mOneLiveIconWidth, mOneLiveIconHeight,
+          actualTickPoint, actualTickPoint, mDiffTickPoint );
+        posX += mOneLiveIconWidth * 1.05f;
+      } // for
+    } // if
+
+    if( nullptr != mAmmoSprite )
+    {
+      float posX = mAmmoIconsStartX;
+      for( uint32_t i = 0; i < mPlayerAmmoLeft; ++i )
+      {
+        mAmmoSprite->Draw(
+          posX, topLine, mAmmoIconWidth, mAmmoIconHeight,
+          actualTickPoint, actualTickPoint, mDiffTickPoint );
+        posX += mAmmoIconWidth * 0.5f;
+      } // for
+    } // if
+
+    mScoreLabelBuffer = FormatScoreNumber( mActualScore );
+    mScoreLabel.SetText( mScoreText + Trim( mScoreLabelBuffer ) );
+    mScoreLabel.Draw(
+      mStatusLineTopLeftX, mStatusLineTopLeftY + 0.2f * mStatusLineHeight,
+      mScoreLabelTextSize,
+      mTickReferencePoint, actualTickPoint, mDiffTickPoint );
+                        // Actual score is drawn in the left part of the status line.
+
+    return true;
+  } // CInvGameScene::RenderStatusBar
 
   //-------------------------------------------------------------------------------------------------
 

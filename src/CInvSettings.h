@@ -67,10 +67,10 @@ namespace Inv
     bool GetFullScreen() const { return mFullScreen; }
     //!< \brief Returns true if the game should run in fullscreen mode
 
-    uint32_t GetWindowWidth() const { return mScreenWidth; }
+    uint32_t GetWidth() const { return mScreenWidth; }
     //!< \brief Returns screen width in pixels
 
-    uint32_t GetWindowHeight() const { return mScreenHeight; }
+    uint32_t GetHeight() const { return mScreenHeight; }
     //!< \brief Returns screen height in pixels
 
     const std::string & GetImagePath() const { return mImagePath; }
@@ -87,6 +87,15 @@ namespace Inv
 
     float GetDifficultyBuildup() const { return mDifficultyBuildup; }
     //!< \brief Returns internal parameter, used to increase game difficulty with each level
+
+    uint32_t GetInitialLives() const { return mInitialLives; }
+    //!< \brief Returns number of player lives (ships) at the beginning of the game
+
+    uint32_t GetAmmo() const { return mAmmo; }
+    //!< \brief Returns number of player shots available (max rockets in the scene)
+
+    float GetReloadTime() const { return mReloadTime; }
+    //!< \brief Returns time (in seconds) to reload one rocket
 
   protected:
 
@@ -123,6 +132,15 @@ namespace Inv
 
     float mDifficultyBuildup;
     //!< Internal parameter, used to increase game difficulty with each level
+
+    uint32_t mInitialLives;
+    //!< \brief Number of player lives (ships) at the beginning of the game
+
+    uint32_t mAmmo;
+    //!< \brief Number of player shots available (max rockets in the scene)
+
+    float mReloadTime;
+    //!< \brief Time (in seconds) to reload one rocket
 
     std::ostream & PrpLine();
     /*!< \brief Helper for formatting output in Preprint method */

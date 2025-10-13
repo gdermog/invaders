@@ -92,7 +92,7 @@ namespace Inv
     mDiffTick{ 0 }
   {
 
-    auto windowWidth = mSettings.GetWindowWidth();
+    auto windowWidth = mSettings.GetWidth();
     auto nrOfLetters = mWelcomeHeader.size();
     mLetterSize = (float)windowWidth / (float)nrOfLetters;
 
@@ -103,7 +103,7 @@ namespace Inv
     mHighScoreWidth = CInvHiscoreList::mMaxHiscoreLineLen * mHighScoreLetterSize;
     mHighScoreHeight = mHighScoreAreaVisibleLines * mHighScoreLetterSize;
 
-    mHighScoreTopLeftX = ( (float)mSettings.GetWindowWidth() - mHighScoreWidth ) * 0.5f;
+    mHighScoreTopLeftX = ( (float)mSettings.GetWidth() - mHighScoreWidth ) * 0.5f;
     mHighScoreTopLeftY = mLetterSize + mHighScoreLetterSize;
     mHighScoreBottomRightX = mHighScoreTopLeftX + mHighScoreWidth;
     mHighScoreBottomRightY = mHighScoreTopLeftY + mHighScoreHeight;
@@ -112,23 +112,23 @@ namespace Inv
 
     mPressEnterLetterSize = mLetterSize * mPressEnterFontRelativeSize;
     mPressEnterTopLeftX =
-      ( (float)mSettings.GetWindowWidth() - mPressToStart.size() * mPressEnterLetterSize ) * 0.5f;
-    mPressEnterTopLeftY =  (float)mSettings.GetWindowHeight() - mPressEnterLetterSize * 1.1f;
+      ( (float)mSettings.GetWidth() - mPressToStart.size() * mPressEnterLetterSize ) * 0.5f;
+    mPressEnterTopLeftY =  (float)mSettings.GetHeight() - mPressEnterLetterSize * 1.1f;
 
-    mQualifiedLetterSize = (float)mSettings.GetWindowWidth() / (float)mYouQualified.size();
+    mQualifiedLetterSize = (float)mSettings.GetWidth() / (float)mYouQualified.size();
     if( mLetterSize * 0.9f < mQualifiedLetterSize )
       mQualifiedLetterSize = mLetterSize * 0.9f;
 
-    mQualifiedTopLeftX = ( (float)mSettings.GetWindowWidth() - mYouQualified.size() * mQualifiedLetterSize ) * 0.5f;
+    mQualifiedTopLeftX = ( (float)mSettings.GetWidth() - mYouQualified.size() * mQualifiedLetterSize ) * 0.5f;
     mQualifiedTopLeftY = mHeaderYPos + 3 * mLetterSize;
 
     mEnterCallsignTopLeftX =
-      ( (float)mSettings.GetWindowWidth() - mEnterCallsign.size() * mQualifiedLetterSize ) * 0.5f;
+      ( (float)mSettings.GetWidth() - mEnterCallsign.size() * mQualifiedLetterSize ) * 0.5f;
     mEnterCallsignTopLeftY = mQualifiedTopLeftY + mQualifiedLetterSize * 1.5f;
 
     mCallsignLetterSize = mLetterSize * 1.5f;
     mCallsignTopLeftX =
-      ( (float)mSettings.GetWindowWidth() - CInvHiscoreList::mMaxHiscoreNameLen * mCallsignLetterSize ) * 0.5f;
+      ( (float)mSettings.GetWidth() - CInvHiscoreList::mMaxHiscoreNameLen * mCallsignLetterSize ) * 0.5f;
     mCallsignTopLeftY = mEnterCallsignTopLeftY + mQualifiedLetterSize * 4.5f;
 
     mTitleSprite = mSpriteStorage.GetSprite( "PINK" );
@@ -139,7 +139,7 @@ namespace Inv
       mTitleSpriteImageSequenceNr = (uint32_t)mTitleSprite->GetNumberOfImages();
       mNrOfTitleSprites = 5;
       mTitleSpriteWidth = 80.0f;
-      float testSpritesDistance = (float)mSettings.GetWindowWidth() / (float)( mNrOfTitleSprites + 1 );
+      float testSpritesDistance = (float)mSettings.GetWidth() / (float)( mNrOfTitleSprites + 1 );
       mTitleSpriteX.reserve( mNrOfTitleSprites );
       for( uint32_t i = 0; i < mNrOfTitleSprites; ++i )
         mTitleSpriteX.push_back( testSpritesDistance * (float)( i + 1 ) );
@@ -223,34 +223,7 @@ namespace Inv
 
   void CInvInsertCoinScreen::FormatHighScore( uint32_t inScore, const std::string & inName )
   {
-    uint32_t ones = inScore % 1000;
-    uint32_t thousands = ( inScore / 1000 ) % 1000;
-    uint32_t millions = ( inScore / 1000000 ) % 1000;
-
-    mHighScoreLineContent.clear();
-
-    if( 0 < millions )
-      mHighScoreLineContent += FormatStr( "%3u", millions );
-    else
-      mHighScoreLineContent += "   ";
-
-    mHighScoreLineContent += " ";
-
-    if( 0 == thousands && 0 == millions )
-      mHighScoreLineContent += "   ";
-    else if( 0 < thousands && 0 == millions )
-      mHighScoreLineContent += FormatStr( "%3u", thousands );
-    else
-      mHighScoreLineContent += FormatStr( "%03u", thousands );
-
-    mHighScoreLineContent += " ";
-
-    if( 0 == thousands && 0 == millions && 0 == ones )
-      mHighScoreLineContent += "   ";
-    else if( 0 < ones && 0 == thousands && 0 == millions )
-      mHighScoreLineContent += FormatStr( "%3u", ones );
-    else
-      mHighScoreLineContent += FormatStr( "%03u", ones );
+    mHighScoreLineContent = FormatScoreNumber( inScore );
 
     mHighScoreLineContent += "   ";
 

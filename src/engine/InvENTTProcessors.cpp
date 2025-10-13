@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file InvENTTProcessors.h
-//! Module contains EnTT processors definitions
+//! Module contains basic EnTT processors definitions
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -20,94 +20,44 @@ namespace Inv
 {
 
 
-  //****** processor: setting of actors to specific states *******************************************
-
-  procActorStateSelector::procActorStateSelector( LARGE_INTEGER refTick ):
-    mRefTick( refTick )
-  {
-  } // procActorStateSelector::procActorStateSelector
+  procEnTTBase::procEnTTBase(
+    LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime ):
+    mSettings( settings ),
+    mSettingsRuntime( settingsRuntime ),
+    mRefTick( refTick ),
+    mIsSuspended( false )
+  {}
 
   //--------------------------------------------------------------------------------------------------
 
-  void procActorStateSelector::reset( LARGE_INTEGER refTick )
+  void procEnTTBase::reset( LARGE_INTEGER refTick )
   {
     mRefTick = refTick;
-  } // procActorStateSelector::reset
+  } // procEnTTBase::reset
 
-  //--------------------------------------------------------------------------------------------------
-
-  void procActorStateSelector::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
-  {
-    auto view = reg.view<const cpAlienBehave, cpAlienStatus, cpGraphics>();
-    view.each( [=]( const cpAlienBehave & behave, cpAlienStatus & status, cpGraphics &gph )
-    {                   // Updating status for alien actors
-
-        if( status.isDying )
-          return;       // Alien is dying, no other status is possible
-
-        if( !( status.isAnimating || status.isFiring ) )
-        {               // Previous status must be resolved before any other is set
-
-          auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-          if( probRoll < behave.animationProbability )
-          {
-            status.isAnimating = true;
-            gph.diffTick.QuadPart = 0ul;
-            gph.standardAnimationEffect->Restore();
-                        // Animation is started on random event. Effect is restored, runs once (as it is not
-                        // continuous) and then suspends itself, sending event message by appropriate callback,
-                        // which sets isAnimating flag to false again.
-          } // if
-          else
-          {
-            probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-            if( probRoll < ( status.isInRaid ? behave.raidShootProbability : behave.shootProbability ) )
-            {
-              status.isFiring = true;
-              gph.diffTick.QuadPart = 0ul;
-              gph.specificAnimationEffect->Restore();
-                        // Fire animation is started on random event. Effect is restored, runs once (as it is not
-                        // continuous) and then suspends itself, sending event message by appropriate callback,
-                        // which sets isFiring flag to false again.
-            } // if
-          } // else
-        } // if
-
-        if( !( status.isInRaid || status.isReturningToFormation ) )
-        {
-//           auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-//           if( probRoll < behave.raidProbability )
-//             status.isInRaid = true;
-//                         // Alien enters raid mode on random event.
-        } // if
-
-    } );
-
-  } // procActorStateSelector::update
 
   //****** processor: adding entities on request of special events ***********************************
 
 
   procEntitySpawner::procEntitySpawner(
     LARGE_INTEGER refTick,
-    CInvEntityFactory & entityFactory,
-    CInvSettingsRuntime & settingsRuntime ):
-    mRefTick( refTick ),
-    mEntityFactory( entityFactory ),
-    mSettingsRuntime( settingsRuntime )
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime,
+    CInvEntityFactory & entityFactory ):
+
+    procEnTTBase( refTick, settings, settingsRuntime ),
+    mEntityFactory( entityFactory )
   {}
-
-  //--------------------------------------------------------------------------------------------------
-
-  void procEntitySpawner::reset( LARGE_INTEGER refTick )
-  {
-    mRefTick = refTick;
-  } // procEntitySpawner::reset
 
   //--------------------------------------------------------------------------------------------------
 
   void procEntitySpawner::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
   {
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
+
     float xTopLeft, yTopLeft;
     float xBottomRight, yBottomRight;
     float xSize, ySize;
@@ -141,17 +91,9 @@ namespace Inv
     LARGE_INTEGER refTick,
     const CInvSettings & settings,
     CInvSettingsRuntime & settingsRuntime ):
-    mRefTick( refTick ),
-    mSettings( settings ),
-    mSettingsRuntime( settingsRuntime )
-  { }
 
-  //--------------------------------------------------------------------------------------------------
-
-  void procPlayerSpeedUpdater::reset( LARGE_INTEGER refTick )
-  {
-    mRefTick = refTick;
-  } // procActorMover::reset
+    procEnTTBase( refTick, settings, settingsRuntime )
+  {}
 
   //--------------------------------------------------------------------------------------------------
 
@@ -162,6 +104,9 @@ namespace Inv
     ControlStateFlags_t controlState,
     ControlValue_t controlValue )
   {
+
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
 
     auto view = reg.view<cpPlayBehave, cpPlayStatus, cpVelocity>();
     view.each( [=]( cpPlayBehave & pos, cpPlayStatus & pstat, cpVelocity & vel )
@@ -195,21 +140,17 @@ namespace Inv
 
   procPlayerFireUpdater::procPlayerFireUpdater(
     LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime,
     CInvEntityFactory & entityFactory,
-    CInvSettingsRuntime & settingsRuntime ):
-    mRefTick( refTick ),
+    uint32_t & ammoLeft ):
+
+    procEnTTBase( refTick, settings, settingsRuntime ),
     mEntityFactory( entityFactory ),
-    mSettingsRuntime( settingsRuntime ),
-    mShootCommenced( false ),
-    mCanShoot( true )
-  { }
+    mAmmoLeft( ammoLeft ),
+    mShootCommenced( false )
+  {}
 
-  //--------------------------------------------------------------------------------------------------
-
-  void procPlayerFireUpdater::reset( LARGE_INTEGER refTick )
-  {
-    mRefTick = refTick;
-  } // procPlayerFireUpdater::reset
 
   //--------------------------------------------------------------------------------------------------
 
@@ -221,10 +162,12 @@ namespace Inv
     ControlStateFlags_t controlState,
     ControlValue_t controlValue )
   {
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
 
     if( ControlStateHave( controlState, ControlState_t::kFire ) )
     {
-      if( ! mShootCommenced && mCanShoot )
+      if( ! mShootCommenced && 0u < mAmmoLeft )
       {
 
         float xTopLeft, yTopLeft;
@@ -249,6 +192,7 @@ namespace Inv
               0.0f, -1.0f );
         } );
 
+        mAmmoLeft--;
         mShootCommenced = true;
       } // if
 
@@ -258,15 +202,20 @@ namespace Inv
 
   } // procPlayerFireUpdater::update
 
+
   //****** processor: bounds guard - player ************************************************
+
 
   procPlayerBoundsGuard::procPlayerBoundsGuard(
     LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime,
     float sceneTopLeftX,
     float sceneTopLeftY,
     float sceneBottomRightX,
     float sceneBottomRightY ):
-    mRefTick( refTick ),
+
+    procEnTTBase( refTick, settings, settingsRuntime ),
     mSceneTopLeftX( sceneTopLeftX ),
     mSceneTopLeftY( sceneTopLeftY ),
     mSceneBottomRightX( sceneBottomRightX ),
@@ -282,7 +231,7 @@ namespace Inv
     float sceneBottomRightX,
     float sceneBottomRightY )
   {
-    mRefTick = refTick;
+    procEnTTBase::reset( refTick );
     mSceneTopLeftX = sceneTopLeftX;
     mSceneTopLeftY = sceneTopLeftY;
     mSceneBottomRightX = sceneBottomRightX;
@@ -296,6 +245,8 @@ namespace Inv
     LARGE_INTEGER actTick,
     LARGE_INTEGER diffTick )
   {
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
 
     auto view = reg.view<cpPlayBehave, cpPlayStatus, cpPosition, cpVelocity, cpGeometry>();
     view.each( [=]( cpPlayBehave & pBehave, cpPlayStatus & pStat, cpPosition & pPos, cpVelocity & pVel, cpGeometry &pGeo )
@@ -316,142 +267,28 @@ namespace Inv
 
   } // procPlayerBoundsGuard::update
 
-
-  //****** processor: bounds guard - aliens ************************************************
-
-
-  procAlienBoundsGuard::procAlienBoundsGuard(
-    LARGE_INTEGER refTick,
-    float & vXGroup,
-    float & vYGroup,
-    float sceneTopLeftX,
-    float sceneTopLeftY,
-    float sceneBottomRightX,
-    float sceneBottomRightY,
-    const CInvSettings & settings,
-    CInvSettingsRuntime & settingsRuntime ):
-
-    mRefTick( refTick ),
-    mVXGroup( vXGroup ),
-    mVYGroup( vYGroup ),
-    mYGroupTranslationCounter( 0 ),
-    mTranslatingDown( false ),
-    mNextVXGroup( 0.0f ),
-    mSceneTopLeftX( sceneTopLeftX ),
-    mSceneTopLeftY( sceneTopLeftY ),
-    mSceneBottomRightX( sceneBottomRightX ),
-    mSceneBottomRightY( sceneBottomRightY ),
-    mSettings( settings ),
-    mSettingsRuntime( settingsRuntime )
-  {}
-
-  //--------------------------------------------------------------------------------------------------
-
-  void procAlienBoundsGuard::reset(
-    LARGE_INTEGER refTick,
-    float sceneTopLeftX,
-    float sceneTopLeftY,
-    float sceneBottomRightX,
-    float sceneBottomRightY )
-  {
-    mRefTick = refTick;
-    mSceneTopLeftX = sceneTopLeftX;
-    mSceneTopLeftY = sceneTopLeftY;
-    mSceneBottomRightX = sceneBottomRightX;
-    mSceneBottomRightY = sceneBottomRightY;
-  } // procAlienBoundsGuard::reset
-
-  //--------------------------------------------------------------------------------------------------
-
-  void procAlienBoundsGuard::update(
-    entt::registry & reg,
-    LARGE_INTEGER actTick,
-    LARGE_INTEGER diffTick,
-    float bottomGuardedArea )
-  {
-
-    bool xChangeNeeded = false;
-    bool yAtTheBottom = false;
-
-    auto view = reg.view<cpAlienBehave, cpAlienStatus, cpPosition, cpGeometry>();
-    view.each( [&]( cpAlienBehave & pBehave, cpAlienStatus & pStat, cpPosition & pPos, cpGeometry & pGeo )
-    {
-        if( pStat.isInRaid || pStat.isReturningToFormation || pStat.isDying )
-          return;       // Alien is in raid or dying, no group bounds guard possible or necessary
-
-        float xPosNext = pPos.X + mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
-        xChangeNeeded |=
-          ( xPosNext - 0.5 * pGeo.width < mSceneTopLeftX ) ||
-          ( mSceneBottomRightX < xPosNext + 0.5 * pGeo.width );
-
-        float yPosNext = pPos.Y + mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
-        yAtTheBottom |=
-          ( yPosNext - 0.5 * pGeo.height < mSceneTopLeftY ) ||
-          ( mSceneBottomRightY - bottomGuardedArea < yPosNext + 0.5 * pGeo.height );
-
-    } );
-
-    if( ! IsZero( mVXGroup ) )
-      mNextVXGroup = -mVXGroup;
-
-    if( xChangeNeeded )
-    {
-      if( yAtTheBottom )
-      {                 // If aliens are at the bottom of the scene, they just change horizontal direction
-        mVXGroup = mNextVXGroup;
-        mTranslatingDown = false;
-        mVYGroup = 0.0f;
-      } // if
-      else
-      {                 // Aliens stops change horizontal direction and starts to move down
-        mVXGroup = 0.0f;
-        mYGroupTranslationCounter = (uint32_t)( mSettingsRuntime.mAlienDescendTime * (float)mSettings.GetTickPerSecond() );
-        mTranslatingDown = true;
-      } // else
-    } // if
-
-    if( mTranslatingDown )
-    {
-      if( ! yAtTheBottom && 0 < mYGroupTranslationCounter )
-      {                 // Aliens are moving down
-        --mYGroupTranslationCounter;
-        mVYGroup = mSettingsRuntime.mAlienVelocity / mSettings.GetTickPerSecond();
-      }
-      else
-      {                 // Aliens finished moving down, continue horizontal movement in opposite direction
-        mVYGroup = 0.0f;
-        mVXGroup = mNextVXGroup;
-        mTranslatingDown = false;
-      } // else
-    } // if
-
-  } // procAlienBoundsGuard::update
-
   //****** processor: moving of actors ************************************************************
 
   procActorMover::procActorMover(
     LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime,
     float & vXGroup,
-    float & vYGroup,
-    CInvSettingsRuntime & settingsRuntime ):
+    float & vYGroup ):
 
-    mRefTick( refTick ),
+    procEnTTBase( refTick, settings, settingsRuntime ),
     mVXGroup( vXGroup ),
     mVYGroup( vYGroup ),
-    mSettingsRuntime( settingsRuntime )
+    mFormationFreeze( false )
   {}
-
-  //--------------------------------------------------------------------------------------------------
-
-  void procActorMover::reset( LARGE_INTEGER refTick )
-  {
-    mRefTick = refTick;
-  } // procActorMover::reset
 
   //--------------------------------------------------------------------------------------------------
 
   void procActorMover::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
   {
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
+
     auto view = reg.view<cpPosition, const cpVelocity>();
     view.each( [&]( entt::entity entity, cpPosition & pos, const cpVelocity & vel )
     {
@@ -459,16 +296,18 @@ namespace Inv
         if( nullptr != aBehave && nullptr != aStat )
         {               // Alien entity
 
-          aStat->formationX += mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
-          aStat->formationY += mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
-                        // Position in formation where alien belongs is updated by group velocity.
+          if( !mFormationFreeze )
+          {             // Position in formation where alien belongs is updated by group velocity.
+            aStat->formationX += mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
+            aStat->formationY += mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
+          } // if
 
           if( aStat->isInRaid || aStat->isReturningToFormation )
           {             // Alien is in raid or returning to formation, moves by its own velocity
             pos.X += vel.vX * mSettingsRuntime.mAlienSpeedupFactor;
             pos.Y += vel.vY * mSettingsRuntime.mAlienSpeedupFactor;
           } // if
-          else
+          else if( ! mFormationFreeze )
           {             // Alien is in formation, moves by group velocity
             pos.X += mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
             pos.Y += mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
@@ -486,27 +325,28 @@ namespace Inv
 
   //****** processor: colliding of actors ***************************************************************
 
-  procCollisionDetector::procCollisionDetector( LARGE_INTEGER refTick, CInvCollisionTest & cTest ):
-    mRefTick( refTick ),
+  procCollisionDetector::procCollisionDetector(
+    LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime,
+    CInvCollisionTest & cTest ):
+
+    procEnTTBase( refTick, settings, settingsRuntime ),
     mCTest( cTest )
-  {
-  }
-
-  //--------------------------------------------------------------------------------------------------
-
-  void procCollisionDetector::reset( LARGE_INTEGER refTick )
-  {
-    mRefTick = refTick;
-  } // procActorMover::reset
+  {}
 
   //--------------------------------------------------------------------------------------------------
 
   void procCollisionDetector::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
   {
+
     mCollidedPairs.clear();
     mCanDamage.clear();
     mCanBeDamagedAlien.clear();
     mCanBeDamagedPlayer.clear();
+
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
 
     auto viewDmg = reg.view<cpDamage, cpGraphics>();
     viewDmg.each( [&]( entt::entity entity, const auto & dmg, const auto & gph )
@@ -567,24 +407,27 @@ namespace Inv
 
     } // for
 
-
   } // procCollisionDetector::update
+
 
   //****** processor: searching for actor that are out of scene **************************************
 
+
   procActorOutOfSceneCheck::procActorOutOfSceneCheck(
     LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime,
     float sceneTopLeftX,
     float sceneTopLeftY,
     float sceneBottomRightX,
     float sceneBottomRightY ):
-    mRefTick( refTick ),
+
+    procEnTTBase( refTick, settings, settingsRuntime ),
     mSceneTopLeftX( sceneTopLeftX ),
     mSceneTopLeftY( sceneTopLeftY ),
     mSceneBottomRightX( sceneBottomRightX ),
     mSceneBottomRightY( sceneBottomRightY )
-  {
-  }
+  {}
 
   //--------------------------------------------------------------------------------------------------
 
@@ -595,7 +438,7 @@ namespace Inv
     float sceneBottomRightX,
     float sceneBottomRightY )
   {
-    mRefTick = refTick;
+    procEnTTBase::reset( refTick );
     mSceneTopLeftX = sceneTopLeftX;
     mSceneTopLeftY = sceneTopLeftY;
     mSceneBottomRightX = sceneBottomRightX;
@@ -606,6 +449,9 @@ namespace Inv
 
   void procActorOutOfSceneCheck::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
   {
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
+
     auto view = reg.view<cpId, const cpPosition, const cpGeometry>();
     view.each( [=]( cpId & id, const cpPosition & pos, const cpGeometry & geo )
     {
@@ -621,26 +467,28 @@ namespace Inv
     } );
   } // procActorOutOfSceneCheck::update
 
+
   //****** processor: garbage collector ***************************************************************
 
-  procGarbageCollector::procGarbageCollector( LARGE_INTEGER refTick, FnEventCallbackEithEntityId_t pruneCallback ):
-    mPruneCallback( pruneCallback ),
-    mRefTick( refTick )
-  {
-  }
 
-  //--------------------------------------------------------------------------------------------------
+  procGarbageCollector::procGarbageCollector(
+    LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime,
+    FnEventCallbackEithEntityId_t pruneCallback ):
 
-  void procGarbageCollector::reset( LARGE_INTEGER refTick )
-  {
-    mRefTick = refTick;
-  } // procGarbageCollector::reset
+    procEnTTBase( refTick, settings, settingsRuntime ),
+    mPruneCallback( pruneCallback )
+  {}
 
   //--------------------------------------------------------------------------------------------------
 
   void procGarbageCollector::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
   {
-    std::vector<entt::entity> entities;
+    mEntities.clear();
+
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
 
     auto view = reg.view<cpId>();
     for( auto entity : view )
@@ -651,11 +499,11 @@ namespace Inv
                         // If it should send notification on pruning, it is done now.
         if( entId.noticeOnPruning && nullptr != mPruneCallback )
           mPruneCallback( entity, entId.id );
-        entities.push_back( entity );
+        mEntities.push_back( entity );
       } // if
     }  // for
 
-    for( auto entity : entities )
+    for( auto entity : mEntities )
       reg.destroy( entity );
                         // Remove all entities marked as inactive
 
@@ -663,27 +511,34 @@ namespace Inv
 
   //****** processor: rendering of actors ************************************************************
 
-  procActorRender::procActorRender( LARGE_INTEGER refTick ):
-    mRefTick( refTick )
+  procActorRender::procActorRender(
+    LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime ):
+
+    procEnTTBase( refTick, settings, settingsRuntime )
   {}
 
-  //--------------------------------------------------------------------------------------------------
-
-  void procActorRender::reset( LARGE_INTEGER refTick )
-  {
-    mRefTick = refTick;
-  } // procActorRender::reset
 
   //--------------------------------------------------------------------------------------------------
 
   void procActorRender::update(
     entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
   {
+    for( auto & item : mZAxisSorting )
+      item.second.clear();
+                        // Clear sorting structure before use (possibly without deleting the memory structures
+                        // from previous usage)
+
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
 
     auto view = reg.view< cpGraphics, const cpPosition, const cpGeometry>();
-
     view.each( [=]( cpGraphics & gph, const cpPosition & pos, const cpGeometry & geo )
     {
+        if( gph.isHidden )
+          return;       // Entity is hidden, do not draw it
+
         mZAxisSorting[gph.standardSprite->GetLevel()].emplace_back( gph.standardSprite, gph, pos, geo );
         gph.diffTick.QuadPart++;
     } );                // Sprite animations are driven by tick count stored in cpGraphics component.
@@ -700,11 +555,9 @@ namespace Inv
           actTick, actTick, item2.gph.diffTick,
           item2.gph.staticStandardImageIndex );
       } // for
-
-      item.second.clear();
-
     } // for
 
   } // procActorRender::update
+
 
 } // namespace Inv

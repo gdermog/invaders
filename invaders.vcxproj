@@ -21,6 +21,7 @@
     <ClCompile Include="src\engine\CInvInsertCoinScreen.cpp" />
     <ClCompile Include="src\engine\CInvPlayItScreen.cpp" />
     <ClCompile Include="src\engine\InvENTTProcessors.cpp" />
+    <ClCompile Include="src\engine\InvENTTProcessorsAI.cpp" />
     <ClCompile Include="src\graphics\CInvCollisionTest.cpp" />
     <ClCompile Include="src\graphics\CInvEffect.cpp" />
     <ClCompile Include="src\graphics\CInvEffectSpriteAnimation.cpp" />
@@ -49,6 +50,7 @@
     <ClInclude Include="src\engine\CInvPlayItScreen.h" />
     <ClInclude Include="src\engine\InvENTTComponents.h" />
     <ClInclude Include="src\engine\InvENTTProcessors.h" />
+    <ClInclude Include="src\engine\InvENTTProcessorsAI.h" />
     <ClInclude Include="src\graphics\CInvCollisionTest.h" />
     <ClInclude Include="src\graphics\CInvEffect.h" />
     <ClInclude Include="src\graphics\CInvEffectSpriteAnimation.h" />
