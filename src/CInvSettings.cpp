@@ -30,6 +30,7 @@ namespace Inv
      mScreenHeight( 600 ),
      mImagePath(),
      mHiscorePath( "./hiscore.csv" ),
+     mMinScore( 100 ),
      mZeroExplosionV( false ),
      mSpeedupPerKill( 0.05f ),
      mDifficultyBuildup( 1.1f )
@@ -78,6 +79,7 @@ namespace Inv
        mImagePath = inCfg.GetValueStr( "graphics", "images", "./images" );
 
        mHiscorePath = inCfg.GetValueStr( "game", "highscore", "./hiscore.csv" );
+       mMinScore = (uint32_t)inCfg.GetValueInteger( "game", "MinScore", 100 );
        mZeroExplosionV = inCfg.GetValueBool( "game", "ZeroExplosionV", false );
        mSpeedupPerKill = (float)inCfg.GetValueDouble( "game", "SpeedupPerKill", 0.05f );
        mDifficultyBuildup = (float)inCfg.GetValueDouble( "game", "DifficultyBuildup", 1.1f );
@@ -122,6 +124,7 @@ namespace Inv
 
      PrpLine() << "ImagePath:" << mImagePath;
      PrpLine() << "HighscorePath:" << mHiscorePath;
+     PrpLine() << "MinScore:" << mMinScore;
      PrpLine() << "ZeroExplosionV:" << ( mZeroExplosionV ? gTrueName : gFalseName );
      PrpLine() << "SpeedupPerKill:" << mSpeedupPerKill;
      PrpLine() << "DifficultyBuildup:" << mDifficultyBuildup;

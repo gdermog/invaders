@@ -64,6 +64,9 @@ namespace Inv
     if( mGameScene.GameOver() )
     {
       newScoreToEnter = mGameScene.GetCurrentScore();
+      if( newScoreToEnter < mSettings.GetMinScore() )
+        newScoreToEnter = 0u;
+                        // Did not qualify for hiscore entry
       gameEnd = true;
     } // if
 

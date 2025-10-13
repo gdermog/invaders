@@ -1,6 +1,7 @@
 //****************************************************************************************************
 //! \file CInvGameScene.cpp
-//! Module declares class CInvGameScene, which implements ...
+//! Module declares class CInvGameScene, which implements the main game scene, containing all entities
+//! and processing the game logic.
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -13,7 +14,6 @@
 #include <graphics/CInvSprite.h>
 
 #include <CInvLogger.h>
-#include <InvStringTools.h>
 
 namespace Inv
 {
@@ -346,6 +346,15 @@ namespace Inv
                         // procedure, involving explosion creation (and possible player respawn).
     } // for
 
+    if( 0 < mTickLeftToReload )
+      --mTickLeftToReload;
+    else                // Player weapon is reloaded and ready to fire again
+    {
+      mTickLeftToReload = mReloadingTicks;
+      if( mPlayerAmmoLeft < mSettings.GetAmmo() )
+        ++mPlayerAmmoLeft;
+    } // else
+
     return true;
 
   } // CInvGameScene::RenderActualScene
@@ -369,6 +378,7 @@ namespace Inv
     {
       mProcActorStateSelector.mIsSuspended = true;
       mProcPlayerSpeedUpdater.mIsSuspended = true;
+      mProcPlayerFireUpdater.mIsSuspended = true;
       mProcActorMover.mFormationFreeze = true;
                         // During player entry sequence, aliens are not moving and player cannot
                         // control his ship (which is not visible at all).
@@ -434,6 +444,7 @@ namespace Inv
 
       mProcActorStateSelector.mIsSuspended = false;
       mProcPlayerSpeedUpdater.mIsSuspended = false;
+      mProcPlayerFireUpdater.mIsSuspended = false;
       mProcActorMover.mFormationFreeze = false;
                         // Aliens start moving and player can control his ship again.
 
@@ -460,6 +471,7 @@ namespace Inv
     mProcGarbageCollector.reset( newTickRefPoint );
 
     mProcActorStateSelector.reset( newTickRefPoint );
+
     mProcEntitySpawner.reset( newTickRefPoint );
 
     mProcPlayerBoundsGuard.reset(
@@ -484,6 +496,7 @@ namespace Inv
 
     mActualScore = 0;
     mPlayerAlive = false;
+                        // Score is zeroed, player is not alive (not spawned) yet.
 
     mPlayerLivesLeft = mSettings.GetInitialLives();
     mPlayerAmmoLeft = mSettings.GetAmmo();
@@ -491,6 +504,7 @@ namespace Inv
 
     mReloadingTicks = (LONGLONG)( (float)mSettings.GetTickPerSecond() * mSettings.GetReloadTime() );
     mTickLeftToReload = mReloadingTicks;
+                        // Player weapon reloading time is set according to settings.
 
     GenerateNewScene(); // Aliens swarm is placed in the scene.
 
@@ -515,7 +529,7 @@ namespace Inv
                         // alien missile). Player entity is marked as dying, explosion is created
                         // at player position and special "dying" effect is started on player sprite.
 
-      if( nullptr == playHealth || nullptr == playGph)
+      if( nullptr == playHealth || nullptr == playGph )
         return false;   // Player has no health or graphics component - this is probably a bug.
 
       if( playStatus->isInvulnerable || playStatus->isDying )
@@ -587,7 +601,7 @@ namespace Inv
       auto [ pPos, pVel, pGeo] = mEnTTRegistry.try_get<cpPosition, cpVelocity, cpGeometry>( entity );
 
       if( mSettings.GetZeroExplosionV() )
-      {                // If demanded, destroyed alien stops and explosion does not inherit his velocity.
+      {                 // If demanded, destroyed alien stops and explosion does not inherit his velocity.
         pVel->vX = 0.0f;
         pVel->vY = 0.0f;
         pVel->vZ = 0.0f;
@@ -612,6 +626,7 @@ namespace Inv
     } // if
 
     return true;
+
   } // CInvGameScene::EliminateEntity
 
   //-------------------------------------------------------------------------------------------------
@@ -638,7 +653,7 @@ namespace Inv
 
       if( 0 < mPlayerLivesLeft )
         --mPlayerLivesLeft;
-
+                        // One player life (ship) is lost.
       return;
 
     } // if
@@ -650,7 +665,7 @@ namespace Inv
       {
         LOG << "Trying to prune active alien!";
         return;         // Player entity is still active, this is probably a bug.
-      }
+      } // if
 
       mActualScore += aBehave->scoreToAdd;
       mSettingsRuntime.mAlienSpeedupFactor += mSettings.GetSpeedupPerKill();
@@ -659,9 +674,9 @@ namespace Inv
           << " points added, speed upscaled to " << mSettingsRuntime.mAlienSpeedupFactor;
 
       --mAliensLeft;
-    }
+    } // if
 
-    if( 0 == mAliensLeft )
+    if( 0u == mAliensLeft )
       NewSwarm();       // All aliens are dead, new swarm must be generated.
 
   } // CInvGameScene::EntityJustPruned
@@ -673,6 +688,22 @@ namespace Inv
 
     mPlayerEntryInProgress = true;
     mPlayerEntryTick.QuadPart = 0;
+
+    auto view = mEnTTRegistry.view<cpId, cpDamage>();
+    view.each( [=]( entt::entity e, cpId & eId, cpDamage & dmg )
+    {                   // All missiles currently in the scene are removed, as they have no target
+                        // to hit anymore in current swarm - and we do not want to have them flying
+                        // around while new swarm is being generated.
+      auto aStat = mEnTTRegistry.try_get<cpAlienStatus>( e );
+      if( nullptr != aStat )
+        return;
+
+      auto pStat = mEnTTRegistry.try_get<cpPlayStatus>( e );
+      if( nullptr != pStat )
+        return;
+
+      eId.active = false;
+    } );
 
     GenerateNewScene();
 
@@ -695,9 +726,12 @@ namespace Inv
   bool CInvGameScene::RenderStatusBar( LARGE_INTEGER actualTickPoint )
   {
     float topLine = mStatusLineTopLeftY * 1.04f;
+                        // Status line have small margin on top
 
     if( nullptr != mLiveSprite && 1u < mPlayerLivesLeft )
-    {
+    {                   // Player lives (ships) are drawn in the right part of the status line.
+                        // One life (ship) is not drawn, as it is represented by player entity
+                        // in the scene.
       float posX = mLivesIconsStartX;
       for( uint32_t i = 0; i < (mPlayerLivesLeft - 1u); ++i )
       {
@@ -709,7 +743,9 @@ namespace Inv
     } // if
 
     if( nullptr != mAmmoSprite )
-    {
+    {                   // Player ammo (missiles) are drawn in the right part of the status line,
+                        // left to player lives (ships). Ammo icons are drawn half-overlapped (skew
+                        // effects on single rockets).
       float posX = mAmmoIconsStartX;
       for( uint32_t i = 0; i < mPlayerAmmoLeft; ++i )
       {
@@ -720,15 +756,15 @@ namespace Inv
       } // for
     } // if
 
-    mScoreLabelBuffer = FormatScoreNumber( mActualScore );
-    mScoreLabel.SetText( mScoreText + Trim( mScoreLabelBuffer ) );
+    mScoreLabelBuffer = mScoreText + std::to_string( mActualScore );
+    mScoreLabel.SetText( mScoreLabelBuffer );
     mScoreLabel.Draw(
       mStatusLineTopLeftX, mStatusLineTopLeftY + 0.2f * mStatusLineHeight,
-      mScoreLabelTextSize,
-      mTickReferencePoint, actualTickPoint, mDiffTickPoint );
+      mScoreLabelTextSize, mTickReferencePoint, actualTickPoint, mDiffTickPoint );
                         // Actual score is drawn in the left part of the status line.
 
     return true;
+
   } // CInvGameScene::RenderStatusBar
 
   //-------------------------------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 //****************************************************************************************************
 //! \file CInvGameScene.h
-//! Module defines class CInvGameScene, which implements ...
+//! Module defines class CInvGameScene, which implements the main game scene, containing all entities
+//! and processing the game logic.
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -220,6 +221,7 @@ namespace Inv
 
     std::shared_ptr<CInvSprite> mLiveSprite;
     //!< \brief Sprite used to render one icon representing one player life (ship) in the
+    //!  status line
 
     float mAmmoIconWidth;
     //!< \brief Width of one icon representing one ammo (rocket) in the status line

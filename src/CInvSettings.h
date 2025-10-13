@@ -79,6 +79,9 @@ namespace Inv
     const std::string & GetHiscorePath() const { return mHiscorePath; }
     //!< \brief Returns path to hiscore file
 
+    uint32_t GetMinScore() const { return mMinScore; }
+    //!< \brief Returns minimum score to be recorded in hiscore list
+
     bool GetZeroExplosionV() const { return mZeroExplosionV; }
     //!< \brief Returns true if actor should stop moving when destroyed
 
@@ -124,6 +127,8 @@ namespace Inv
     std::string mHiscorePath;
                         //!< Path to hiscore file
 
+    uint32_t mMinScore; //!< Minimum score to be recorded in hiscore list
+
     bool mZeroExplosionV;
                         //!< If true, actor stops moving when destroyed
 
@@ -141,6 +146,8 @@ namespace Inv
 
     float mReloadTime;
     //!< \brief Time (in seconds) to reload one rocket
+
+
 
     std::ostream & PrpLine();
     /*!< \brief Helper for formatting output in Preprint method */

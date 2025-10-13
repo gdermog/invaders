@@ -25,20 +25,33 @@
 namespace Inv
 {
 
+  struct cLess
+  {
+    bool operator()( const std::string & str1, const std::string & str2 ) const
+    {
+      auto * s1 = (unsigned char *)str1.c_str();
+      auto * s2 = (unsigned char *)str2.c_str();
+      unsigned char c1, c2;
+
+      do
+      {
+        c1 = (unsigned char)toupper( (int)*s1++ );
+        c2 = (unsigned char)toupper( (int)*s2++ );
+        if( c1 == '\0' ) return c1 < c2;
+      } while( c1 == c2 );
+
+      return c1 < c2;
+    } // cLess
+  };
+
   using StrVect_t = std::vector<std::string>;
   //!< Vector of strings
-
-  using WStrVect_t = std::vector<std::wstring>;
-  //!< Vector of wide strings
 
   using StrSet_t = std::set<std::string>;
   //!< Set of strings
 
-  using WStrSet_t = std::set<std::wstring>;
-  //!< Set of wide strings
-
   template<typename T>
-  using StrMap_t = std::map<std::string, T>;
+  using StrMap_t = std::map<std::string, T, cLess>;
   //!< Map indexed by string
 
   //! Number types
