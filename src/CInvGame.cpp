@@ -190,6 +190,8 @@ namespace Inv
     mSpriteStorage->AddSprite( "PINK", "invaderPink" );
     mSpriteStorage->AddSprite( "PINKEXPL", "explosionPink" );
     mSpriteStorage->AddSprite( "SPIT", "spit" );
+    mSpriteStorage->AddSprite( "SAUCER", "saucer" );
+    mSpriteStorage->AddSprite( "SAUCEREXPL", "explosionSaucer" );
 
     mSpriteStorage->AddSprite( "FIGHT", "fighter" );
     mSpriteStorage->AddSprite( "LIVE", "fighter" );
