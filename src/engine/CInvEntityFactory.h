@@ -58,6 +58,12 @@ namespace Inv
          \param[in] alienSizeX  Width of the alien entity [px], height will be calculated according
                                 to sprite aspect ratio. */
 
+    entt::entity AddAlienBossEntity(
+      const std::string & entityType,
+      float posX, float posY,
+      float vX, float vY,
+      float alienSizeX );
+
     entt::entity AddPlayerEntity(
       const std::string & entityType,
       float posX, float posY,

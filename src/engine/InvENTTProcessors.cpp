@@ -361,6 +361,10 @@ namespace Inv
       if( nullptr != bAlien && nullptr != sAlien && ! sAlien->isDying )
         mCanBeDamagedAlien.insert( entity );
 
+      auto [bBossAlien, sBossAlien] = reg.try_get<cpAlienBehave, cpAlienBossStatus>( entity );
+      if( nullptr != bBossAlien && nullptr != sBossAlien && !sBossAlien->isDying )
+        mCanBeDamagedAlien.insert( entity );
+
       auto [ bPlayer, sPlayer ] = reg.try_get<cpPlayBehave, cpPlayStatus>( entity );
       if( nullptr != bPlayer && nullptr != sPlayer && ! sPlayer->isDying && ! sPlayer->isInvulnerable )
         mCanBeDamagedPlayer.insert( entity );

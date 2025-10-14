@@ -102,6 +102,19 @@ namespace Inv
     float formationY;   //!< Y position in formation (of centre of alien object) [px]
   };
 
+  //****** component: alien boss status ***************************************************************
+
+/*! \brief This component determines the status of the boss alien computer-controlled element. */
+  struct cpAlienBossStatus
+  {
+    bool isFiring;      //!< \b true if the alien is in firing state, false otherwise.
+
+    bool isShootRequested;
+                        //!< \b true if the alien requested to shoot in current tick.
+
+    bool isDying;       //!< \b true if the alien is in dying state, false otherwise.
+  };
+
   //****** component: player behavior ****************************************************************
 
   /*! \brief This component determines the actual behavior of the player-controlled element. */

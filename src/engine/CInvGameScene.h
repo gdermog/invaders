@@ -195,6 +195,8 @@ namespace Inv
     static const float mStatusLineAreaCoefficient;
     //!< \brief Coefficient defining the area at the bottom of the scene where status line is placed
 
+    static const float mBossAreaCoefficient;
+
     float mStatusLineTopLeftX;
     //!< \brief X coordinate of top left corner of the status line in pixels.
 

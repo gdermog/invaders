@@ -105,8 +105,6 @@ namespace Inv
 /* specify different animation points of interest and so on.                          */
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
-    auto &aStat = mEnTTRegistry.get<cpAlienStatus>( invader );
-
     auto standardAnimationEffect = std::make_shared<CInvEffectSpriteAnimation>(
       mSettings, mPd3dDevice, 1u );
     standardAnimationEffect->SetPace( 6 );
@@ -144,13 +142,91 @@ namespace Inv
                         //  be activated on external event.
 
     mEnTTRegistry.emplace<cpGraphics>( invader,
-      entitySprite, 0u, standardAnimationEffect, firingAnimationEffect, shrinkAnimationEffect, LARGE_INTEGER{0} );
+      entitySprite, 0u, standardAnimationEffect, firingAnimationEffect, shrinkAnimationEffect, LARGE_INTEGER{0}, false );
                         // component: graphics (sprite, static image index, standard animation
                         // sequence, firing animation sequence, animation driver is zeroed )
 
     return invader;
 
   } // CInvEntityFactory::AddEntity
+
+  //-------------------------------------------------------------------------------------------------
+
+  entt::entity CInvEntityFactory::AddAlienBossEntity(
+    const std::string & entityType,
+    float posX, float posY,
+    float vX, float vY, float alienSizeX )
+  {
+    std::shared_ptr<CInvSprite> entitySprite = mSpriteStorage.GetSprite( entityType );
+    if( nullptr == entitySprite )
+    {
+      LOG << "Error: Sprite with ID '" << entityType << "' does not exist, cannot create entity.";
+      return {};
+    } // if
+    entitySprite->SetLevel( LVL_ALIEN );
+
+    const auto boss = mEnTTRegistry.create();
+
+    mEnTTRegistry.emplace<cpId>( boss, (uint64_t)boss, entityType, true, true );
+                        // component: entity full identifier
+
+    mEnTTRegistry.emplace<cpPosition>( boss, posX, posY, 0.0f );
+                        // component: position
+
+    float div = std::sqrt( vX * vX + vY * vY );
+    if( IsZero( div ) )
+      div = mSettingsRuntime.mAlienRaidVelocity;
+    else
+      div = mSettingsRuntime.mAlienRaidVelocity / div;
+    div *= mSettingsRuntime.mSceneLevelMultiplicator;
+    div /= (float)mSettings.GetTickPerSecond();
+    mEnTTRegistry.emplace<cpVelocity>( boss, vX * div, vY * div, 0.0f );
+                        // component: velocity
+
+    auto baseSize = entitySprite->GetImageSize( 0 );
+    auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
+    mEnTTRegistry.emplace<cpGeometry>( boss, alienSizeX, alienSizeX * aspectRatio );
+                        // component: geometry
+
+    mEnTTRegistry.emplace<cpAlienBehave>(
+      boss, 0.0f,
+      mSettingsRuntime.mAlienRaidShootProbability * mSettingsRuntime.mSceneLevelMultiplicator,
+      0.0f, 0.0f, posX, posY, 5000u );
+                        // component: ai behavior /*??? SCORE ???*/
+
+    mEnTTRegistry.emplace<cpAlienBossStatus>( boss, false, false, false );
+                        // component: alien status (not animating, not firing, shoot not requested, not dying )
+
+    mEnTTRegistry.emplace<cpHealth>( boss, 1u, 1u );
+                        // component: health points (single hit will do)
+
+    mEnTTRegistry.emplace<cpDamage>( boss, 1u, true, false, false );
+                        // component: entity damage (can hit player, no friendly fire,
+                        // not dying/removed on hit)
+
+    auto standardAnimationEffect = std::make_shared<CInvEffectSpriteAnimation>(
+      mSettings, mPd3dDevice, 1u );
+    standardAnimationEffect->SetPace( 6 );
+    standardAnimationEffect->SetContinuous( true );
+    entitySprite->AddEffect( standardAnimationEffect );
+                        // Standard animation effect starts running in case of the bos and is continuous
+
+    auto shrinkAnimationEffect = std::make_shared<CInvEffectSpriteShrink>( mSettings, mPd3dDevice, 11u );
+    shrinkAnimationEffect->SetPace( 6 );
+    shrinkAnimationEffect->SetContinuous( false );
+    shrinkAnimationEffect->Suspend();
+    shrinkAnimationEffect->AddEventCallback(
+      BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackUnsetActive, boss ) );
+    entitySprite->AddEffect( shrinkAnimationEffect );
+                        // Shrink animation effect starts suspended (dying effect, not needed for now), it will
+                        //  be activated on external event.
+
+    mEnTTRegistry.emplace<cpGraphics>( boss,
+      entitySprite, 0u, standardAnimationEffect, nullptr, shrinkAnimationEffect, LARGE_INTEGER{ 0 }, false );
+                        // component: graphics (sprite, static image index, standard animation
+                        // sequence, firing animation sequence, animation driver is zeroed )
+
+  } // CInvEntityFactory::AddAlienBossEntity
 
   //-------------------------------------------------------------------------------------------------
 

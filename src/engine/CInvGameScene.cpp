@@ -20,6 +20,7 @@ namespace Inv
 
   static const std::string lModLogId( "GAMESCENE" );
 
+  const float CInvGameScene::mBossAreaCoefficient = 0.080f;
   const float CInvGameScene::mStatusLineAreaCoefficient = 0.925f;
   const float CInvGameScene::mAlienStartingAreaCoefficient = 0.65f;
   const std::string CInvGameScene::mPlayerEntryTextAttention = "ATTENTION";
@@ -199,7 +200,8 @@ namespace Inv
       auto baseSize = baseSprite->GetImageSize( 0 );
       auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
       auto alienHeight = alienWidth * aspectRatio;
-      auto yPos = mSceneTopLeftY + ( alienHeight * 1.2f ) * (float)rowIndex + alienHeight * 0.5f;
+      auto yPos = mSceneTopLeftY + mSceneHeight * mBossAreaCoefficient
+                 + ( alienHeight * 1.2f ) * (float)rowIndex + alienHeight * 0.5f;
 
       auto spaceTakenByAliens = alienWidth * (float)ar.first;
       auto spaceTakenByRow = spaceTakenByAliens + spaceInBetween * ( (uint32_t)ar.first - 1u );
@@ -279,6 +281,17 @@ namespace Inv
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 //  mEntityFactory.AddMissileEntity(
 //    "ROCKET", true, mPlayerStartX, mPlayerStartY, 0.1f * playerWidth, 0.0f, -1.0f );
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+/* BOSS! Boss is spawned at the start of the game for debugging purposes  */
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+    mEntityFactory.AddAlienBossEntity(
+      "SAUCER",
+      35.0f - mSceneWidth * mBossAreaCoefficient,
+      mSceneWidth * mBossAreaCoefficient * 0.5f,
+      1.0, 0.0f,
+      mSceneWidth * mBossAreaCoefficient );
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
     return true;
@@ -625,6 +638,57 @@ namespace Inv
 
     } // if
 
+
+    auto [aliennBossBehave, alienBossStatus, aliennBossHealth, aliennBossGph] =
+      mEnTTRegistry.try_get<cpAlienBehave, cpAlienBossStatus, cpHealth, cpGraphics>( entity );
+    if( nullptr != aliennBossBehave && nullptr != alienBossStatus )
+    {                   // Alien entity elimination from game scene is commenced (hit by player missile).
+                        // Alien entity is marked as dying, explosion is created at alien position and
+                        // special "dying" effect is started on alien sprite.
+
+      if( nullptr == aliennBossHealth || nullptr == aliennBossGph )
+        return false;   // Alien has no health or graphics component - this is probably a bug.
+
+      if( alienBossStatus->isDying )
+        return false;   // Alien is already dying, ignore the hit.
+
+      if( 0 < aliennBossHealth->hitPoints )
+        --aliennBossHealth->hitPoints;
+                        // Alien looses one health point.
+
+      if( 0 < aliennBossHealth->hitPoints )
+        return true;    // Alien still has some health points and continues to fight.
+
+      alienBossStatus->isDying = true;
+                        // Welcome to the graveard, bastard ...
+
+      auto [pPos, pVel, pGeo] = mEnTTRegistry.try_get<cpPosition, cpVelocity, cpGeometry>( entity );
+
+      if( mSettings.GetZeroExplosionV() )
+      {                 // If demanded, destroyed alien stops and explosion does not inherit his velocity.
+        pVel->vX = 0.0f;
+        pVel->vY = 0.0f;
+        pVel->vZ = 0.0f;
+      }  // if
+
+      auto explosionSize = ( nullptr == pGeo ? 150.0f : alienGph->standardSprite->GetResultingSizeX() * 1.5f );
+      auto xplX = ( nullptr == pPos ? 0.0f : pPos->X );
+      auto xplY = ( nullptr == pPos ? 0.0f : pPos->Y );
+      auto xplVx = ( nullptr == pVel ? 0.0f : pVel->vX );
+      auto xplVy = ( nullptr == pVel ? 0.0f : pVel->vY );
+      mEntityFactory.AddExplosionEntity( "SAUCEREXPL", xplX, xplY, explosionSize, xplVx, xplVy );
+                        // Explosion is created at alien position, moving with the invader. Explosion entity
+                        // is automatically pruned from game scene when its animation finishes.
+
+      if( nullptr != aliennBossGph && nullptr != aliennBossGph->dyingAnimationEffect )
+        aliennBossGph->dyingAnimationEffect->Restore();
+                        // Dying effect is started on invader sprite. When the effect finishes, entity
+                        // is marked for pruning and removed from game scene by garbage collector. This
+                        // then triggers EntityJustPruned() method, which notifies main game scene about
+                        // invader elimination.
+
+    } // if
+
     return true;
 
   } // CInvGameScene::EliminateEntity
@@ -633,7 +697,7 @@ namespace Inv
 
   void CInvGameScene::EntityJustPruned( entt::entity entity, uint32_t nr )
   {
-    auto [ entId, entBehave, entStatus ] = mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus>(entity);
+    auto [entId, entBehave, entStatus] = mEnTTRegistry.try_get<cpId, cpPlayBehave, cpPlayStatus>( entity );
     if( nullptr != entId && nullptr != entBehave && nullptr != entStatus )
     {                   // Player entity elimination from game scene is done, appropriate measures
                         // must be taken (respawn, reduce number of lives, end of game etc.)
@@ -649,11 +713,11 @@ namespace Inv
       mPlayerEntryInProgress = true;
       mPlayerEntryTick.QuadPart = 0;
       mPlayerAlive = false;
-                        // Player is no more in the scene, new entry sequence must be started.
+      // Player is no more in the scene, new entry sequence must be started.
 
       if( 0 < mPlayerLivesLeft )
         --mPlayerLivesLeft;
-                        // One player life (ship) is lost.
+      // One player life (ship) is lost.
       return;
 
     } // if
@@ -661,7 +725,7 @@ namespace Inv
     auto [aId, aBehave, aStatus] = mEnTTRegistry.try_get<cpId, cpAlienBehave, cpAlienStatus>( entity );
     if( nullptr != aId && nullptr != aBehave && nullptr != aStatus )
     {
-      if( entId->active )
+      if( aId->active )
       {
         LOG << "Trying to prune active alien!";
         return;         // Player entity is still active, this is probably a bug.
@@ -671,9 +735,33 @@ namespace Inv
       mSettingsRuntime.mAlienSpeedupFactor += mSettings.GetSpeedupPerKill();
 
       LOG << "Alien was pruned from game scene, " << aBehave->scoreToAdd
-          << " points added, speed upscaled to " << mSettingsRuntime.mAlienSpeedupFactor;
+        << " points added, speed upscaled to " << mSettingsRuntime.mAlienSpeedupFactor;
 
       --mAliensLeft;
+    } // if
+
+    auto [aBossId, aBossBehave, aBossStatus, aBossPos, aBossGeo] =
+      mEnTTRegistry.try_get<cpId, cpAlienBehave, cpAlienBossStatus, cpPosition, cpGeometry>( entity );
+    if( nullptr != aId && nullptr != aBehave && nullptr != aBossStatus )
+    {
+      if( aBossId->active )
+      {
+        LOG << "Trying to prune active alien!";
+        return;         // Player entity is still active, this is probably a bug.
+      } // if
+
+      if( nullptr != aBossPos && nullptr != aBossGeo )
+        return;
+
+      if( ( mSceneTopLeftX < aBossPos->X + aBossGeo->width * 0.5f ) &&
+          ( mSceneTopLeftY < aBossPos->Y + aBossGeo->height * 0.5f ) &&
+          ( aBossPos->X - aBossGeo->width * 0.5f < mSceneBottomRightX ) &&
+          ( aBossPos->Y - aBossGeo->height * 0.5f < mSceneBottomRightY ) )
+      {
+        mActualScore += aBossBehave->scoreToAdd;
+
+        LOG << "Alien boss was pruned from game scene, " << aBossBehave->scoreToAdd << " score added";
+      }
     } // if
 
     if( 0u == mAliensLeft )
@@ -696,6 +784,10 @@ namespace Inv
                         // around while new swarm is being generated.
       auto aStat = mEnTTRegistry.try_get<cpAlienStatus>( e );
       if( nullptr != aStat )
+        return;
+
+      auto aBossStat = mEnTTRegistry.try_get<cpAlienBossStatus>( e );
+      if( nullptr != aBossStat )
         return;
 
       auto pStat = mEnTTRegistry.try_get<cpPlayStatus>( e );
@@ -801,6 +893,7 @@ namespace Inv
     auto aStat = mEnTTRegistry.try_get<cpAlienStatus>( ent );
     if( nullptr != aStat )
       aStat->isFiring = false;
+
   } // CInvGameScene::CallbackAlienFiringDone
 
   //-------------------------------------------------------------------------------------------------
