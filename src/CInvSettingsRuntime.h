@@ -79,6 +79,9 @@ namespace Inv
     float mAlienSpeedupFactor;
     //!< Factor by which alien speed is increased
 
+    float mSaucerProbability;
+    //!< Probability of saucer appearance in each game tick, usually a small. Affects game
+
     //@{}---------------------------------------------------------------------------------------------
     //! @name Public data concerning player
     //@{----------------------------------------------------------------------------------------------

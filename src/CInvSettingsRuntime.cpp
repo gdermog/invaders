@@ -33,6 +33,7 @@ namespace Inv
     mPlayerVelocity( 150.0f ),
     mAlienDescendTime( 0.5f ),
     mAlienSpeedupFactor( 1.0f ),
+    mSaucerProbability( 0.00005f ),
     mSpitVelocity( 75.0f ),
     mRocketVelocity( 225.0f ),
     mRocketSupply( 3 ),
@@ -75,6 +76,7 @@ namespace Inv
     PrpLine() << "RaidVelocity:" << mAlienRaidVelocity;
     PrpLine() << "DescendTime:" << mAlienDescendTime;
     PrpLine() << "SpeedupFactor:" << mAlienSpeedupFactor;
+    PrpLine() << "SaucerProb:" << mSaucerProbability;
     LOG;
 
     PrpLine() << "------ PLAYER PARAMETERS --------------------------";
@@ -107,6 +109,7 @@ namespace Inv
     mAlienRaidVelocity = 112.5f;
     mAlienDescendTime = 0.5f;
     mAlienSpeedupFactor = 1.0f;
+    mSaucerProbability = 0.00005f;
 
     mPlayerInvulnerabilityTicks = 150;
     mPlayerVelocity = 150.0f;
