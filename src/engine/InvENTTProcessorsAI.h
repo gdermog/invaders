@@ -15,6 +15,7 @@
 #include <InvGlobals.h>
 #include <engine/InvENTTComponents.h>
 #include <engine/InvENTTProcessors.h>
+#include <engine/CInvEntityFactory.h>
 
 namespace Inv
 {
@@ -31,17 +32,8 @@ namespace Inv
       CInvSettingsRuntime & settingsRuntime,
       CInvEntityFactory & entityFactory,
       uint32_t & aliensLeft,
-      float saucerSize,
-      float saucerSpawnPointY,
-      float saucerSpawnPointXLeft,
-      float saucerSpawnPointXRight );
+      std::vector<AlienBossDescriptor_t> & bossDescriptor );
 
-    void reset(
-      LARGE_INTEGER refTick,
-      float saucerSize,
-      float saucerSpawnPointY,
-      float saucerSpawnPointXLeft,
-      float saucerSpawnPointXRight );
 
     void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
 
@@ -49,10 +41,7 @@ namespace Inv
 
     uint32_t &mAliensLeft;
 
-    float mSaucerSize;
-    float mSaucerSpawnPointY;
-    float mSaucerSpawnPointXLeft;
-    float mSaucerSpawnPointXRight;
+    std::vector<AlienBossDescriptor_t> & mBossDescriptor;
 
   }; // procActorStateSelector
 
@@ -65,9 +54,16 @@ namespace Inv
     procActorStateSelector(
       LARGE_INTEGER refTick,
       const CInvSettings & settings,
-      CInvSettingsRuntime & settingsRuntime );
+      CInvSettingsRuntime & settingsRuntime,
+      bool & isInDangerousArea);
 
-    void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
+    void update(
+      entt::registry & reg,
+      LARGE_INTEGER actTick,
+      LARGE_INTEGER diffTick,
+      uint32_t quickDeathTicksLeft );
+
+    bool & mIsInDangerousArea;
 
   }; // procActorStateSelector
 
@@ -134,7 +130,8 @@ namespace Inv
     void update(
       entt::registry & reg,
       LARGE_INTEGER actTick,
-      LARGE_INTEGER diffTick );
+      LARGE_INTEGER diffTick,
+      uint32_t quickDeathTicksLeft );
 
 
   }; // procAlienRaidDriver

@@ -79,9 +79,6 @@ namespace Inv
     float mAlienSpeedupFactor;
     //!< Factor by which alien speed is increased
 
-    float mSaucerProbability;
-    //!< Probability of saucer appearance in each game tick, usually a small. Affects game
-
     float mAlienRaidMaxTime;
     //!< Maximum time an alien can stay in raid mode, in seconds
 
@@ -95,6 +92,9 @@ namespace Inv
     float mReturnTgtDistance;
     //!< \brief Distance from target position, at which the alien is considered to be
     //!  back in formation.
+
+    float mDangerAreaThreatCoefficient;
+    //!< Coefficient expressing how dangerous is the area above the alien formation
 
     //@{}---------------------------------------------------------------------------------------------
     //! @name Public data concerning player

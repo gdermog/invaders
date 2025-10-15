@@ -324,6 +324,12 @@ namespace Inv
     std::string mScoreLabelBuffer;
     //<! \brief Buffer used to create "SCORE" label text
 
+    bool mIsInDangerousArea;
+    //<! \brief Flag indicating whether player is in dangerous area (above all aliens)
+
+    uint32_t mQuickDeathTicksLeft;
+    //<! \brief Number of ticks left to initiate quick death mode
+
     //------ Alien global state -----------------------------------------------------------------------
 
     float mVXGroup;
@@ -335,17 +341,8 @@ namespace Inv
     uint32_t mAliensLeft;
     //!< \brief Number of aliens still alive in the scene.
 
-    float mSaucerSize;
-    //!< \brief Size of the boss saucer (width in pixels).
-
-    float mSaucerSpawnY;
-    //!< \brief Y coordinate where the boss saucer spawns (top edge of the scene).
-
-    float mSaucerSpawnXLeft;
-    //!< \brief X coordinate where the boss saucer spawns when entering from left side
-
-    float mSaucerSpawnXRight;
-    //!< \brief X coordinate where the boss saucer spawns when entering from right side
+    std::vector<AlienBossDescriptor_t> mAlienBosses;
+    //!< \brief Descriptors of boss aliens that can appear in the scene.
 
     //------ EnTT processors --------------------------------------------------------------------------
 
@@ -356,6 +353,7 @@ namespace Inv
     procPlayerFireUpdater mProcPlayerFireUpdater;
     procPlayerSpeedUpdater mProcPlayerSpeedUpdater;
     procPlayerBoundsGuard mProcPlayerBoundsGuard;
+    procPlayerInDanger mProcPlayerInDanger;
     procAlienBoundsGuard mProcAlienBoundsGuard;
     procActorMover mProcActorMover;
     procAlienRaidDriver mProcAlienRaidDriver;

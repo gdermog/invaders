@@ -19,6 +19,8 @@
 namespace Inv
 {
 
+  static const std::string lModLogId( "PROC" );
+
 
   procEnTTBase::procEnTTBase(
     LARGE_INTEGER refTick,
@@ -67,8 +69,8 @@ namespace Inv
     view.each( [&]( cpAlienStatus & stat, const cpPosition & pos, const cpGeometry & geo, const cpGraphics &gph )
     {                   // Check for aliens shooting requests
 
-        if( ! stat.isShootRequested )
-          return;       // Alien did not request to shoot in this tick
+        if( stat.isDying || ! stat.isShootRequested )
+          return;       // Alien did not request to shoot in this tick (or is dead and cannot shoot)
 
         gph.standardSprite->GetResultingPosition(
           xTopLeft, yTopLeft, xBottomRight, yBottomRight, xSize, ySize, imageIndex );
@@ -180,6 +182,9 @@ namespace Inv
         {               // This should work as there is only one player entity. If there are more, all would shoot
                         // simultaneously, which is probably not desired. In such case more complex logic would be
                         // needed.
+
+            if( stat.isDying )
+              return;     // Player is dying, cannot shoot
 
             gph.standardSprite->GetResultingPosition(
               xTopLeft, yTopLeft, xBottomRight, yBottomRight, xSize, ySize, imageIndex );
@@ -496,15 +501,14 @@ namespace Inv
   {
     mEntities.clear();
 
-    if( mIsSuspended )
-      return;           // Processor is suspended, no action is performed
+    /* No suspended state for garbage collector! */
 
     auto view = reg.view<cpId>();
     for( auto entity : view )
     {
       auto & entId = view.get<cpId>( entity );
       if( !entId.active )
-      {                 // Entity is marked as inactive and it will be remove from registry in short time.
+      {                 // Entity is marked as inactive and it will be remove from registry.
                         // If it should send notification on pruning, it is done now.
         if( entId.noticeOnPruning && nullptr != mPruneCallback )
           mPruneCallback( entity, entId.id );
@@ -527,7 +531,6 @@ namespace Inv
 
     procEnTTBase( refTick, settings, settingsRuntime )
   {}
-
 
   //--------------------------------------------------------------------------------------------------
 
@@ -568,5 +571,53 @@ namespace Inv
 
   } // procActorRender::update
 
+  //****** processor: check if the player actor is in dangerous area **********************************
+
+
+  procPlayerInDanger::procPlayerInDanger(
+    LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime,
+    bool & isInDangerousArea ):
+
+    procEnTTBase( refTick, settings, settingsRuntime ),
+    mIsInDangerousArea( isInDangerousArea )
+  {}
+
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procPlayerInDanger::update(
+    entt::registry & reg,
+    LARGE_INTEGER actTick,
+    LARGE_INTEGER diffTick )
+  {
+    float minAlienY = 1e25f;
+
+    auto viewA = reg.view<const cpAlienBehave, cpAlienStatus, cpPosition>();
+    viewA.each( [&]( const cpAlienBehave & behave, cpAlienStatus & status, cpPosition & pos )
+    {                   // Searching for highest alien position
+
+      if( status.isDying )
+        return;         // Alien is dying, does not count
+
+      if( pos.Y < minAlienY )
+        minAlienY = pos.Y;
+    } );
+
+    mIsInDangerousArea = false;
+    auto viewP = reg.view<const cpPlayBehave, cpPlayStatus, cpPosition>();
+    viewP.each( [&]( const cpPlayBehave & behave, cpPlayStatus & status, cpPosition & pos )
+    {
+        if( status.isDying )
+          return;       // Player is dying, does not count
+
+        if( pos.Y < minAlienY )
+          mIsInDangerousArea = true;
+                        // Player is too high - risky position, risky ...
+    } );
+
+
+  } // procPlayerInDanger::update
 
 } // namespace Inv

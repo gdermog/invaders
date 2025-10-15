@@ -297,6 +297,25 @@ namespace Inv
 
   }; // procActorRender
 
+  //****** processor: check if the player actor is in dangerous area **********************************
+
+
+  struct procPlayerInDanger: public procEnTTBase
+  {
+    procPlayerInDanger(
+      LARGE_INTEGER refTick,
+      const CInvSettings & settings,
+      CInvSettingsRuntime & settingsRuntime,
+      bool & isInDangerousArea );
+
+    void update(
+      entt::registry & reg,
+      LARGE_INTEGER actTick,
+      LARGE_INTEGER diffTick );
+
+    bool & mIsInDangerousArea;
+
+  }; // procPlayerSpeedUpdater
 
 } // namespace Inv
 

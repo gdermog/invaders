@@ -25,6 +25,39 @@ namespace Inv
 
   class CInvGameScene;
 
+  using AlienBossDescriptor_t = struct
+  {
+    uint32_t mBossTypeId;
+    //!< \brief Unique ID of this alien entity type
+
+    std::string mSpriteId;
+    //!< \brief Sprite ID of the alien entity
+
+    uint32_t mPoints;
+    //!< \brief Points awarded for destroying this alien entity
+
+    uint32_t mIsSpawned;
+    //!< \brief Current number of this alien entity type that are present in the scene
+
+    uint32_t mMaxSpawned;
+    //!< \brief Maximum number of this alien entity type that can be present in the scene at once
+
+    float mSpawnProbability;
+    //!< \brief Probability of spawning this alien entity type per game tick, if not at maximum number already
+
+    float mSize;
+    //!< \brief Size of the boss saucer (width in pixels).
+
+    float mSpawnY;
+    //!< \brief Y coordinate where the boss saucer spawns (top edge of the scene).
+
+    float mSpawnXLeft;
+    //!< \brief X coordinate where the boss saucer spawns when entering from left side
+
+    float mSpawnXRight;
+    //!< \brief X coordinate where the boss saucer spawns when entering from right side
+  };
+
   /*! \brief The class implements generator of in-game actors and objects. */
   class CInvEntityFactory
   {
@@ -59,7 +92,7 @@ namespace Inv
                                 to sprite aspect ratio. */
 
     entt::entity AddAlienBossEntity(
-      const std::string & entityType,
+      AlienBossDescriptor_t & bossType,
       float posX, float posY,
       float vX, float vY,
       float alienSizeX );

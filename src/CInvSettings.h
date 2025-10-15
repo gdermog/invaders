@@ -82,6 +82,9 @@ namespace Inv
     uint32_t GetMinScore() const { return mMinScore; }
     //!< \brief Returns minimum score to be recorded in hiscore list
 
+    float GetRaidScoreCoef() const { return mRaidScoreCoef; }
+    //!< \brief Returns score multiplier for destroyed raiding alien
+
     bool GetZeroExplosionV() const { return mZeroExplosionV; }
     //!< \brief Returns true if actor should stop moving when destroyed
 
@@ -90,6 +93,9 @@ namespace Inv
 
     float GetDifficultyBuildup() const { return mDifficultyBuildup; }
     //!< \brief Returns internal parameter, used to increase game difficulty with each level
+
+    float GetQuickDeathTime() const { return mQuickDeathTime; }
+    //!< \brief Returns time (in seconds) for quick death mode
 
     uint32_t GetInitialLives() const { return mInitialLives; }
     //!< \brief Returns number of player lives (ships) at the beginning of the game
@@ -129,6 +135,10 @@ namespace Inv
 
     uint32_t mMinScore; //!< Minimum score to be recorded in hiscore list
 
+    float mRaidScoreCoef;
+                        //!< Score multiplier for destroyed raiding alien
+
+
     bool mZeroExplosionV;
                         //!< If true, actor stops moving when destroyed
 
@@ -137,6 +147,9 @@ namespace Inv
 
     float mDifficultyBuildup;
     //!< Internal parameter, used to increase game difficulty with each level
+
+    float mQuickDeathTime;
+    //!< Time (in seconds) for quick death mode
 
     uint32_t mInitialLives;
     //!< \brief Number of player lives (ships) at the beginning of the game

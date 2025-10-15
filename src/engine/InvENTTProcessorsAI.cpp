@@ -12,12 +12,14 @@
 #include <engine/InvENTTComponents.h>
 
 #include <graphics/CInvSprite.h>
-#include <engine/CInvEntityFactory.h>
 #include <CInvSettings.h>
+#include <CInvLogger.h>
 #include <CInvSettingsRuntime.h>
 
 namespace Inv
 {
+
+  static const std::string lModLogId( "PROCAI" );
 
   //****** processor: setting of actors to specific states *******************************************
 
@@ -27,36 +29,14 @@ namespace Inv
     CInvSettingsRuntime & settingsRuntime,
     CInvEntityFactory & entityFactory,
     uint32_t & aliensLeft,
-    float saucerSize,
-    float saucerSpawnPointY,
-    float saucerSpawnPointXLeft,
-    float saucerSpawnPointXRight ):
+    std::vector<AlienBossDescriptor_t> & bossDescriptor ):
 
     procEnTTBase( refTick, settings, settingsRuntime ),
     mEntityFactory( entityFactory ),
     mAliensLeft( aliensLeft ),
-    mSaucerSize( saucerSize ),
-    mSaucerSpawnPointY( saucerSpawnPointY ),
-    mSaucerSpawnPointXLeft( saucerSpawnPointXLeft ),
-    mSaucerSpawnPointXRight( saucerSpawnPointXRight )
-  {
-  }
+    mBossDescriptor( bossDescriptor )
+  {}
 
-  //--------------------------------------------------------------------------------------------------
-
-  void procSpecialActorSpawner::reset(
-    LARGE_INTEGER refTick,
-    float saucerSize,
-    float saucerSpawnPointY,
-    float saucerSpawnPointXLeft,
-    float saucerSpawnPointXRight )
-  {
-    procEnTTBase::reset( refTick );
-    mSaucerSize = saucerSize;
-    mSaucerSpawnPointY = saucerSpawnPointY;
-    mSaucerSpawnPointXLeft = saucerSpawnPointXLeft;
-    mSaucerSpawnPointXRight = saucerSpawnPointXRight;
-  } // procSpecialActorSpawner::reset
 
   //--------------------------------------------------------------------------------------------------
 
@@ -65,19 +45,31 @@ namespace Inv
     if( mIsSuspended )
       return;           // Processor is suspended, no action is performed
 
-    auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-    if( probRoll < mSettingsRuntime.mSaucerProbability * mSettingsRuntime.mSceneLevelMultiplicator )
-    {                   // Alien boss (flying saucer) is spawned on random event
-      bool fromLeft = ( ( rand() % 2 ) == 0 );
-      mEntityFactory.AddAlienBossEntity(
-        "SAUCER",
-        fromLeft ? mSaucerSpawnPointXLeft : mSaucerSpawnPointXRight,
-        mSaucerSpawnPointY,
-        fromLeft ? 1.0 : -1.0, 0.0f,
-        mSaucerSize );
-      ++mAliensLeft;    // One more alien is present in the scene
-    } // if
+    for( auto & boss : mBossDescriptor )
+    {
 
+      if( boss.mMaxSpawned <= boss.mIsSpawned )
+        continue;       // Maximum number of this alien boss type is already present in the scene
+
+      auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+      if( probRoll < boss.mSpawnProbability * mSettingsRuntime.mSceneLevelMultiplicator )
+      {                   // Alien boss (flying saucer) is spawned on random event
+        bool fromLeft = ( ( rand() % 2 ) == 0 );
+        mEntityFactory.AddAlienBossEntity(
+          boss,
+          fromLeft ? boss.mSpawnXLeft : boss.mSpawnXRight,
+          boss.mSpawnY, /* Must be player Y if mSpawnY is negative!!! S*/
+          fromLeft ? 1.0 : -1.0, 0.0f,
+          boss.mSize );
+
+        ++boss.mIsSpawned;
+        ++mAliensLeft;  // One more alien of given type is present in the scene
+
+        LOG << "Boss alien of type " << boss.mSpriteId << " spawned, numbers are now "
+            << boss.mIsSpawned << "/" << boss.mMaxSpawned;
+
+      } // if
+    }
   } // procSpecialActorSpawner::update
 
   //****** processor: setting of actors to specific states *******************************************
@@ -85,65 +77,82 @@ namespace Inv
   procActorStateSelector::procActorStateSelector(
     LARGE_INTEGER refTick,
     const CInvSettings & settings,
-    CInvSettingsRuntime & settingsRuntime ):
+    CInvSettingsRuntime & settingsRuntime,
+    bool & isInDangerousArea ):
 
-    procEnTTBase( refTick, settings, settingsRuntime )
-  {
-  }
+    procEnTTBase( refTick, settings, settingsRuntime ),
+    mIsInDangerousArea( isInDangerousArea )
+  {}
 
   //--------------------------------------------------------------------------------------------------
 
-  void procActorStateSelector::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
+  void procActorStateSelector::update(
+    entt::registry & reg,
+    LARGE_INTEGER actTick,
+    LARGE_INTEGER diffTick,
+    uint32_t quickDeathTicksLeft )
   {
     if( mIsSuspended )
       return;           // Processor is suspended, no action is performed
 
     auto view = reg.view<const cpAlienBehave, cpAlienStatus, cpGraphics>();
-    view.each( [=]( const cpAlienBehave & behave, cpAlienStatus & status, cpGraphics & gph )
-      {                   // Updating status for alien actors
+    view.each( [&]( const cpAlienBehave & behave, cpAlienStatus & status, cpGraphics & gph )
+    {                   // Updating status for alien actors
 
-        if( status.isDying )
-          return;       // Alien is dying, no other status is possible
+      if( status.isDying )
+        return;         // Alien is dying, no other status is possible
 
-        if( !( status.isAnimating || status.isFiring ) )
-        {               // Previous status must be resolved before any other is set
+      if( !( status.isAnimating || status.isFiring ) )
+      {                 // Previous status must be resolved before any other is set
 
-          auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-          if( probRoll < behave.animationProbability )
-          {
-            status.isAnimating = true;
-            gph.diffTick.QuadPart = 0ul;
-            gph.standardAnimationEffect->Restore();
-            // Animation is started on random event. Effect is restored, runs once (as it is not
-            // continuous) and then suspends itself, sending event message by appropriate callback,
-            // which sets isAnimating flag to false again.
-          } // if
-          else
-          {
-            probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-            if( probRoll < ( status.isInRaid ? behave.raidShootProbability : behave.shootProbability ) )
-            {
-              status.isFiring = true;
-              gph.diffTick.QuadPart = 0ul;
-              gph.specificAnimationEffect->Restore();
-              // Fire animation is started on random event. Effect is restored, runs once (as it is not
-              // continuous) and then suspends itself, sending event message by appropriate callback,
-              // which sets isFiring flag to false again.
-            } // if
-          } // else
-        } // if
-
-        if( !( status.isInRaid || status.isReturningToFormation ) )
+        auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+        if( probRoll < behave.animationProbability )
         {
-          auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-          if( probRoll < behave.raidProbability )
-          {             // Alien enters raid mode on random event.
-            status.isInRaid = true;
-            status.raidTicksLeft = UINT32_MAX;
-          } // if
+          status.isAnimating = true;
+          gph.diffTick.QuadPart = 0ul;
+          gph.standardAnimationEffect->Restore();
+                        // Animation is started on random event. Effect is restored, runs once (as it is not
+                        // continuous) and then suspends itself, sending event message by appropriate callback,
+                        // which sets isAnimating flag to false again.
         } // if
+        else
+        {
+          probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+          if( probRoll < ( status.isInRaid ? behave.raidShootProbability : behave.shootProbability ) )
+          {
+            status.isFiring = true;
+            gph.diffTick.QuadPart = 0ul;
+            gph.specificAnimationEffect->Restore();
+                        // Fire animation is started on random event. Effect is restored, runs once (as it is not
+                        // continuous) and then suspends itself, sending event message by appropriate callback,
+                        // which sets isFiring flag to false again.
+          } // if
+        } // else
+      } // if
 
-      } );
+      if( !( status.isInRaid || status.isReturningToFormation ) )
+      {
+        float prob = behave.raidProbability * 2.0f * mSettingsRuntime.mAlienSpeedupFactor;
+        if( mIsInDangerousArea )
+          prob *= mSettingsRuntime.mDangerAreaThreatCoefficient;
+                        // Invaders are more probable to enter raid if player is in dangerous area
+                        // (above the alien formation).
+
+        float probRoll;
+        if( 0u == quickDeathTicksLeft )
+          probRoll = 0.0f;
+        else
+          probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+                        // On quick deat mode all aliens are raiding
+
+        if( probRoll < prob )
+        {             // Alien enters raid mode on random event.
+          status.isInRaid = true;
+          status.raidTicksLeft = UINT32_MAX;
+        } // if
+      } // if
+
+    } );
 
   } // procActorStateSelector::update
 
@@ -171,8 +180,7 @@ namespace Inv
     mSceneTopLeftY( sceneTopLeftY ),
     mSceneBottomRightX( sceneBottomRightX ),
     mSceneBottomRightY( sceneBottomRightY )
-  {
-  }
+  {}
 
   //--------------------------------------------------------------------------------------------------
 
@@ -207,19 +215,22 @@ namespace Inv
     auto view = reg.view<cpAlienBehave, cpAlienStatus, cpPosition, cpGeometry>();
     view.each( [&]( cpAlienBehave & pBehave, cpAlienStatus & pStat, cpPosition & pPos, cpGeometry & pGeo )
     {
-      if( pStat.isInRaid || pStat.isReturningToFormation || pStat.isDying )
-        return;       // Alien is in raid or dying, no group bounds guard possible or necessary
+      if( pStat.isDying )
+        return;         // Alien is dying, no group bounds guard possible or necessary
 
-      float xPosNext = pPos.X + mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
+      float xPosNext = pStat.formationX + mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
       xChangeNeeded |=
         ( xPosNext - 0.5 * pGeo.width < mSceneTopLeftX ) ||
         ( mSceneBottomRightX < xPosNext + 0.5 * pGeo.width );
 
-      float yPosNext = pPos.Y + mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
+      float yPosNext = pStat.formationY + mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
       yAtTheBottom |=
         ( yPosNext - 0.5 * pGeo.height < mSceneTopLeftY ) ||
         ( mSceneBottomRightY - bottomGuardedArea < yPosNext + 0.5 * pGeo.height );
-
+                        // Coo-eee, do not check pos.X and pos.Y there, use formation positions!!! While
+                        // the lowest alien is on raid, rest of the formation could drop too low and after
+                        // the return of the raider there would be not enough space for player ship at the
+                        // bottom of the screen!
     } );
 
     if( !IsZero( mVXGroup ) )
@@ -272,7 +283,10 @@ namespace Inv
   //--------------------------------------------------------------------------------------------------
 
   void procAlienRaidDriver::update(
-    entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
+    entt::registry & reg,
+    LARGE_INTEGER actTick,
+    LARGE_INTEGER diffTick,
+    uint32_t quickDeathTicksLeft )
   {
 
     if( mIsSuspended )
@@ -317,12 +331,15 @@ namespace Inv
 
         float distanceToTarget = sqrt( deltaX * deltaX + deltaY * deltaY );
 
-        if( pStat.isInRaid &&
+        if( 0u < quickDeathTicksLeft )
+        {               // On quick death mode all aliens gone for raind and never returns to formation
+          if( pStat.isInRaid &&
             ( distanceToTarget < mSettingsRuntime.mRaidTgtDistance || 0u == pStat.raidTicksLeft ) )
-        {               // Alien reached target distance in raid, returns to formation
-          pStat.isInRaid = false;
-          pStat.isReturningToFormation = true;
-          pStat.raidTicksLeft = 0u;
+          {               // Alien reached target distance in raid, returns to formation
+            pStat.isInRaid = false;
+            pStat.isReturningToFormation = true;
+            pStat.raidTicksLeft = 0u;
+          } // if
         } // if
 
         if( pStat.isReturningToFormation && distanceToTarget < mSettingsRuntime.mReturnTgtDistance )
@@ -339,21 +356,43 @@ namespace Inv
         } // if
 
         float velocitySize =
-          mSettingsRuntime.mAlienRaidVelocity * mSettingsRuntime.mAlienSpeedupFactor /
-          mSettings.GetTickPerSecond();
-                        // Alien velocity magnitude (per tick)
+          mSettingsRuntime.mAlienRaidVelocity / mSettings.GetTickPerSecond();
+                        // Alien velocity magnitude (per tick). Do not multiply it by
+                        // mSettingsRuntime.mAlienSpeedupFactor, it is done in procActorMover
+                        // processor.
 
         if( UINT32_MAX == pStat.raidTicksLeft )
         {               // Raid just started, movement must be initiated
-
           pStat.raidTicksLeft =
             (uint32_t)( mSettingsRuntime.mAlienRaidMaxTime * mSettings.GetTickPerSecond() );
           pVel.vX = velocitySize * deltaX / distanceToTarget;
           pVel.vY = velocitySize * deltaY / distanceToTarget;
           return;
-        }
+        } // if
 
+        float phi = atan2( pVel.vX * deltaY - pVel.vY * deltaX, pVel.vX * deltaX + pVel.vY * deltaY );
+                        // Oriented angle between current velocity vector and vector to target is
+                        // calculated according to definition of scalar and pseudoskálární product
+                        // of two vectors.
 
+        if( phi < -maxAlienTurningAngle )
+          phi = -maxAlienTurningAngle;
+        else if( maxAlienTurningAngle < phi )
+          phi = maxAlienTurningAngle;
+                        // Angle change is limited by maximum turning angle per tick
+
+        float cosPhi = cos( phi );
+        float sinPhi = sin( phi );
+                        // Cosine and sine of limited angle change is calculated
+
+        float newVX = cosPhi * pVel.vX - sinPhi * pVel.vY;
+        float newVY = sinPhi * pVel.vX + cosPhi * pVel.vY;
+        pVel.vX = newVX;
+        pVel.vY = newVY;// New velocity vector is calculated by rotation of old vector
+                        // by limited angle change
+
+        if( 0u < pStat.raidTicksLeft )
+          --pStat.raidTicksLeft;
                         // One tick in raid mode is consumed
 
     });

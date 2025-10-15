@@ -12,7 +12,7 @@
 #include <engine/InvENTTComponents.h>
 
 #include <graphics/CInvSprite.h>
-
+#include <InvStringTools.h>
 #include <CInvLogger.h>
 
 namespace Inv
@@ -104,30 +104,45 @@ namespace Inv
     mPlayerAmmoLeft( 0 ),
     mReloadingTicks( 0 ),
     mTickLeftToReload( 0 ),
+    mIsInDangerousArea( false ),
+    mQuickDeathTicksLeft( 0u ),
 
     //------ Alien (group) global state ---------------------------------------------------------------
 
     mVXGroup( 0.0f ),
     mVYGroup( 0.0f ),
     mAliensLeft( 0 ),
-    mSaucerSize( 0.0f ),
-    mSaucerSpawnY( 0.0f ),
-    mSaucerSpawnXLeft( 0.0f ),
-    mSaucerSpawnXRight( 0.0f ),
+
+    mAlienBosses
+    {
+      {
+           10u,             // mTypeId;
+           "SAUCER",        // mSpriteId;
+           5000u,           // mPoints
+           0u,              // mIsSpawned
+           2u,              // mMaxSpawned
+           0.001f,          // mSpawnProbability;
+           80.0f,           // mSize - will be recalculated in GenerateNewScene() according to scene size
+           40.0f,           // mSpawnY - will be recalculated in GenerateNewScene()
+           0.0f,            // mSpawnXLeft - will be recalculated in GenerateNewScene()
+           0.0f             // mSpawnXRight - will be recalculated in GenerateNewScene()
+      }
+    },
 
     //------ EnTT processors --------------------------------------------------------------------------
 
 #define PROCCMN  tickReferencePoint, settings, settingsRuntime
 
     mProcGarbageCollector     ( PROCCMN, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
-    mProcActorStateSelector   ( PROCCMN ),
+    mProcActorStateSelector   ( PROCCMN, mIsInDangerousArea ),
     mProcEntitySpawner        ( PROCCMN, mEntityFactory ),
-    mProcSpecialActorSpawner  ( PROCCMN, mEntityFactory, mAliensLeft, 0.0f, 0.0f, 0.0f, 0.0f ),
+    mProcSpecialActorSpawner  ( PROCCMN, mEntityFactory, mAliensLeft, mAlienBosses ),
     mProcActorMover           ( PROCCMN, mVXGroup, mVYGroup ),
     mProcAlienRaidDriver      ( PROCCMN ),
     mProcPlayerFireUpdater    ( PROCCMN, mEntityFactory, mPlayerAmmoLeft ),
     mProcPlayerSpeedUpdater   ( PROCCMN ),
     mProcPlayerBoundsGuard    ( PROCCMN, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight() ),
+    mProcPlayerInDanger       ( PROCCMN, mIsInDangerousArea ),
     mProcAlienBoundsGuard     ( PROCCMN, mVXGroup, mVYGroup, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight() ),
     mProcActorOutOfSceneCheck ( PROCCMN, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight() ),
     mProcCollisionDetector    ( PROCCMN, mCollisionTest ),
@@ -191,17 +206,28 @@ namespace Inv
                         // Alien width is set in such way that the maximum number of aliens in a row
                         // fits into specific part of the scene width, rest is space in between aliens
                         // and white space at the sides of the scene.
-                        //
-    auto bossSprite = mSpriteStorage.GetSprite( "SAUCER" );
-    auto bossSize = bossSprite->GetImageSize( 0 );
-    auto aspectRatio = (float)bossSize.second / (float)bossSize.first;
-    mSaucerSize = aspectRatio * mSceneHeight * mBossAreaCoefficient;
-    mSaucerSpawnY = mSceneTopLeftY + mSaucerSize * 0.50f;
-    mSaucerSpawnXLeft = -mSaucerSize * 0.49f;
-    mSaucerSpawnXRight = mSceneBottomRightX + mSaucerSize * 0.49f;
+
+    for( auto & ab : mAlienBosses )
+    {                   // Reset the number of spawned bosses to zero
+      auto bossSprite = mSpriteStorage.GetSprite( ab.mSpriteId );
+      if( nullptr == bossSprite )
+        continue;
+      auto bossSize = bossSprite->GetImageSize( 0 );
+      auto aspectRatio = (float)bossSize.second / (float)bossSize.first;
+      ab.mSize = aspectRatio * mSceneHeight * mBossAreaCoefficient;
+
+      if( IsZero( ab.mSpawnY ) || IsPositive( ab.mSpawnY ) )
+         ab.mSpawnY = mSceneTopLeftY + ab.mSize * 0.50f;
+                        // If spawn height is negative in the descriptor, it is not changed here
+                        // and real spawn height will be calculated later acording to the player
+                        // ship position.
+
+      ab.mSpawnXLeft = -ab.mSize * 0.49f;
+      ab.mSpawnXRight = mSceneBottomRightX + ab.mSize * 0.49f;
                         // Saucer (boss alien) size is set to fit into the boss area, its spawn
                         // position is just outside of the scene at the top, both on left and
                         // right side.
+    } // for
 
     mVXGroup = 0.0f;
     mVYGroup = 0.0f;
@@ -316,17 +342,17 @@ namespace Inv
 /* RAID! Several invaders are raiding at the start of the game for debug- */
 /* ging purposes                                                          */
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
-    uint32_t raiders = 2;
-    auto viewA = mEnTTRegistry.view<cpAlienBehave, cpAlienStatus, cpPosition, cpVelocity, cpGeometry>();
-    viewA.each( [&]( cpAlienBehave & pBehave, cpAlienStatus & pStat, cpPosition & pPos, cpVelocity & pVel, cpGeometry & pGeo )
-    {
-      if( 0u < raiders )
-      {
-        pStat.isInRaid = true;
-        pStat.raidTicksLeft = UINT32_MAX;
-        --raiders;
-      }
-    } );
+//   uint32_t raiders = 2;
+//   auto viewA = mEnTTRegistry.view<cpAlienBehave, cpAlienStatus, cpPosition, cpVelocity, cpGeometry>();
+//   viewA.each( [&]( cpAlienBehave & pBehave, cpAlienStatus & pStat, cpPosition & pPos, cpVelocity & pVel, cpGeometry & pGeo )
+//   {
+//     if( 0u < raiders )
+//     {
+//       pStat.isInRaid = true;
+//       pStat.raidTicksLeft = UINT32_MAX;
+//       --raiders;
+//     }
+//   } );
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
     return true;
@@ -345,7 +371,7 @@ namespace Inv
                         // Removes entities marked as inactive from the registry, noticing
                         // main scene class if demanded.
 
-    mProcActorStateSelector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+    mProcActorStateSelector.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, mQuickDeathTicksLeft );
                         // All entities are checked for state changes (firing, raid, etc.) according
                         // to their behavior component and random events.
 
@@ -366,6 +392,9 @@ namespace Inv
     mProcPlayerBoundsGuard.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // Player entity is kept within scene bounds
 
+    mProcPlayerInDanger.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+                        // Player is marked as being in dangerous area (above alien formation)
+
     mProcAlienBoundsGuard.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, mPlayerHeight * 1.25f );
                         // Alien entities are kept within scene bounds, alien group velocity is
                         // changed if needed. When first alien reaches left or right scene border,
@@ -375,7 +404,7 @@ namespace Inv
     mProcActorMover.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // All entities are moved according to their velocity
 
-    mProcAlienRaidDriver.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+    mProcAlienRaidDriver.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, mQuickDeathTicksLeft );
                         // Raiding or returning aliens have their velocity adjusted
 
     mProcActorOutOfSceneCheck.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
@@ -410,6 +439,10 @@ namespace Inv
         ++mPlayerAmmoLeft;
     } // else
 
+    if( !mPlayerEntryInProgress && 0u < mQuickDeathTicksLeft )
+      --mQuickDeathTicksLeft;
+                        // Quick death period after player spawn or respawn is counted down
+
     return true;
 
   } // CInvGameScene::RenderActualScene
@@ -431,6 +464,7 @@ namespace Inv
 
     if( 0 == mPlayerEntryTick.QuadPart )
     {
+      mQuickDeathTicksLeft = (uint32_t)( mSettings.GetQuickDeathTime() * (uint32_t)mSettings.GetTickPerSecond() );
       mProcSpecialActorSpawner.mIsSuspended = true;
       mProcActorStateSelector.mIsSuspended = true;
       mProcPlayerSpeedUpdater.mIsSuspended = true;
@@ -478,6 +512,7 @@ namespace Inv
     else
     {                   // Player entity is spawned or respawned and made invulnerable for a while.
                         // Aliens start moving and player can control his ship again.
+
       if( !mPlayerAlive )
         SpawnPlayer();
       else
@@ -525,6 +560,28 @@ namespace Inv
     mTickReferencePoint = newTickRefPoint;
     mEnTTRegistry.clear();
 
+    mActualScore = 0;
+    mPlayerAlive = false;
+                        // Score is zeroed, player is not alive (not spawned) yet.
+
+    mPlayerLivesLeft = mSettings.GetInitialLives();
+    mPlayerAmmoLeft = mSettings.GetAmmo();
+                        // Player lives and ammo are reset to initial values.
+
+    mReloadingTicks = (LONGLONG)( (float)mSettings.GetTickPerSecond() * mSettings.GetReloadTime() );
+    mTickLeftToReload = mReloadingTicks;
+                        // Player weapon reloading time is set according to settings.
+
+    mQuickDeathTicksLeft = (uint32_t)( mSettings.GetQuickDeathTime() * (uint32_t)mSettings.GetTickPerSecond() );
+
+    mPlayerEntryInProgress = true;
+    mPlayerEntryTick.QuadPart = 0;
+                        // Player entry sequence is started.
+
+    for( auto & boss: mAlienBosses )
+      boss.mIsSpawned = 0u;
+                        // Number of spawned alien bosses is reset to zero.
+
     GenerateNewScene(); // Aliens swarm is placed in the scene. Also recalculates
                         // various scene parameters, whic is then sent to processors.
 
@@ -534,17 +591,14 @@ namespace Inv
 
     mProcEntitySpawner.reset( newTickRefPoint );
 
-    mProcSpecialActorSpawner.reset(
-      newTickRefPoint,
-      mSaucerSize,
-      mSaucerSpawnY,
-      mSaucerSpawnXLeft,
-      mSaucerSpawnXRight );
+    mProcSpecialActorSpawner.reset( newTickRefPoint );
 
     mProcPlayerBoundsGuard.reset(
       newTickRefPoint,
       mSceneTopLeftX, mSceneTopLeftY,
       mSceneBottomRightX, mSceneBottomRightY );
+
+    mProcPlayerInDanger.reset( newTickRefPoint );
 
     mProcAlienBoundsGuard.reset(
       newTickRefPoint,
@@ -564,21 +618,6 @@ namespace Inv
 
     mProcCollisionDetector.reset( newTickRefPoint );
 
-    mActualScore = 0;
-    mPlayerAlive = false;
-                        // Score is zeroed, player is not alive (not spawned) yet.
-
-    mPlayerLivesLeft = mSettings.GetInitialLives();
-    mPlayerAmmoLeft = mSettings.GetAmmo();
-                        // Player lives and ammo are reset to initial values.
-
-    mReloadingTicks = (LONGLONG)( (float)mSettings.GetTickPerSecond() * mSettings.GetReloadTime() );
-    mTickLeftToReload = mReloadingTicks;
-                        // Player weapon reloading time is set according to settings.
-
-    mPlayerEntryInProgress = true;
-    mPlayerEntryTick.QuadPart = 0;
-                        // Player entry sequence is started.
 
   } // CInvGameScene::Reset
 
@@ -786,11 +825,16 @@ namespace Inv
         return;         // Player entity is still active, this is probably a bug.
       } // if
 
-      mActualScore += aBehave->scoreToAdd;
+      auto deltaScore = aBehave->scoreToAdd;
+      if( aStatus->isInRaid || aStatus->isReturningToFormation )
+        deltaScore = (uint32_t)( (float)deltaScore * mSettings.GetRaidScoreCoef() );
+                        // If alien was killed during raid, player gets extra points.
+
+      mActualScore += deltaScore;
       mSettingsRuntime.mAlienSpeedupFactor += mSettings.GetSpeedupPerKill();
 
-      LOG << "Alien was pruned from game scene, " << aBehave->scoreToAdd
-        << " points added, speed upscaled to " << mSettingsRuntime.mAlienSpeedupFactor;
+      LOG << "Alien was pruned from game scene, " << deltaScore
+          << " points added, speed upscaled to " << mSettingsRuntime.mAlienSpeedupFactor;
 
       if( 0u < mAliensLeft )
       --mAliensLeft;
@@ -807,20 +851,37 @@ namespace Inv
       } // if
 
       if( nullptr == aBossPos || nullptr == aBossGeo )
+      {
+        LOG << "Encountered nullptr in aBossPos or aBossGeo!";
         return;
+      } // if
 
       if( ( mSceneTopLeftX < aBossPos->X + aBossGeo->width * 0.5f ) &&
           ( mSceneTopLeftY < aBossPos->Y + aBossGeo->height * 0.5f ) &&
           ( aBossPos->X - aBossGeo->width * 0.5f < mSceneBottomRightX ) &&
           ( aBossPos->Y - aBossGeo->height * 0.5f < mSceneBottomRightY ) )
       {
-        mActualScore += aBossBehave->scoreToAdd;
+         mActualScore += aBossBehave->scoreToAdd;
 
-        LOG << "Alien boss was pruned from game scene, " << aBossBehave->scoreToAdd << " score added";
+         LOG << "Alien boss was pruned from game scene, " << aBossBehave->scoreToAdd << " score added";
       }
+      else
+      {
+         LOG << "Alien boss was pruned from game scene outside of visible area, no score added";
+      } // else
 
       if( 0u < mAliensLeft )
         --mAliensLeft;
+
+      for( auto & boss : mAlienBosses )
+      {
+        if( boss.mBossTypeId == nr && 0u < boss.mIsSpawned )
+        {
+          --boss.mIsSpawned;
+          LOG << "Reducing number of " << boss.mSpriteId << " bosses to " << boss.mIsSpawned << "/" << boss.mMaxSpawned;
+          break;
+        } // if
+      } // for
 
     } // if
 
@@ -837,8 +898,17 @@ namespace Inv
     mPlayerEntryInProgress = true;
     mPlayerEntryTick.QuadPart = 0;
 
-    auto view = mEnTTRegistry.view<cpId, cpDamage>();
-    view.each( [=]( entt::entity e, cpId & eId, cpDamage & dmg )
+    auto viewP = mEnTTRegistry.view<cpPlayBehave, cpPlayStatus, cpGraphics>();
+    viewP.each( [=]( cpPlayBehave & pBehave, cpPlayStatus & pStat, cpGraphics & pGph )
+    {                   // Player must be hidden during new swarm generation sequence,
+                        // because new aliens are placed in the scene and if the player
+                        // is alive, he could be hit by them immediately. Player ship
+                        // is made visible again by PlayerEntryProcessing() method.
+      pGph.isHidden = true;
+    } );
+
+    auto viewE = mEnTTRegistry.view<cpId, cpDamage>();
+    viewE.each( [=]( entt::entity e, cpId & eId, cpDamage & dmg )
     {                   // All missiles currently in the scene are removed, as they have no target
                         // to hit anymore in current swarm - and we do not want to have them flying
                         // around while new swarm is being generated.
@@ -908,7 +978,8 @@ namespace Inv
       } // for
     } // if
 
-    mScoreLabelBuffer = mScoreText + std::to_string( mActualScore );
+    uint32_t secsToQuickDeath = mQuickDeathTicksLeft / (uint32_t)mSettings.GetTickPerSecond();
+    mScoreLabelBuffer = FormatStr( "%2u ", secsToQuickDeath ) + mScoreText + std::to_string( mActualScore );
     mScoreLabel.SetText( mScoreLabelBuffer );
     mScoreLabel.Draw(
       mStatusLineTopLeftX, mStatusLineTopLeftY + 0.2f * mStatusLineHeight,

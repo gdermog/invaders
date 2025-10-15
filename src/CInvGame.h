@@ -55,7 +55,6 @@ namespace Inv
     bool Cleanup();
     //!< Releases resources of the game, returns true if successful
 
-
   private:
 
     HRESULT InitD3D();

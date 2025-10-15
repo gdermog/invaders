@@ -33,11 +33,11 @@ namespace Inv
     mPlayerVelocity( 0.0f ),
     mAlienDescendTime( 0.f ),
     mAlienSpeedupFactor( 1.0f ),
-    mSaucerProbability( 0.0f  ),
     mAlienRaidMaxTime( 0.0f ),
     mAlienRaidMaxAnglePerSec( 0.0f ),
     mRaidTgtDistance( 0.0f ),
     mReturnTgtDistance( 0.0f ),
+    mDangerAreaThreatCoefficient( 1.0f ),
     mSpitVelocity( 0.0f ),
     mRocketVelocity( 0.0f ),
     mRocketSupply( 0 ),
@@ -50,9 +50,6 @@ namespace Inv
   //-------------------------------------------------------------------------------------------------
 
   CInvSettingsRuntime::~CInvSettingsRuntime() = default;
-
-  //-------------------------------------------------------------------------------------------------
-
 
   //-------------------------------------------------------------------------------------------------
 
@@ -80,11 +77,11 @@ namespace Inv
     PrpLine() << "RaidVelocity:" << mAlienRaidVelocity;
     PrpLine() << "DescendTime:" << mAlienDescendTime;
     PrpLine() << "SpeedupFactor:" << mAlienSpeedupFactor;
-    PrpLine() << "SaucerProb:" << mSaucerProbability;
     PrpLine() << "RaidMaxTime:" << mAlienRaidMaxTime;
     PrpLine() << "RaidMaxAnglePerSec:" << mAlienRaidMaxAnglePerSec;
     PrpLine() << "RaidTgtDistance:" << mRaidTgtDistance;
     PrpLine() << "ReturnTgtDistance:" << mReturnTgtDistance;
+    PrpLine() << "DangerAreaThreatCoef:" << mDangerAreaThreatCoefficient;
     LOG;
 
     PrpLine() << "------ PLAYER PARAMETERS --------------------------";
@@ -110,18 +107,18 @@ namespace Inv
     mSceneLevelMultiplicator = 1.0f;
 
     mAlienAnimationProbability = 0.0025f;
-    mAlienShootProbability = 0.0005f;
-    mAlienRaidProbability = 0.00007f;
+    mAlienShootProbability = 0.0003f;
+    mAlienRaidProbability = 0.00001f;
     mAlienVelocity = 37.5f;
-    mAlienRaidShootProbability = 0.05f;
-    mAlienRaidVelocity = 75.0f;
+    mAlienRaidShootProbability = 0.075f;
+    mAlienRaidVelocity = 55.0f;
     mAlienDescendTime = 0.5f;
     mAlienSpeedupFactor = 1.0f;
-    mSaucerProbability = 0.0012f;
     mAlienRaidMaxTime = 4.0f;
     mAlienRaidMaxAnglePerSec = gPI;
     mRaidTgtDistance = 10.0f;
     mReturnTgtDistance = 10.0f;
+    mDangerAreaThreatCoefficient = 15.0f;
 
     mPlayerInvulnerabilityTicks = 150;
     mPlayerVelocity = 150.0f;

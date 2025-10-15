@@ -20,7 +20,7 @@ namespace Inv
   struct cpId
   {
 
-    uint64_t id;        //!< Full entity identifier (index)
+    uint64_t id;        //!< Additional identifier
     std::string typeId; //!< Type identifier (for logging and debugging purposes)
     bool active;        //!< \b true if the entity is active. Inactive entity is not processed nor
                         //!  displayed in game loop and it will be pruned in nearest possiblev time.

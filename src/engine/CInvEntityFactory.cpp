@@ -67,7 +67,7 @@ namespace Inv
 
     const auto invader = mEnTTRegistry.create();
 
-    mEnTTRegistry.emplace<cpId>( invader, (uint64_t)invader, entityType, true, true );
+    mEnTTRegistry.emplace<cpId>( invader, 1u, entityType, true, true );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( invader, posX, posY, 0.0f );
@@ -164,21 +164,21 @@ namespace Inv
   //-------------------------------------------------------------------------------------------------
 
   entt::entity CInvEntityFactory::AddAlienBossEntity(
-    const std::string & entityType,
+    AlienBossDescriptor_t & bossType,
     float posX, float posY,
     float vX, float vY, float alienSizeX )
   {
-    std::shared_ptr<CInvSprite> entitySprite = mSpriteStorage.GetSprite( entityType );
+    std::shared_ptr<CInvSprite> entitySprite = mSpriteStorage.GetSprite( bossType.mSpriteId );
     if( nullptr == entitySprite )
     {
-      LOG << "Error: Sprite with ID '" << entityType << "' does not exist, cannot create entity.";
+      LOG << "Error: Sprite with ID '" << bossType.mSpriteId << "' does not exist, cannot create entity.";
       return {};
     } // if
     entitySprite->SetLevel( LVL_ALIEN );
 
     const auto boss = mEnTTRegistry.create();
 
-    mEnTTRegistry.emplace<cpId>( boss, (uint64_t)boss, entityType, true, true );
+    mEnTTRegistry.emplace<cpId>( boss, (uint64_t)bossType.mBossTypeId, bossType.mSpriteId, true, true );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( boss, posX, posY, 0.0f );
@@ -261,7 +261,7 @@ namespace Inv
 
     const auto fighter = mEnTTRegistry.create();
 
-    auto & pId = mEnTTRegistry.emplace<cpId>( fighter, (uint64_t)fighter, entityType, true, true );
+    auto & pId = mEnTTRegistry.emplace<cpId>( fighter, 2u, entityType, true, true );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( fighter, posX, posY, 0.0f );
@@ -338,7 +338,7 @@ namespace Inv
     const auto missile = mEnTTRegistry.create();
 
 
-    mEnTTRegistry.emplace<cpId>( missile, (uint64_t)missile, entityType, true, false );
+    mEnTTRegistry.emplace<cpId>( missile, 3u, entityType, true, false );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( missile, posX, posY, 0.0f );
@@ -397,7 +397,7 @@ namespace Inv
 
     const auto explosion = mEnTTRegistry.create();
 
-    auto & explosionId = mEnTTRegistry.emplace<cpId>( explosion, (uint64_t)explosion, entityType, true, false );
+    auto & explosionId = mEnTTRegistry.emplace<cpId>( explosion, 4u, entityType, true, false );
                         // component: entity full identifier
 
     mEnTTRegistry.emplace<cpPosition>( explosion, posX, posY, 0.0f );

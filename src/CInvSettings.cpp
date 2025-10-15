@@ -31,12 +31,15 @@ namespace Inv
      mImagePath(),
      mHiscorePath( "./hiscore.csv" ),
      mMinScore( 100 ),
+     mRaidScoreCoef( 5.0f ),
      mZeroExplosionV( false ),
      mSpeedupPerKill( 0.05f ),
-     mDifficultyBuildup( 1.1f )
-   {
-
-   } // CInvSettings::CInvSettings
+     mDifficultyBuildup( 1.1f ),
+     mQuickDeathTime( 60.0f ),
+     mInitialLives( 3 ),
+     mAmmo( 3 ),
+     mReloadTime( 1.0f )
+   {}
 
    //-------------------------------------------------------------------------------------------------
 
@@ -71,22 +74,24 @@ namespace Inv
        mSeed = (int32_t)inCfg.GetValueInteger( {}, "Seed", -1 );
        mTickPerSecond = (uint32_t)inCfg.GetValueInteger( {}, "TickPerSecond", 60 );
 
-       mFullScreen = inCfg.GetValueBool( "graphics", "fullscreen", false );
+       mFullScreen = inCfg.GetValueBool( "graphics", "FullScreen", false );
 
-       mScreenWidth = (uint32_t)inCfg.GetValueInteger( "graphics", "width", 800 );
-       mScreenHeight = (uint32_t)inCfg.GetValueInteger( "graphics", "height", 600 );
+       mScreenWidth = (uint32_t)inCfg.GetValueInteger( "graphics", "Width", 800 );
+       mScreenHeight = (uint32_t)inCfg.GetValueInteger( "graphics", "Height", 600 );
 
-       mImagePath = inCfg.GetValueStr( "graphics", "images", "./images" );
+       mImagePath = inCfg.GetValueStr( "graphics", "Images", "./images" );
 
-       mHiscorePath = inCfg.GetValueStr( "game", "highscore", "./hiscore.csv" );
+       mHiscorePath = inCfg.GetValueStr( "game", "HighScore", "./hiscore.csv" );
        mMinScore = (uint32_t)inCfg.GetValueInteger( "game", "MinScore", 100 );
+       mRaidScoreCoef = (float)inCfg.GetValueDouble( "game", "RaidScoreCoef", 5.0f );
        mZeroExplosionV = inCfg.GetValueBool( "game", "ZeroExplosionV", false );
        mSpeedupPerKill = (float)inCfg.GetValueDouble( "game", "SpeedupPerKill", 0.05f );
        mDifficultyBuildup = (float)inCfg.GetValueDouble( "game", "DifficultyBuildup", 1.1f );
+       mQuickDeathTime = (float)inCfg.GetValueDouble( "game", "QuickDeathTime", 60.0f );
 
        mInitialLives = (uint32_t)inCfg.GetValueInteger( "player", "InitialLives", 3 );
        mAmmo = (uint32_t)inCfg.GetValueInteger( "player", "Ammo", 3 );
-       mReloadTime = (float)inCfg.GetValueDouble( "player", "reloadTime", 1.0f );
+       mReloadTime = (float)inCfg.GetValueDouble( "player", "ReloadTime", 1.0f );
 
      }
      catch( std::exception& e )
@@ -125,9 +130,16 @@ namespace Inv
      PrpLine() << "ImagePath:" << mImagePath;
      PrpLine() << "HighscorePath:" << mHiscorePath;
      PrpLine() << "MinScore:" << mMinScore;
+     PrpLine() << "RaidScoreCoef:" << mRaidScoreCoef;
      PrpLine() << "ZeroExplosionV:" << ( mZeroExplosionV ? gTrueName : gFalseName );
      PrpLine() << "SpeedupPerKill:" << mSpeedupPerKill;
      PrpLine() << "DifficultyBuildup:" << mDifficultyBuildup;
+     PrpLine() << "QuickDeathTime:" << mQuickDeathTime;
+     LOG;
+
+     PrpLine() << "InitialLives:" << mInitialLives;
+     PrpLine() << "Ammo:" << mAmmo;
+     PrpLine() << "ReloadTime:" << mReloadTime;
      LOG;
 
    } // CInvSettings::Preprint
