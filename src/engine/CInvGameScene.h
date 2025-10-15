@@ -324,7 +324,7 @@ namespace Inv
     std::string mScoreLabelBuffer;
     //<! \brief Buffer used to create "SCORE" label text
 
-    //------ Alien (group) global state ---------------------------------------------------------------
+    //------ Alien global state -----------------------------------------------------------------------
 
     float mVXGroup;
     //<! \brief Current velocity of alien group in X-axis [px/tick].
@@ -335,11 +335,24 @@ namespace Inv
     uint32_t mAliensLeft;
     //!< \brief Number of aliens still alive in the scene.
 
+    float mSaucerSize;
+    //!< \brief Size of the boss saucer (width in pixels).
+
+    float mSaucerSpawnY;
+    //!< \brief Y coordinate where the boss saucer spawns (top edge of the scene).
+
+    float mSaucerSpawnXLeft;
+    //!< \brief X coordinate where the boss saucer spawns when entering from left side
+
+    float mSaucerSpawnXRight;
+    //!< \brief X coordinate where the boss saucer spawns when entering from right side
+
     //------ EnTT processors --------------------------------------------------------------------------
 
     procGarbageCollector mProcGarbageCollector;
     procActorStateSelector mProcActorStateSelector;
     procEntitySpawner mProcEntitySpawner;
+    procSpecialActorSpawner mProcSpecialActorSpawner;
     procPlayerFireUpdater mProcPlayerFireUpdater;
     procPlayerSpeedUpdater mProcPlayerSpeedUpdater;
     procPlayerBoundsGuard mProcPlayerBoundsGuard;

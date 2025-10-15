@@ -20,7 +20,7 @@ namespace Inv
 
   static const std::string lModLogId( "GAMESCENE" );
 
-  const float CInvGameScene::mBossAreaCoefficient = 0.080f;
+  const float CInvGameScene::mBossAreaCoefficient = 0.1f;
   const float CInvGameScene::mStatusLineAreaCoefficient = 0.925f;
   const float CInvGameScene::mAlienStartingAreaCoefficient = 0.65f;
   const std::string CInvGameScene::mPlayerEntryTextAttention = "ATTENTION";
@@ -110,6 +110,10 @@ namespace Inv
     mVXGroup( 0.0f ),
     mVYGroup( 0.0f ),
     mAliensLeft( 0 ),
+    mSaucerSize( 0.0f ),
+    mSaucerSpawnY( 0.0f ),
+    mSaucerSpawnXLeft( 0.0f ),
+    mSaucerSpawnXRight( 0.0f ),
 
     //------ EnTT processors --------------------------------------------------------------------------
 
@@ -118,6 +122,7 @@ namespace Inv
     mProcGarbageCollector     ( PROCCMN, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
     mProcActorStateSelector   ( PROCCMN ),
     mProcEntitySpawner        ( PROCCMN, mEntityFactory ),
+    mProcSpecialActorSpawner  ( PROCCMN, mEntityFactory, mAliensLeft, 0.0f, 0.0f, 0.0f, 0.0f ),
     mProcActorMover           ( PROCCMN, mVXGroup, mVYGroup ),
     mProcPlayerFireUpdater    ( PROCCMN, mEntityFactory, mPlayerAmmoLeft ),
     mProcPlayerSpeedUpdater   ( PROCCMN ),
@@ -185,6 +190,17 @@ namespace Inv
                         // Alien width is set in such way that the maximum number of aliens in a row
                         // fits into specific part of the scene width, rest is space in between aliens
                         // and white space at the sides of the scene.
+                        //
+    auto bossSprite = mSpriteStorage.GetSprite( "SAUCER" );
+    auto bossSize = bossSprite->GetImageSize( 0 );
+    auto aspectRatio = (float)bossSize.second / (float)bossSize.first;
+    mSaucerSize = aspectRatio * mSceneHeight * mBossAreaCoefficient;
+    mSaucerSpawnY = mSceneTopLeftY + mSaucerSize * 0.50;
+    mSaucerSpawnXLeft = -mSaucerSize * 0.49f;
+    mSaucerSpawnXRight = mSceneBottomRightX + mSaucerSize * 0.49f;
+                        // Saucer (boss alien) size is set to fit into the boss area, its spawn
+                        // position is just outside of the scene at the top, both on left and
+                        // right side.
 
     mVXGroup = 0.0f;
     mVYGroup = 0.0f;
@@ -286,12 +302,13 @@ namespace Inv
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 /* BOSS! Boss is spawned at the start of the game for debugging purposes  */
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
-    mEntityFactory.AddAlienBossEntity(
-      "SAUCER",
-      35.0f - mSceneWidth * mBossAreaCoefficient,
-      mSceneWidth * mBossAreaCoefficient * 0.5f,
-      1.0, 0.0f,
-      mSceneWidth * mBossAreaCoefficient );
+//  mEntityFactory.AddAlienBossEntity(
+//    "SAUCER",
+//    35.0f - mSceneWidth * mBossAreaCoefficient,
+//    //mSceneWidth * mBossAreaCoefficient * 0.5f,
+//    mPlayerStartY - 1.5f * mPlayerHeight,
+//    1.0, 0.0f,
+//    mSceneWidth * mBossAreaCoefficient );
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
     return true;
@@ -317,6 +334,10 @@ namespace Inv
     mProcEntitySpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // New entities are spawned according to spawn requests stored in the
                         // registry by other processors (as missiles, for example).
+
+    mProcSpecialActorSpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+                        // Special entities (as alien boss) are spawned according to special
+                        // spawn requests stored in the registry by other processors.
 
     mProcPlayerSpeedUpdater.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, controlState, controlValue );
                         // Player velocity is updated according to control state (keyboard)
@@ -389,6 +410,7 @@ namespace Inv
 
     if( 0 == mPlayerEntryTick.QuadPart )
     {
+      mProcSpecialActorSpawner.mIsSuspended = true;
       mProcActorStateSelector.mIsSuspended = true;
       mProcPlayerSpeedUpdater.mIsSuspended = true;
       mProcPlayerFireUpdater.mIsSuspended = true;
@@ -455,6 +477,7 @@ namespace Inv
       if( IsZero( mVXGroup ) )
         mVXGroup = mSettingsRuntime.mAlienVelocity * mSettingsRuntime.mSceneLevelMultiplicator / (float)mSettings.GetTickPerSecond();
 
+      mProcSpecialActorSpawner.mIsSuspended = false;
       mProcActorStateSelector.mIsSuspended = false;
       mProcPlayerSpeedUpdater.mIsSuspended = false;
       mProcPlayerFireUpdater.mIsSuspended = false;
@@ -481,11 +504,21 @@ namespace Inv
     mTickReferencePoint = newTickRefPoint;
     mEnTTRegistry.clear();
 
+    GenerateNewScene(); // Aliens swarm is placed in the scene. Also recalculates
+                        // various scene parameters, whic is then sent to processors.
+
     mProcGarbageCollector.reset( newTickRefPoint );
 
     mProcActorStateSelector.reset( newTickRefPoint );
 
     mProcEntitySpawner.reset( newTickRefPoint );
+
+    mProcSpecialActorSpawner.reset(
+      newTickRefPoint,
+      mSaucerSize,
+      mSaucerSpawnY,
+      mSaucerSpawnXLeft,
+      mSaucerSpawnXRight );
 
     mProcPlayerBoundsGuard.reset(
       newTickRefPoint,
@@ -518,8 +551,6 @@ namespace Inv
     mReloadingTicks = (LONGLONG)( (float)mSettings.GetTickPerSecond() * mSettings.GetReloadTime() );
     mTickLeftToReload = mReloadingTicks;
                         // Player weapon reloading time is set according to settings.
-
-    GenerateNewScene(); // Aliens swarm is placed in the scene.
 
     mPlayerEntryInProgress = true;
     mPlayerEntryTick.QuadPart = 0;
@@ -713,11 +744,11 @@ namespace Inv
       mPlayerEntryInProgress = true;
       mPlayerEntryTick.QuadPart = 0;
       mPlayerAlive = false;
-      // Player is no more in the scene, new entry sequence must be started.
+                        // Player is no more in the scene, new entry sequence must be started.
 
       if( 0 < mPlayerLivesLeft )
         --mPlayerLivesLeft;
-      // One player life (ship) is lost.
+                        // One player life (ship) is lost.
       return;
 
     } // if
@@ -737,6 +768,7 @@ namespace Inv
       LOG << "Alien was pruned from game scene, " << aBehave->scoreToAdd
         << " points added, speed upscaled to " << mSettingsRuntime.mAlienSpeedupFactor;
 
+      if( 0u < mAliensLeft )
       --mAliensLeft;
     } // if
 
@@ -746,11 +778,11 @@ namespace Inv
     {
       if( aBossId->active )
       {
-        LOG << "Trying to prune active alien!";
+        LOG << "Trying to prune active alien boss!";
         return;         // Player entity is still active, this is probably a bug.
       } // if
 
-      if( nullptr != aBossPos && nullptr != aBossGeo )
+      if( nullptr == aBossPos || nullptr == aBossGeo )
         return;
 
       if( ( mSceneTopLeftX < aBossPos->X + aBossGeo->width * 0.5f ) &&
@@ -762,6 +794,10 @@ namespace Inv
 
         LOG << "Alien boss was pruned from game scene, " << aBossBehave->scoreToAdd << " score added";
       }
+
+      if( 0u < mAliensLeft )
+        --mAliensLeft;
+
     } // if
 
     if( 0u == mAliensLeft )

@@ -12,12 +12,72 @@
 #include <engine/InvENTTComponents.h>
 
 #include <graphics/CInvSprite.h>
+#include <engine/CInvEntityFactory.h>
 #include <CInvSettings.h>
 #include <CInvSettingsRuntime.h>
 
 namespace Inv
 {
 
+  //****** processor: setting of actors to specific states *******************************************
+
+  procSpecialActorSpawner::procSpecialActorSpawner(
+    LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime,
+    CInvEntityFactory & entityFactory,
+    uint32_t & aliensLeft,
+    float saucerSize,
+    float saucerSpawnPointY,
+    float saucerSpawnPointXLeft,
+    float saucerSpawnPointXRight ):
+
+    procEnTTBase( refTick, settings, settingsRuntime ),
+    mEntityFactory( entityFactory ),
+    mAliensLeft( aliensLeft ),
+    mSaucerSize( saucerSize ),
+    mSaucerSpawnPointY( saucerSpawnPointY ),
+    mSaucerSpawnPointXLeft( saucerSpawnPointXLeft ),
+    mSaucerSpawnPointXRight( saucerSpawnPointXRight )
+  {}
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procSpecialActorSpawner::reset(
+    LARGE_INTEGER refTick,
+    float saucerSize,
+    float saucerSpawnPointY,
+    float saucerSpawnPointXLeft,
+    float saucerSpawnPointXRight )
+  {
+    procEnTTBase::reset( refTick );
+    mSaucerSize = saucerSize;
+    mSaucerSpawnPointY = saucerSpawnPointY;
+    mSaucerSpawnPointXLeft = saucerSpawnPointXLeft;
+    mSaucerSpawnPointXRight = saucerSpawnPointXRight;
+  } // procSpecialActorSpawner::reset
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procSpecialActorSpawner::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
+  {
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
+
+    auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+    if( probRoll < mSettingsRuntime.mSaucerProbability * mSettingsRuntime.mSceneLevelMultiplicator )
+    {                   // Alien boss (flying saucer) is spawned on random event
+      bool fromLeft = ( ( rand() % 2 ) == 0 );
+      mEntityFactory.AddAlienBossEntity(
+      "SAUCER",
+      fromLeft ? mSaucerSpawnPointXLeft : mSaucerSpawnPointXRight,
+      mSaucerSpawnPointY,
+      fromLeft ? 1.0 : -1.0 , 0.0f,
+      mSaucerSize );
+      ++mAliensLeft;    // One more alien is present in the scene
+    } // if
+
+  } // procSpecialActorSpawner::update
 
   //****** processor: setting of actors to specific states *******************************************
 

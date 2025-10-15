@@ -19,6 +19,42 @@
 namespace Inv
 {
 
+  //****** processor: setting of actors to specific states *******************************************
+
+  /*! \brief This processor sgenerates special actors (alien bosses and so on) according to
+      random events. */
+  struct procSpecialActorSpawner: public procEnTTBase
+  {
+    procSpecialActorSpawner(
+      LARGE_INTEGER refTick,
+      const CInvSettings & settings,
+      CInvSettingsRuntime & settingsRuntime,
+      CInvEntityFactory & entityFactory,
+      uint32_t & aliensLeft,
+      float saucerSize,
+      float saucerSpawnPointY,
+      float saucerSpawnPointXLeft,
+      float saucerSpawnPointXRight );
+
+    void reset(
+      LARGE_INTEGER refTick,
+      float saucerSize,
+      float saucerSpawnPointY,
+      float saucerSpawnPointXLeft,
+      float saucerSpawnPointXRight );
+
+    void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
+
+    CInvEntityFactory & mEntityFactory;
+
+    uint32_t &mAliensLeft;
+
+    float mSaucerSize;
+    float mSaucerSpawnPointY;
+    float mSaucerSpawnPointXLeft;
+    float mSaucerSpawnPointXRight;
+
+  }; // procActorStateSelector
 
   //****** processor: setting of actors to specific states *******************************************
 

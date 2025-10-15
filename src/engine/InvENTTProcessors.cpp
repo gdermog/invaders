@@ -351,12 +351,17 @@ namespace Inv
     auto viewDmg = reg.view<cpDamage, cpGraphics>();
     viewDmg.each( [&]( entt::entity entity, const auto & dmg, const auto & gph )
     {
+        if( gph.isHidden )
+          return;       // Hidden entity does not deal damage
         mCanDamage.insert( entity );
     } );
 
     auto viewHealth = reg.view<cpId, cpHealth, cpGraphics>();
-    viewHealth.each( [&]( entt::entity entity, const auto & id, const auto & hlt, const auto & )
+    viewHealth.each( [&]( entt::entity entity, const auto & id, const auto & hlt, const auto & gph)
     {
+        if( gph.isHidden )
+          return;       // Hidden entity cannot be hit
+
       auto [ bAlien, sAlien ] = reg.try_get<cpAlienBehave, cpAlienStatus>( entity );
       if( nullptr != bAlien && nullptr != sAlien && ! sAlien->isDying )
         mCanBeDamagedAlien.insert( entity );

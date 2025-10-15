@@ -33,7 +33,7 @@ namespace Inv
     mPlayerVelocity( 150.0f ),
     mAlienDescendTime( 0.5f ),
     mAlienSpeedupFactor( 1.0f ),
-    mSaucerProbability( 0.00005f ),
+    mSaucerProbability( 0.0015f  ),
     mSpitVelocity( 75.0f ),
     mRocketVelocity( 225.0f ),
     mRocketSupply( 3 ),
@@ -109,7 +109,7 @@ namespace Inv
     mAlienRaidVelocity = 112.5f;
     mAlienDescendTime = 0.5f;
     mAlienSpeedupFactor = 1.0f;
-    mSaucerProbability = 0.00005f;
+    mSaucerProbability = 0.0015f;
 
     mPlayerInvulnerabilityTicks = 150;
     mPlayerVelocity = 150.0f;
