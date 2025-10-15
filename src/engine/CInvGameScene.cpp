@@ -124,6 +124,7 @@ namespace Inv
     mProcEntitySpawner        ( PROCCMN, mEntityFactory ),
     mProcSpecialActorSpawner  ( PROCCMN, mEntityFactory, mAliensLeft, 0.0f, 0.0f, 0.0f, 0.0f ),
     mProcActorMover           ( PROCCMN, mVXGroup, mVYGroup ),
+    mProcAlienRaidDriver      ( PROCCMN ),
     mProcPlayerFireUpdater    ( PROCCMN, mEntityFactory, mPlayerAmmoLeft ),
     mProcPlayerSpeedUpdater   ( PROCCMN ),
     mProcPlayerBoundsGuard    ( PROCCMN, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight() ),
@@ -195,7 +196,7 @@ namespace Inv
     auto bossSize = bossSprite->GetImageSize( 0 );
     auto aspectRatio = (float)bossSize.second / (float)bossSize.first;
     mSaucerSize = aspectRatio * mSceneHeight * mBossAreaCoefficient;
-    mSaucerSpawnY = mSceneTopLeftY + mSaucerSize * 0.50;
+    mSaucerSpawnY = mSceneTopLeftY + mSaucerSize * 0.50f;
     mSaucerSpawnXLeft = -mSaucerSize * 0.49f;
     mSaucerSpawnXRight = mSceneBottomRightX + mSaucerSize * 0.49f;
                         // Saucer (boss alien) size is set to fit into the boss area, its spawn
@@ -311,6 +312,23 @@ namespace Inv
 //    mSceneWidth * mBossAreaCoefficient );
 /**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
 
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+/* RAID! Several invaders are raiding at the start of the game for debug- */
+/* ging purposes                                                          */
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+    uint32_t raiders = 2;
+    auto viewA = mEnTTRegistry.view<cpAlienBehave, cpAlienStatus, cpPosition, cpVelocity, cpGeometry>();
+    viewA.each( [&]( cpAlienBehave & pBehave, cpAlienStatus & pStat, cpPosition & pPos, cpVelocity & pVel, cpGeometry & pGeo )
+    {
+      if( 0u < raiders )
+      {
+        pStat.isInRaid = true;
+        pStat.raidTicksLeft = UINT32_MAX;
+        --raiders;
+      }
+    } );
+/**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**//**/
+
     return true;
 
   } // CInvGameScene::SpawnPlayer
@@ -356,6 +374,9 @@ namespace Inv
 
     mProcActorMover.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // All entities are moved according to their velocity
+
+    mProcAlienRaidDriver.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+                        // Raiding or returning aliens have their velocity adjusted
 
     mProcActorOutOfSceneCheck.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // All entities out of scene are marked as inactive and will be removed by garbage
@@ -531,6 +552,9 @@ namespace Inv
       mSceneBottomRightX, mSceneBottomRightY );
 
     mProcActorMover.reset( newTickRefPoint );
+
+    mProcAlienRaidDriver.reset( newTickRefPoint );
+
     mProcActorOutOfSceneCheck.reset(
       newTickRefPoint,
       mSceneTopLeftX, mSceneTopLeftY,

@@ -120,6 +120,25 @@ namespace Inv
 
   }; // procAlienBoundsGuard
 
+  //****** processor: setting of actors to specific states *******************************************
+
+  /*! \brief This processor handles behavior of aliens that are presently on raid or returning
+      from raid into the formation. */
+  struct procAlienRaidDriver: public procEnTTBase
+  {
+    procAlienRaidDriver(
+      LARGE_INTEGER refTick,
+      const CInvSettings & settings,
+      CInvSettingsRuntime & settingsRuntime );
+
+    void update(
+      entt::registry & reg,
+      LARGE_INTEGER actTick,
+      LARGE_INTEGER diffTick );
+
+
+  }; // procAlienRaidDriver
+
 
 } // namespace Inv
 

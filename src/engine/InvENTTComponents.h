@@ -96,7 +96,12 @@ namespace Inv
     bool isInRaid;      //!< \b true if the alien is in raid state, false otherwise.
 
     bool isReturningToFormation;
-                        //!< \b true if the alien is returning to formation after raid, false otherwise.
+                        //!< \b true if the alien is returning to formation after raid,
+                        //!<  false otherwise.
+
+    uint32_t raidTicksLeft;
+                        //!< Number of ticks left in raid mode. When it reaches zero,
+                        //!< alien returns to formation.
 
     float formationX;   //!< X position in formation (of centre of alien object) [px]
     float formationY;   //!< Y position in formation (of centre of alien object) [px]

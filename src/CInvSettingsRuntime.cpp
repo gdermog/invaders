@@ -23,24 +23,28 @@ namespace Inv
   CInvSettingsRuntime::CInvSettingsRuntime():
     mSceneLevel( 1 ),
     mSceneLevelMultiplicator( 1.0f ),
-    mAlienAnimationProbability( 0.0025f ),
-    mAlienShootProbability( 0.0005f ),
-    mAlienRaidProbability( 0.0001f ),
-    mAlienVelocity( 37.5f ),
-    mAlienRaidShootProbability( 0.05f ),
-    mAlienRaidVelocity( 112.5f ),
-    mPlayerInvulnerabilityTicks( 150 ),
-    mPlayerVelocity( 150.0f ),
-    mAlienDescendTime( 0.5f ),
+    mAlienAnimationProbability( 0.0f ),
+    mAlienShootProbability( 0.f ),
+    mAlienRaidProbability( 0.0f),
+    mAlienVelocity( 0.0f ),
+    mAlienRaidShootProbability( 0.0f ),
+    mAlienRaidVelocity( 0.0f ),
+    mPlayerInvulnerabilityTicks( 1 ),
+    mPlayerVelocity( 0.0f ),
+    mAlienDescendTime( 0.f ),
     mAlienSpeedupFactor( 1.0f ),
-    mSaucerProbability( 0.0015f  ),
-    mSpitVelocity( 75.0f ),
-    mRocketVelocity( 225.0f ),
-    mRocketSupply( 3 ),
-    mRocketSupplyReplenishRate( 1.0f ),
-    mRocketSupplyReplenishTicks( 60 )
+    mSaucerProbability( 0.0f  ),
+    mAlienRaidMaxTime( 0.0f ),
+    mAlienRaidMaxAnglePerSec( 0.0f ),
+    mRaidTgtDistance( 0.0f ),
+    mReturnTgtDistance( 0.0f ),
+    mSpitVelocity( 0.0f ),
+    mRocketVelocity( 0.0f ),
+    mRocketSupply( 0 ),
+    mRocketSupplyReplenishRate( 0.0f ),
+    mRocketSupplyReplenishTicks( 1 )
   {
-
+    ResetToDefaults();
   } // CInvSettingsRuntime::CInvSettingsRuntime
 
   //-------------------------------------------------------------------------------------------------
@@ -77,6 +81,10 @@ namespace Inv
     PrpLine() << "DescendTime:" << mAlienDescendTime;
     PrpLine() << "SpeedupFactor:" << mAlienSpeedupFactor;
     PrpLine() << "SaucerProb:" << mSaucerProbability;
+    PrpLine() << "RaidMaxTime:" << mAlienRaidMaxTime;
+    PrpLine() << "RaidMaxAnglePerSec:" << mAlienRaidMaxAnglePerSec;
+    PrpLine() << "RaidTgtDistance:" << mRaidTgtDistance;
+    PrpLine() << "ReturnTgtDistance:" << mReturnTgtDistance;
     LOG;
 
     PrpLine() << "------ PLAYER PARAMETERS --------------------------";
@@ -103,13 +111,17 @@ namespace Inv
 
     mAlienAnimationProbability = 0.0025f;
     mAlienShootProbability = 0.0005f;
-    mAlienRaidProbability = 0.0001f;
+    mAlienRaidProbability = 0.00007f;
     mAlienVelocity = 37.5f;
     mAlienRaidShootProbability = 0.05f;
-    mAlienRaidVelocity = 112.5f;
+    mAlienRaidVelocity = 75.0f;
     mAlienDescendTime = 0.5f;
     mAlienSpeedupFactor = 1.0f;
-    mSaucerProbability = 0.0015f;
+    mSaucerProbability = 0.0012f;
+    mAlienRaidMaxTime = 4.0f;
+    mAlienRaidMaxAnglePerSec = gPI;
+    mRaidTgtDistance = 10.0f;
+    mReturnTgtDistance = 10.0f;
 
     mPlayerInvulnerabilityTicks = 150;
     mPlayerVelocity = 150.0f;

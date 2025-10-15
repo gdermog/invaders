@@ -358,6 +358,7 @@ namespace Inv
     procPlayerBoundsGuard mProcPlayerBoundsGuard;
     procAlienBoundsGuard mProcAlienBoundsGuard;
     procActorMover mProcActorMover;
+    procAlienRaidDriver mProcAlienRaidDriver;
     procActorOutOfSceneCheck mProcActorOutOfSceneCheck;
     procCollisionDetector mProcCollisionDetector;
     procActorRender mProcActorRender;

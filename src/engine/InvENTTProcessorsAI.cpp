@@ -39,7 +39,8 @@ namespace Inv
     mSaucerSpawnPointY( saucerSpawnPointY ),
     mSaucerSpawnPointXLeft( saucerSpawnPointXLeft ),
     mSaucerSpawnPointXRight( saucerSpawnPointXRight )
-  {}
+  {
+  }
 
   //--------------------------------------------------------------------------------------------------
 
@@ -69,11 +70,11 @@ namespace Inv
     {                   // Alien boss (flying saucer) is spawned on random event
       bool fromLeft = ( ( rand() % 2 ) == 0 );
       mEntityFactory.AddAlienBossEntity(
-      "SAUCER",
-      fromLeft ? mSaucerSpawnPointXLeft : mSaucerSpawnPointXRight,
-      mSaucerSpawnPointY,
-      fromLeft ? 1.0 : -1.0 , 0.0f,
-      mSaucerSize );
+        "SAUCER",
+        fromLeft ? mSaucerSpawnPointXLeft : mSaucerSpawnPointXRight,
+        mSaucerSpawnPointY,
+        fromLeft ? 1.0 : -1.0, 0.0f,
+        mSaucerSize );
       ++mAliensLeft;    // One more alien is present in the scene
     } // if
 
@@ -87,7 +88,8 @@ namespace Inv
     CInvSettingsRuntime & settingsRuntime ):
 
     procEnTTBase( refTick, settings, settingsRuntime )
-  {}
+  {
+  }
 
   //--------------------------------------------------------------------------------------------------
 
@@ -97,8 +99,8 @@ namespace Inv
       return;           // Processor is suspended, no action is performed
 
     auto view = reg.view<const cpAlienBehave, cpAlienStatus, cpGraphics>();
-    view.each( [=]( const cpAlienBehave & behave, cpAlienStatus & status, cpGraphics &gph )
-    {                   // Updating status for alien actors
+    view.each( [=]( const cpAlienBehave & behave, cpAlienStatus & status, cpGraphics & gph )
+      {                   // Updating status for alien actors
 
         if( status.isDying )
           return;       // Alien is dying, no other status is possible
@@ -112,9 +114,9 @@ namespace Inv
             status.isAnimating = true;
             gph.diffTick.QuadPart = 0ul;
             gph.standardAnimationEffect->Restore();
-                        // Animation is started on random event. Effect is restored, runs once (as it is not
-                        // continuous) and then suspends itself, sending event message by appropriate callback,
-                        // which sets isAnimating flag to false again.
+            // Animation is started on random event. Effect is restored, runs once (as it is not
+            // continuous) and then suspends itself, sending event message by appropriate callback,
+            // which sets isAnimating flag to false again.
           } // if
           else
           {
@@ -124,22 +126,24 @@ namespace Inv
               status.isFiring = true;
               gph.diffTick.QuadPart = 0ul;
               gph.specificAnimationEffect->Restore();
-                        // Fire animation is started on random event. Effect is restored, runs once (as it is not
-                        // continuous) and then suspends itself, sending event message by appropriate callback,
-                        // which sets isFiring flag to false again.
+              // Fire animation is started on random event. Effect is restored, runs once (as it is not
+              // continuous) and then suspends itself, sending event message by appropriate callback,
+              // which sets isFiring flag to false again.
             } // if
           } // else
         } // if
 
         if( !( status.isInRaid || status.isReturningToFormation ) )
         {
-//           auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-//           if( probRoll < behave.raidProbability )
-//             status.isInRaid = true;
-//                         // Alien enters raid mode on random event.
+          auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+          if( probRoll < behave.raidProbability )
+          {             // Alien enters raid mode on random event.
+            status.isInRaid = true;
+            status.raidTicksLeft = UINT32_MAX;
+          } // if
         } // if
 
-    } );
+      } );
 
   } // procActorStateSelector::update
 
@@ -167,7 +171,8 @@ namespace Inv
     mSceneTopLeftY( sceneTopLeftY ),
     mSceneBottomRightX( sceneBottomRightX ),
     mSceneBottomRightY( sceneBottomRightY )
-  {}
+  {
+  }
 
   //--------------------------------------------------------------------------------------------------
 
@@ -202,22 +207,22 @@ namespace Inv
     auto view = reg.view<cpAlienBehave, cpAlienStatus, cpPosition, cpGeometry>();
     view.each( [&]( cpAlienBehave & pBehave, cpAlienStatus & pStat, cpPosition & pPos, cpGeometry & pGeo )
     {
-        if( pStat.isInRaid || pStat.isReturningToFormation || pStat.isDying )
-          return;       // Alien is in raid or dying, no group bounds guard possible or necessary
+      if( pStat.isInRaid || pStat.isReturningToFormation || pStat.isDying )
+        return;       // Alien is in raid or dying, no group bounds guard possible or necessary
 
-        float xPosNext = pPos.X + mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
-        xChangeNeeded |=
-          ( xPosNext - 0.5 * pGeo.width < mSceneTopLeftX ) ||
-          ( mSceneBottomRightX < xPosNext + 0.5 * pGeo.width );
+      float xPosNext = pPos.X + mVXGroup * mSettingsRuntime.mAlienSpeedupFactor;
+      xChangeNeeded |=
+        ( xPosNext - 0.5 * pGeo.width < mSceneTopLeftX ) ||
+        ( mSceneBottomRightX < xPosNext + 0.5 * pGeo.width );
 
-        float yPosNext = pPos.Y + mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
-        yAtTheBottom |=
-          ( yPosNext - 0.5 * pGeo.height < mSceneTopLeftY ) ||
-          ( mSceneBottomRightY - bottomGuardedArea < yPosNext + 0.5 * pGeo.height );
+      float yPosNext = pPos.Y + mVYGroup * mSettingsRuntime.mAlienSpeedupFactor;
+      yAtTheBottom |=
+        ( yPosNext - 0.5 * pGeo.height < mSceneTopLeftY ) ||
+        ( mSceneBottomRightY - bottomGuardedArea < yPosNext + 0.5 * pGeo.height );
 
     } );
 
-    if( ! IsZero( mVXGroup ) )
+    if( !IsZero( mVXGroup ) )
       mNextVXGroup = -mVXGroup;
 
     if( xChangeNeeded )
@@ -238,7 +243,7 @@ namespace Inv
 
     if( mTranslatingDown )
     {
-      if( ! yAtTheBottom && 0 < mYGroupTranslationCounter )
+      if( !yAtTheBottom && 0 < mYGroupTranslationCounter )
       {                 // Aliens are moving down
         --mYGroupTranslationCounter;
         mVYGroup = mSettingsRuntime.mAlienVelocity / mSettings.GetTickPerSecond();
@@ -253,5 +258,111 @@ namespace Inv
 
   } // procAlienBoundsGuard::update
 
+    //****** processor: setting of actors to specific states *******************************************
+
+  procAlienRaidDriver::procAlienRaidDriver(
+    LARGE_INTEGER refTick,
+    const CInvSettings & settings,
+    CInvSettingsRuntime & settingsRuntime ):
+
+    procEnTTBase( refTick, settings, settingsRuntime )
+  {}
+
+
+  //--------------------------------------------------------------------------------------------------
+
+  void procAlienRaidDriver::update(
+    entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
+  {
+
+    if( mIsSuspended )
+      return;           // Processor is suspended, no action is performed
+
+    bool isPlayerDead = true;
+    float actPlayerX = 0.5f * mSettings.GetWidth();
+    float actPlayerY = 0.5f * mSettings.GetHeight();
+
+    float maxAlienTurningAngle =
+      mSettingsRuntime.mAlienRaidMaxAnglePerSec / mSettings.GetTickPerSecond();
+
+    auto viewP = reg.view<cpPlayBehave, cpPlayStatus, cpPosition, cpGraphics>();
+    viewP.each( [&]( cpPlayBehave & pBehave, cpPlayStatus & pStat, cpPosition & pPos, cpGraphics & pGph )
+    {
+        isPlayerDead = pStat.isDying;
+        actPlayerX = pPos.X;
+        actPlayerY = pPos.Y;
+    } );
+
+    auto viewA = reg.view<cpAlienBehave, cpAlienStatus, cpPosition, cpVelocity, cpGeometry>();
+    viewA.each( [&]( cpAlienBehave & pBehave, cpAlienStatus & pStat, cpPosition & pPos, cpVelocity &pVel, cpGeometry & pGeo )
+    {
+        if( !( pStat.isInRaid || pStat.isReturningToFormation ) || pStat.isDying )
+          return;       // Alien is not in raid or is dying, it does not concern this processor
+
+        if( isPlayerDead || 0u == pStat.raidTicksLeft )
+        {               // Player is dead or time is up => alien returns to formation
+          pStat.isInRaid = false;
+          pStat.isReturningToFormation = true;
+        } // if
+
+        float xTgt = pStat.isReturningToFormation ? pStat.formationX : actPlayerX;
+        float yTgt = pStat.isReturningToFormation ? pStat.formationY : actPlayerY;
+                        // Target position is either player position (in raid) or formation
+                        // position (returning to formation)
+
+        float deltaX = xTgt - pPos.X;
+        float deltaY = yTgt - pPos.Y;
+                        // Vector from actual alien position to target position, basis
+                        // for the pursuit curve.
+
+        float distanceToTarget = sqrt( deltaX * deltaX + deltaY * deltaY );
+
+        if( pStat.isInRaid &&
+            ( distanceToTarget < mSettingsRuntime.mRaidTgtDistance || 0u == pStat.raidTicksLeft ) )
+        {               // Alien reached target distance in raid, returns to formation
+          pStat.isInRaid = false;
+          pStat.isReturningToFormation = true;
+          pStat.raidTicksLeft = 0u;
+        } // if
+
+        if( pStat.isReturningToFormation && distanceToTarget < mSettingsRuntime.mReturnTgtDistance )
+        {               // Alien reached target distance when returning to formation,
+                        // it is back in formation
+          pStat.isInRaid = false;
+          pStat.isReturningToFormation = false;
+          pStat.raidTicksLeft = 0u;
+          pPos.X = pStat.formationX;
+          pPos.Y = pStat.formationY;
+          pVel.vX = 0.0f;
+          pVel.vY = 0.0f;
+          return;
+        } // if
+
+        float velocitySize =
+          mSettingsRuntime.mAlienRaidVelocity * mSettingsRuntime.mAlienSpeedupFactor /
+          mSettings.GetTickPerSecond();
+                        // Alien velocity magnitude (per tick)
+
+        if( UINT32_MAX == pStat.raidTicksLeft )
+        {               // Raid just started, movement must be initiated
+
+          pStat.raidTicksLeft =
+            (uint32_t)( mSettingsRuntime.mAlienRaidMaxTime * mSettings.GetTickPerSecond() );
+          pVel.vX = velocitySize * deltaX / distanceToTarget;
+          pVel.vY = velocitySize * deltaY / distanceToTarget;
+          return;
+        }
+
+
+                        // One tick in raid mode is consumed
+
+    });
+
+
+
+  } // procAlienRaidDriver::update
+
+
+  //--------------------------------------------------------------------------------------------------
 
 } // namespace Inv

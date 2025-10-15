@@ -89,8 +89,19 @@ namespace Inv
       mSettingsRuntime.mAlienRaidShootProbability * mSettingsRuntime.mSceneLevelMultiplicator,
       posX, posY, 100u );     // component: ai behavior /*??? SCORE ???*/
 
-    mEnTTRegistry.emplace<cpAlienStatus>( invader, false, false, false, false, false, false, posX, posY );
-                        // component: alien status (not animating, not firing, shoot not requested, not dying )
+    mEnTTRegistry.emplace<cpAlienStatus>
+    (                   // component: alien status
+      invader,          // entity
+      false,            // isAnimating
+      false,            // isFiring
+      false,            // isShootRequested
+      false,            // isDying
+      false,            // isInRaid
+      false,            // isReturningToFormation
+      0u,               // raidTicksLeft
+      posX,             // formationX
+      posY              // formationY
+    );
 
     mEnTTRegistry.emplace<cpHealth>( invader, 1u, 1u );
                         // component: health points (single hit will do)

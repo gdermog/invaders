@@ -82,6 +82,20 @@ namespace Inv
     float mSaucerProbability;
     //!< Probability of saucer appearance in each game tick, usually a small. Affects game
 
+    float mAlienRaidMaxTime;
+    //!< Maximum time an alien can stay in raid mode, in seconds
+
+    float mAlienRaidMaxAnglePerSec;
+    //!< Maximum angle (in radians) per one second that an alien can turn when in raid mode
+
+    float mRaidTgtDistance;
+    //!< \brief Distance from target position, at which alien stops raid and starts
+    //!  returning to formation.
+
+    float mReturnTgtDistance;
+    //!< \brief Distance from target position, at which the alien is considered to be
+    //!  back in formation.
+
     //@{}---------------------------------------------------------------------------------------------
     //! @name Public data concerning player
     //@{----------------------------------------------------------------------------------------------
