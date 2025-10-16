@@ -116,6 +116,7 @@ namespace Inv
     mClearColor( D3DCOLOR_XRGB( 0, 0, 0 ) ),
     mLoopElapsedMicrosecondsMax( 0 ),
     mLoopElapsedMicrosecondsAvg( 0.0f ),
+    mLoopWaitedMicrosecondsAvg( 0.0f ),
     mLoopElapsedMicrosecondsAvgCount( 0 )
   {}
 
@@ -156,7 +157,7 @@ namespace Inv
                       mWindiwClassId.c_str(), NULL };
     RegisterClassEx( &mWindowClass );
 
-    RECT r = { 0, 0, mSettings.GetWidth(), mSettings.GetHeight() };
+    RECT r = { 0, 0, (LONG)mSettings.GetWidth(), (LONG)mSettings.GetHeight() };
     int style = mSettings.GetFullScreen() ? WS_POPUP : WS_OVERLAPPEDWINDOW;
     style |= WS_VISIBLE;
     AdjustWindowRect( &r, style, false );
@@ -192,10 +193,12 @@ namespace Inv
     mSpriteStorage->AddSprite( "SPIT", "spit" );
     mSpriteStorage->AddSprite( "SAUCER", "saucer" );
     mSpriteStorage->AddSprite( "SAUCEREXPL", "explosionSaucer" );
+    mSpriteStorage->AddSprite( "PACVADER", "pacvader" );
+    mSpriteStorage->AddSprite( "PACVADEREXPL", "explosionPacvader" );
 
     mSpriteStorage->AddSprite( "FIGHT", "fighter" );
     mSpriteStorage->AddSprite( "LIVE", "fighter" );
-    mSpriteStorage->AddSprite( "FEXPL", "explosionFighter" );
+    mSpriteStorage->AddSprite( "FIGHTEXPL", "explosionFighter" );
     mSpriteStorage->AddSprite( "ROCKET", "rocket" );
     mSpriteStorage->AddSprite( "AMMO", "rocketAmmo" );
 
@@ -369,9 +372,20 @@ namespace Inv
         if( mLoopElapsedMicrosecondsMax < ElapsedMicroseconds.QuadPart )
           mLoopElapsedMicrosecondsMax = ElapsedMicroseconds.QuadPart;
 
-        mLoopElapsedMicrosecondsAvg =
-          ( mLoopElapsedMicrosecondsAvg * mLoopElapsedMicrosecondsAvgCount +
+        if( IsZero( mLoopElapsedMicrosecondsAvg ) )
+          mLoopElapsedMicrosecondsAvg = (float)ElapsedMicroseconds.QuadPart;
+        else
+          mLoopElapsedMicrosecondsAvg =
+            ( mLoopElapsedMicrosecondsAvg * mLoopElapsedMicrosecondsAvgCount +
             (float)ElapsedMicroseconds.QuadPart ) / ( mLoopElapsedMicrosecondsAvgCount + 1 );
+
+        if( ElapsedMilliseconds < mMillisecondsPerTick )
+          mLoopWaitedMicrosecondsAvg =
+            ( mLoopWaitedMicrosecondsAvg * mLoopElapsedMicrosecondsAvgCount +
+            (float)( mMillisecondsPerTick - ElapsedMilliseconds ) ) / ( mLoopElapsedMicrosecondsAvgCount + 1 );
+
+        ++mLoopElapsedMicrosecondsAvgCount;
+
       } // if
 
       mReferenceTick.QuadPart++;
@@ -389,6 +403,7 @@ namespace Inv
     LOG << "Maximal loop time: " << mLoopElapsedMicrosecondsMax << " us";
     LOG << "Average loop time: " << mLoopElapsedMicrosecondsAvg << " us";
     LOG << "Demanded tick time: " << mMillisecondsPerTick * 1000 << " us";
+    LOG << "Average wait time: " << mLoopWaitedMicrosecondsAvg * 1000 << " us";
 
     return true;
   } // CInvGame::Cleanup

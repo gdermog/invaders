@@ -105,6 +105,9 @@
     <ClCompile Include="src\engine\InvENTTProcessorsAI.cpp">
       <Filter>Source Files\engine</Filter>
     </ClCompile>
+    <ClCompile Include="src\graphics\CInvEffectSpriteMirror.cpp">
+      <Filter>Source Files\graphics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InvGlobals.h">
@@ -187,6 +190,9 @@
     </ClInclude>
     <ClInclude Include="src\engine\InvENTTProcessorsAI.h">
       <Filter>Header Files\engine</Filter>
+    </ClInclude>
+    <ClInclude Include="src\graphics\CInvEffectSpriteMirror.h">
+      <Filter>Header Files\graphics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

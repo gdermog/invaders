@@ -29,7 +29,7 @@ namespace Inv
     CInvSettingsRuntime & settingsRuntime,
     CInvEntityFactory & entityFactory,
     uint32_t & aliensLeft,
-    std::vector<AlienBossDescriptor_t> & bossDescriptor ):
+    std::map<uint32_t, AlienBossDescriptor_t> & bossDescriptor ):
 
     procEnTTBase( refTick, settings, settingsRuntime ),
     mEntityFactory( entityFactory ),
@@ -40,27 +40,29 @@ namespace Inv
 
   //--------------------------------------------------------------------------------------------------
 
-  void procSpecialActorSpawner::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
+  void procSpecialActorSpawner::update(
+    entt::registry & reg,
+    LARGE_INTEGER actTick,
+    LARGE_INTEGER diffTick,
+    float playerYPos )
   {
     if( mIsSuspended )
       return;           // Processor is suspended, no action is performed
 
-    for( auto & boss : mBossDescriptor )
+    for( auto & bossIt : mBossDescriptor )
     {
+      auto & boss = bossIt.second;
 
       if( boss.mMaxSpawned <= boss.mIsSpawned )
         continue;       // Maximum number of this alien boss type is already present in the scene
 
       auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
       if( probRoll < boss.mSpawnProbability * mSettingsRuntime.mSceneLevelMultiplicator )
-      {                   // Alien boss (flying saucer) is spawned on random event
+      {                   // Alien boss (like flying saucer) is spawned on random event
         bool fromLeft = ( ( rand() % 2 ) == 0 );
         mEntityFactory.AddAlienBossEntity(
-          boss,
-          fromLeft ? boss.mSpawnXLeft : boss.mSpawnXRight,
-          boss.mSpawnY, /* Must be player Y if mSpawnY is negative!!! S*/
-          fromLeft ? 1.0 : -1.0, 0.0f,
-          boss.mSize );
+          boss, fromLeft, IsNegative( boss.mSpawnY ) ? playerYPos : boss.mSpawnY,
+          fromLeft ? 1.0f : -1.0f, 0.0f, boss.mSize );
 
         ++boss.mIsSpawned;
         ++mAliensLeft;  // One more alien of given type is present in the scene

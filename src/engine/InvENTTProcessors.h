@@ -141,7 +141,9 @@ namespace Inv
       float sceneTopLeftX,
       float sceneTopLeftY,
       float sceneBottomRightX,
-      float sceneBottomRightY );
+      float sceneBottomRightY,
+      float & playerActX,
+      float & playerActY );
 
     void reset(
       LARGE_INTEGER refTick,
@@ -163,6 +165,12 @@ namespace Inv
     //!< \brief X coordinate of bottom right corner of the game scene in pixels.
     float mSceneBottomRightY;
     //!< \brief Y coordinate of bottom right corner of the game scene in pixels.
+
+    float & mPlayerActX;
+    //<! \brief Actual X coordinate of the player ship, reference for update
+
+    float & mPlayerActY;
+    //<! \brief Actual Y coordinate of the player ship, reference for update
 
   }; // procPlayerBoundsGuard
 

@@ -26,6 +26,7 @@
     <ClCompile Include="src\graphics\CInvEffect.cpp" />
     <ClCompile Include="src\graphics\CInvEffectSpriteAnimation.cpp" />
     <ClCompile Include="src\graphics\CInvEffectSpriteBlink.cpp" />
+    <ClCompile Include="src\graphics\CInvEffectSpriteMirror.cpp" />
     <ClCompile Include="src\graphics\CInvEffectSpriteShift.cpp" />
     <ClCompile Include="src\graphics\CInvEffectSpriteShiftRotate.cpp" />
     <ClCompile Include="src\graphics\CInvEffectSpriteShrink.cpp" />
@@ -55,6 +56,7 @@
     <ClInclude Include="src\graphics\CInvEffect.h" />
     <ClInclude Include="src\graphics\CInvEffectSpriteAnimation.h" />
     <ClInclude Include="src\graphics\CInvEffectSpriteBlink.h" />
+    <ClInclude Include="src\graphics\CInvEffectSpriteMirror.h" />
     <ClInclude Include="src\graphics\CInvEffectSpriteShift.h" />
     <ClInclude Include="src\graphics\CInvEffectSpriteShiftRotate.h" />
     <ClInclude Include="src\graphics\CInvEffectSpriteShrink.h" />

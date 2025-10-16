@@ -17,6 +17,7 @@
 #include <graphics/CInvEffectSpriteAnimation.h>
 #include <graphics/CInvEffectSpriteBlink.h>
 #include <graphics/CInvEffectSpriteShrink.h>
+#include <graphics/CInvEffectSpriteMirror.h>
 
 namespace Inv
 {
@@ -165,7 +166,7 @@ namespace Inv
 
   entt::entity CInvEntityFactory::AddAlienBossEntity(
     AlienBossDescriptor_t & bossType,
-    float posX, float posY,
+    bool fromLeft, float posY,
     float vX, float vY, float alienSizeX )
   {
     std::shared_ptr<CInvSprite> entitySprite = mSpriteStorage.GetSprite( bossType.mSpriteId );
@@ -181,7 +182,8 @@ namespace Inv
     mEnTTRegistry.emplace<cpId>( boss, (uint64_t)bossType.mBossTypeId, bossType.mSpriteId, true, true );
                         // component: entity full identifier
 
-    mEnTTRegistry.emplace<cpPosition>( boss, posX, posY, 0.0f );
+    mEnTTRegistry.emplace<cpPosition>(
+      boss, fromLeft ? bossType.mSpawnXLeft : bossType.mSpawnXRight, posY, 0.0f );
                         // component: position
 
     float div = std::sqrt( vX * vX + vY * vY );
@@ -189,7 +191,7 @@ namespace Inv
       div = mSettingsRuntime.mAlienRaidVelocity;
     else
       div = mSettingsRuntime.mAlienRaidVelocity / div;
-    div *= mSettingsRuntime.mSceneLevelMultiplicator;
+    div *= mSettingsRuntime.mSceneLevelMultiplicator * bossType.mSpeedCoef;
     div /= (float)mSettings.GetTickPerSecond();
     mEnTTRegistry.emplace<cpVelocity>( boss, vX * div, vY * div, 0.0f );
                         // component: velocity
@@ -202,7 +204,8 @@ namespace Inv
     mEnTTRegistry.emplace<cpAlienBehave>(
       boss, 0.0f,
       mSettingsRuntime.mAlienRaidShootProbability * mSettingsRuntime.mSceneLevelMultiplicator,
-      0.0f, 0.0f, posX, posY, 5000u );
+      0.0f, 0.0f, fromLeft ? bossType.mSpawnXLeft : bossType.mSpawnXRight, posY,
+      bossType.mScorePoints );
                         // component: ai behavior /*??? SCORE ???*/
 
     mEnTTRegistry.emplace<cpAlienBossStatus>( boss, false, false, false );
@@ -215,9 +218,12 @@ namespace Inv
                         // component: entity damage (can hit player, no friendly fire,
                         // not dying/removed on hit)
 
+    auto nrOfTicksToFullCycle = (float)mSettings.GetTickPerSecond() * bossType.mAnimationLength;
+    auto ticksPerImage = (uint32_t)( nrOfTicksToFullCycle / (float)entitySprite->GetNumberOfImages() );
+
     auto standardAnimationEffect = std::make_shared<CInvEffectSpriteAnimation>(
       mSettings, mPd3dDevice, 1u );
-    standardAnimationEffect->SetPace( 6 );
+    standardAnimationEffect->SetPace( ticksPerImage );
     standardAnimationEffect->SetContinuous( true );
     entitySprite->AddEffect( standardAnimationEffect );
                         // Standard animation effect starts running in case of the bos and is continuous
@@ -232,10 +238,20 @@ namespace Inv
                         // Shrink animation effect starts suspended (dying effect, not needed for now), it will
                         //  be activated on external event.
 
+    if( !fromLeft && bossType.mMirrorIfFromRight )
+    {
+      auto mirrorEffect = std::make_shared<CInvEffectSpriteMirror>( mSettings, mPd3dDevice, 50u );
+      entitySprite->AddEffect( mirrorEffect );
+                         // Mirroring effect is applied immediately if the boss enters
+                         // from right side (if necessary)
+    } // if
+
     mEnTTRegistry.emplace<cpGraphics>( boss,
       entitySprite, 0u, standardAnimationEffect, nullptr, shrinkAnimationEffect, LARGE_INTEGER{ 0 }, false );
                         // component: graphics (sprite, static image index, standard animation
                         // sequence, firing animation sequence, animation driver is zeroed )
+
+    return boss;
 
   } // CInvEntityFactory::AddAlienBossEntity
 

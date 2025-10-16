@@ -32,16 +32,20 @@ namespace Inv
       CInvSettingsRuntime & settingsRuntime,
       CInvEntityFactory & entityFactory,
       uint32_t & aliensLeft,
-      std::vector<AlienBossDescriptor_t> & bossDescriptor );
+      std::map<uint32_t, AlienBossDescriptor_t> & bossDescriptor );
 
 
-    void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
+    void update(
+      entt::registry & reg,
+      LARGE_INTEGER actTick,
+      LARGE_INTEGER diffTick,
+      float playerYPos );
 
     CInvEntityFactory & mEntityFactory;
 
     uint32_t &mAliensLeft;
 
-    std::vector<AlienBossDescriptor_t> & mBossDescriptor;
+    std::map<uint32_t, AlienBossDescriptor_t> & mBossDescriptor;
 
   }; // procActorStateSelector
 

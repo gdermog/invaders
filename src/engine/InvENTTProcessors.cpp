@@ -218,13 +218,17 @@ namespace Inv
     float sceneTopLeftX,
     float sceneTopLeftY,
     float sceneBottomRightX,
-    float sceneBottomRightY ):
+    float sceneBottomRightY,
+    float & playerActX,
+    float & playerActY ):
 
     procEnTTBase( refTick, settings, settingsRuntime ),
     mSceneTopLeftX( sceneTopLeftX ),
     mSceneTopLeftY( sceneTopLeftY ),
     mSceneBottomRightX( sceneBottomRightX ),
-    mSceneBottomRightY( sceneBottomRightY )
+    mSceneBottomRightY( sceneBottomRightY ),
+    mPlayerActX( playerActX ),
+    mPlayerActY( playerActY )
   {}
 
   //--------------------------------------------------------------------------------------------------
@@ -267,6 +271,9 @@ namespace Inv
           pVel.vY = 0.0f;
         else if( mSceneBottomRightY < yPosNext + 0.5 * pGeo.height )
           pVel.vY = 0.0f;
+
+        mPlayerActX = pPos.X + pVel.vX;
+        mPlayerActY = pPos.Y + pVel.vY;
 
     } );
 
@@ -511,7 +518,7 @@ namespace Inv
       {                 // Entity is marked as inactive and it will be remove from registry.
                         // If it should send notification on pruning, it is done now.
         if( entId.noticeOnPruning && nullptr != mPruneCallback )
-          mPruneCallback( entity, entId.id );
+          mPruneCallback( entity, (uint32_t)entId.id );
         mEntities.push_back( entity );
       } // if
     }  // for

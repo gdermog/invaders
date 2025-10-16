@@ -33,7 +33,13 @@ namespace Inv
     std::string mSpriteId;
     //!< \brief Sprite ID of the alien entity
 
-    uint32_t mPoints;
+    bool mMirrorIfFromRight;
+    //!< \brief If true, the sprite is mirrored when the alien entity enters from right side
+
+    float mAnimationLength;
+    //!< \brief Length of animation cycle, in seconds.
+
+    uint32_t mScorePoints;
     //!< \brief Points awarded for destroying this alien entity
 
     uint32_t mIsSpawned;
@@ -56,6 +62,11 @@ namespace Inv
 
     float mSpawnXRight;
     //!< \brief X coordinate where the boss saucer spawns when entering from right side
+
+    float mSpeedCoef;
+    //!< \brief Speed coefficient, multiplied by base alien speed to get actual speed
+    //!  of this alien entity
+
   };
 
   /*! \brief The class implements generator of in-game actors and objects. */
@@ -93,7 +104,7 @@ namespace Inv
 
     entt::entity AddAlienBossEntity(
       AlienBossDescriptor_t & bossType,
-      float posX, float posY,
+      bool fromLeft, float posY,
       float vX, float vY,
       float alienSizeX );
 

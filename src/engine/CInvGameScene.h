@@ -91,6 +91,8 @@ namespace Inv
           \param[in] actualTickPoint Current tick point, used to calculate game situation
           \returns false in case of error. */
 
+    void EngineOnHold( bool onHold );
+
     void Reset( LARGE_INTEGER newTickRefPoint );
     /*!< \brief Resets the game state to initial conditions, ready for a new game.
 
@@ -130,6 +132,8 @@ namespace Inv
     void NewSwarm();
     /*!< \brief Generates new alien swarm, increases level counter and speedup factor. It is called
          when all aliens are destroyed. */
+
+    void CalculateQuickDeathTicks();
 
     //------ Timing parameters --------------------------------------------------------------------------
 
@@ -288,6 +292,12 @@ namespace Inv
     float mPlayerStartY;
     //<! \brief Y coordinate of the player ship starting position (bottom center of the scene)
 
+    float mPlayerActX;
+    //<! \brief Actual X coordinate of the player ship
+
+    float mPlayerActY;
+    //<! \brief Actual Y coordinate of the player ship
+
     bool mPlayerAlive;
     //!< \brief Flag indicating whether player entity is alive (true) or dead (false).
 
@@ -341,7 +351,7 @@ namespace Inv
     uint32_t mAliensLeft;
     //!< \brief Number of aliens still alive in the scene.
 
-    std::vector<AlienBossDescriptor_t> mAlienBosses;
+    std::map<uint32_t, AlienBossDescriptor_t> mAlienBosses;
     //!< \brief Descriptors of boss aliens that can appear in the scene.
 
     //------ EnTT processors --------------------------------------------------------------------------

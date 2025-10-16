@@ -121,6 +121,8 @@ namespace Inv
 
     float mLoopElapsedMicrosecondsAvg;
 
+    float mLoopWaitedMicrosecondsAvg;
+
     uint64_t mLoopElapsedMicrosecondsAvgCount;
 
     static const std::wstring mWindiwClassId;

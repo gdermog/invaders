@@ -72,7 +72,7 @@ namespace Inv
     mStatusLineTopLeftY( (float)settings.GetHeight() * mStatusLineAreaCoefficient ),
     mStatusLineBottomRightX( (float)settings.GetWidth() ),
     mStatusLineBottomRightY( (float)settings.GetHeight() ),
-    mStatusLineHeight( (float)settings.GetHeight() * ( 1.0 - mStatusLineAreaCoefficient ) ),
+    mStatusLineHeight( (float)settings.GetHeight() * ( 1.0f - mStatusLineAreaCoefficient ) ),
     mOneLiveIconWidth( 0.0f ),
     mOneLiveIconHeight( 0.0f ),
     mLivesIconsStartX( 0.0f ),
@@ -96,6 +96,8 @@ namespace Inv
     mPlayerHeight( 0.0f ),
     mPlayerStartX( 0.0f ),
     mPlayerStartY( 0.0f ),
+    mPlayerActX( 0.0f ),
+    mPlayerActY( 0.0f ),
     mPlayerEntryInProgress( false ),
     mPlayerEntryTick{ 0 },
     mActualScore( 0 ),
@@ -115,18 +117,36 @@ namespace Inv
 
     mAlienBosses
     {
-      {
+      { 10u, {
            10u,             // mTypeId;
-           "SAUCER",        // mSpriteId;
+           "SAUCER",        // mSpriteId
+           false,           // mMirrorIfFromRight
+           1.5f,            // mAnimationLength
            5000u,           // mPoints
            0u,              // mIsSpawned
            2u,              // mMaxSpawned
-           0.001f,          // mSpawnProbability;
+           0.001f,          // mSpawnProbability
            80.0f,           // mSize - will be recalculated in GenerateNewScene() according to scene size
            40.0f,           // mSpawnY - will be recalculated in GenerateNewScene()
            0.0f,            // mSpawnXLeft - will be recalculated in GenerateNewScene()
-           0.0f             // mSpawnXRight - will be recalculated in GenerateNewScene()
-      }
+           0.0f,            // mSpawnXRight - will be recalculated in GenerateNewScene()
+           1.0f             // mSpeedCoef
+      }},
+      { 20u, {
+           20u,             // mTypeId
+           "PACVADER",      // mSpriteId
+           true,            // mMirrorIfFromRight
+           0.5f,            // mAnimationLength
+           15000u,          // mPoints
+           0u,              // mIsSpawned
+           1u,              // mMaxSpawned
+           0.0002f,         // mSpawnProbability
+           80.0f,           // mSize - will be recalculated in GenerateNewScene() according to scene size
+           -1.0f,           // mSpawnY - will be adjusted according to player position
+           0.0f,            // mSpawnXLeft - will be recalculated in GenerateNewScene()
+           0.0f,            // mSpawnXRight - will be recalculated in GenerateNewScene()
+           3.0f             // mSpeedCoef
+      }}
     },
 
     //------ EnTT processors --------------------------------------------------------------------------
@@ -141,7 +161,7 @@ namespace Inv
     mProcAlienRaidDriver      ( PROCCMN ),
     mProcPlayerFireUpdater    ( PROCCMN, mEntityFactory, mPlayerAmmoLeft ),
     mProcPlayerSpeedUpdater   ( PROCCMN ),
-    mProcPlayerBoundsGuard    ( PROCCMN, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight() ),
+    mProcPlayerBoundsGuard    ( PROCCMN, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight(), mPlayerActX, mPlayerActY ),
     mProcPlayerInDanger       ( PROCCMN, mIsInDangerousArea ),
     mProcAlienBoundsGuard     ( PROCCMN, mVXGroup, mVYGroup, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight() ),
     mProcActorOutOfSceneCheck ( PROCCMN, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight() ),
@@ -207,8 +227,10 @@ namespace Inv
                         // fits into specific part of the scene width, rest is space in between aliens
                         // and white space at the sides of the scene.
 
-    for( auto & ab : mAlienBosses )
+    for( auto & abIt : mAlienBosses )
     {                   // Reset the number of spawned bosses to zero
+      auto & ab = abIt.second;
+
       auto bossSprite = mSpriteStorage.GetSprite( ab.mSpriteId );
       if( nullptr == bossSprite )
         continue;
@@ -304,6 +326,9 @@ namespace Inv
     mPlayerStartX = mSceneTopLeftX + mSceneWidth * 0.5f;
     mPlayerStartY = mSceneBottomRightY - mPlayerHeight * 0.5f;
 
+    mPlayerActX = mSceneTopLeftX + mSceneWidth * 0.5f;
+    mPlayerActY = mSceneBottomRightY - mPlayerHeight * 0.5f;
+
     mPlayerEntity =
       mEntityFactory.AddPlayerEntity( "FIGHT", mPlayerStartX, mPlayerStartY, mPlayerWidth );
 
@@ -379,7 +404,7 @@ namespace Inv
                         // New entities are spawned according to spawn requests stored in the
                         // registry by other processors (as missiles, for example).
 
-    mProcSpecialActorSpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
+    mProcSpecialActorSpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, mPlayerActY );
                         // Special entities (as alien boss) are spawned according to special
                         // spawn requests stored in the registry by other processors.
 
@@ -464,14 +489,12 @@ namespace Inv
 
     if( 0 == mPlayerEntryTick.QuadPart )
     {
-      mQuickDeathTicksLeft = (uint32_t)( mSettings.GetQuickDeathTime() * (uint32_t)mSettings.GetTickPerSecond() );
-      mProcSpecialActorSpawner.mIsSuspended = true;
-      mProcActorStateSelector.mIsSuspended = true;
-      mProcPlayerSpeedUpdater.mIsSuspended = true;
-      mProcPlayerFireUpdater.mIsSuspended = true;
-      mProcActorMover.mFormationFreeze = true;
+      CalculateQuickDeathTicks();
+
+      EngineOnHold( true );
                         // During player entry sequence, aliens are not moving and player cannot
                         // control his ship (which is not visible at all).
+
       auto view = mEnTTRegistry.view<cpPlayBehave, cpPlayStatus, cpGraphics>();
       view.each( [=]( cpPlayBehave & pBehave, cpPlayStatus & pStat, cpGraphics & pGph )
       {
@@ -523,6 +546,8 @@ namespace Inv
         {
           pPos->X = mPlayerStartX;
           pPos->Y = mPlayerStartY;
+          mPlayerActX = mPlayerStartX;
+          mPlayerActY = mPlayerStartY;
           pStatus->isInvulnerable = true;
           pGph->standardAnimationEffect->Restore();
                         // Player is made invulnerable for a while, blinking effect is started on his sprite.
@@ -533,11 +558,7 @@ namespace Inv
       if( IsZero( mVXGroup ) )
         mVXGroup = mSettingsRuntime.mAlienVelocity * mSettingsRuntime.mSceneLevelMultiplicator / (float)mSettings.GetTickPerSecond();
 
-      mProcSpecialActorSpawner.mIsSuspended = false;
-      mProcActorStateSelector.mIsSuspended = false;
-      mProcPlayerSpeedUpdater.mIsSuspended = false;
-      mProcPlayerFireUpdater.mIsSuspended = false;
-      mProcActorMover.mFormationFreeze = false;
+      EngineOnHold( false );
                         // Aliens start moving and player can control his ship again.
 
       auto view = mEnTTRegistry.view<cpPlayBehave, cpPlayStatus, cpGraphics>();
@@ -555,8 +576,23 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
+  void CInvGameScene::EngineOnHold( bool onHold )
+  {
+    mProcSpecialActorSpawner.mIsSuspended = onHold;
+    mProcActorStateSelector.mIsSuspended = onHold;
+    mProcPlayerSpeedUpdater.mIsSuspended = onHold;
+    mProcPlayerFireUpdater.mIsSuspended = onHold;
+    mProcActorMover.mFormationFreeze = onHold;
+  } // CInvGameScene::EngineOnHold
+
+  //-------------------------------------------------------------------------------------------------
+
   void CInvGameScene::Reset( LARGE_INTEGER newTickRefPoint )
   {
+    EngineOnHold( true );
+                        // Game engine is put on hold during reset. It is run again
+                        // when player entry sequence is finished.
+
     mTickReferencePoint = newTickRefPoint;
     mEnTTRegistry.clear();
 
@@ -572,14 +608,14 @@ namespace Inv
     mTickLeftToReload = mReloadingTicks;
                         // Player weapon reloading time is set according to settings.
 
-    mQuickDeathTicksLeft = (uint32_t)( mSettings.GetQuickDeathTime() * (uint32_t)mSettings.GetTickPerSecond() );
+    CalculateQuickDeathTicks();
 
     mPlayerEntryInProgress = true;
     mPlayerEntryTick.QuadPart = 0;
                         // Player entry sequence is started.
 
     for( auto & boss: mAlienBosses )
-      boss.mIsSpawned = 0u;
+      boss.second.mIsSpawned = 0u;
                         // Number of spawned alien bosses is reset to zero.
 
     GenerateNewScene(); // Aliens swarm is placed in the scene. Also recalculates
@@ -669,7 +705,7 @@ namespace Inv
       auto xplY = ( nullptr == pPos ? 0.0f : pPos->Y );
       auto xplVx = ( nullptr == pVel ? 0.0f : pVel->vX );
       auto xplVy = ( nullptr == pVel ? 0.0f : pVel->vY );
-      mEntityFactory.AddExplosionEntity( "FEXPL", xplX, xplY, explosionSize, xplVx, xplVy );
+      mEntityFactory.AddExplosionEntity( "FIGHTEXPL", xplX, xplY, explosionSize, xplVx, xplVy );
                         // Explosion is created at player position, moving with the player. Explosion entity
                         // is automatically pruned from game scene when its animation finishes.
 
@@ -732,25 +768,24 @@ namespace Inv
 
     } // if
 
-
-    auto [aliennBossBehave, alienBossStatus, aliennBossHealth, aliennBossGph] =
-      mEnTTRegistry.try_get<cpAlienBehave, cpAlienBossStatus, cpHealth, cpGraphics>( entity );
-    if( nullptr != aliennBossBehave && nullptr != alienBossStatus )
+    auto [ alienBossId, alienBossBehave, alienBossStatus, alienBossHealth, alienBossGph] =
+      mEnTTRegistry.try_get<cpId, cpAlienBehave, cpAlienBossStatus, cpHealth, cpGraphics>( entity );
+    if( nullptr != alienBossBehave && nullptr != alienBossStatus )
     {                   // Alien entity elimination from game scene is commenced (hit by player missile).
                         // Alien entity is marked as dying, explosion is created at alien position and
                         // special "dying" effect is started on alien sprite.
 
-      if( nullptr == aliennBossHealth || nullptr == aliennBossGph )
+      if( nullptr == alienBossId || nullptr == alienBossHealth || nullptr == alienBossGph )
         return false;   // Alien has no health or graphics component - this is probably a bug.
 
       if( alienBossStatus->isDying )
         return false;   // Alien is already dying, ignore the hit.
 
-      if( 0 < aliennBossHealth->hitPoints )
-        --aliennBossHealth->hitPoints;
+      if( 0 < alienBossHealth->hitPoints )
+        --alienBossHealth->hitPoints;
                         // Alien looses one health point.
 
-      if( 0 < aliennBossHealth->hitPoints )
+      if( 0 < alienBossHealth->hitPoints )
         return true;    // Alien still has some health points and continues to fight.
 
       alienBossStatus->isDying = true;
@@ -765,21 +800,26 @@ namespace Inv
         pVel->vZ = 0.0f;
       }  // if
 
-      auto explosionSize = ( nullptr == pGeo ? 150.0f : alienGph->standardSprite->GetResultingSizeX() * 1.5f );
-      auto xplX = ( nullptr == pPos ? 0.0f : pPos->X );
-      auto xplY = ( nullptr == pPos ? 0.0f : pPos->Y );
-      auto xplVx = ( nullptr == pVel ? 0.0f : pVel->vX );
-      auto xplVy = ( nullptr == pVel ? 0.0f : pVel->vY );
-      mEntityFactory.AddExplosionEntity( "SAUCEREXPL", xplX, xplY, explosionSize, xplVx, xplVy );
-                        // Explosion is created at alien position, moving with the invader. Explosion entity
-                        // is automatically pruned from game scene when its animation finishes.
+      auto findBoss = mAlienBosses.find( alienBossId->id );
+      if( findBoss != mAlienBosses.end() )
+      {                 // Explosion is created at alien position, moving with the invader.
+                        // Explosion entity is automatically pruned from game scene when its
+                        // animation finishes.
+        auto explosionSize = ( nullptr == pGeo ? 150.0f : alienGph->standardSprite->GetResultingSizeX() * 1.5f );
+        auto xplX = ( nullptr == pPos ? 0.0f : pPos->X );
+        auto xplY = ( nullptr == pPos ? 0.0f : pPos->Y );
+        auto xplVx = ( nullptr == pVel ? 0.0f : pVel->vX );
+        auto xplVy = ( nullptr == pVel ? 0.0f : pVel->vY );
+        mEntityFactory.AddExplosionEntity(
+          findBoss->second.mSpriteId + "EXPL", xplX, xplY, explosionSize, xplVx, xplVy );
+      } // if
 
-      if( nullptr != aliennBossGph && nullptr != aliennBossGph->dyingAnimationEffect )
-        aliennBossGph->dyingAnimationEffect->Restore();
-                        // Dying effect is started on invader sprite. When the effect finishes, entity
-                        // is marked for pruning and removed from game scene by garbage collector. This
-                        // then triggers EntityJustPruned() method, which notifies main game scene about
-                        // invader elimination.
+      if( nullptr != alienBossGph && nullptr != alienBossGph->dyingAnimationEffect )
+        alienBossGph->dyingAnimationEffect->Restore();
+                        // Dying effect is started on invader sprite. When the effect finishes,
+                        // entity is marked for pruning and removed from game scene by garbage
+                        // collector. This then triggers EntityJustPruned() method, which notifies
+                        // main game scene about invader elimination.
 
     } // if
 
@@ -863,7 +903,8 @@ namespace Inv
       {
          mActualScore += aBossBehave->scoreToAdd;
 
-         LOG << "Alien boss was pruned from game scene, " << aBossBehave->scoreToAdd << " score added";
+         LOG << "Alien boss was pruned from game scene, " << aBossBehave->scoreToAdd
+             << " score added";
       }
       else
       {
@@ -873,12 +914,14 @@ namespace Inv
       if( 0u < mAliensLeft )
         --mAliensLeft;
 
-      for( auto & boss : mAlienBosses )
+      for( auto & bossIt : mAlienBosses )
       {
+        auto & boss = bossIt.second;
         if( boss.mBossTypeId == nr && 0u < boss.mIsSpawned )
         {
           --boss.mIsSpawned;
-          LOG << "Reducing number of " << boss.mSpriteId << " bosses to " << boss.mIsSpawned << "/" << boss.mMaxSpawned;
+          LOG << "Reducing number of " << boss.mSpriteId << " bosses to "
+              << boss.mIsSpawned << "/" << boss.mMaxSpawned;
           break;
         } // if
       } // for
@@ -942,6 +985,23 @@ namespace Inv
     mSettingsRuntime.Preprint();
 
   } // CInvGameScene::NewSwarm
+
+  //-------------------------------------------------------------------------------------------------
+
+  void CInvGameScene::CalculateQuickDeathTicks()
+  {
+    auto quickDeathTime =
+      mSettings.GetQuickDeathTime() - ( mSettingsRuntime.mAlienSpeedupFactor - 1.0f);
+    if( quickDeathTime < 30.0f )
+      quickDeathTime = 30.0f;
+                        // Quick death time after player spawn or respawn is set in such way that
+                        // it is shortened by alien speedup factor, but it is never less than
+                        // half a minute.
+
+    mQuickDeathTicksLeft =
+      (uint32_t)( quickDeathTime * (uint32_t)mSettings.GetTickPerSecond() );
+                        // Quick death time ticks is set.
+  } // CInvGameScene::CalculateQuickDeathTicks
 
   //-------------------------------------------------------------------------------------------------
 
