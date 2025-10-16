@@ -22,6 +22,7 @@
 #include <graphics/CInvSpriteStorage.h>
 #include <graphics/CInvText.h>
 #include <graphics/CInvPrimitive.h>
+#include <graphics/CInvBackground.h>
 
 #include <engine/CInvHiscoreList.h>
 #include <engine/CInvInsertCoinScreen.h>
@@ -87,6 +88,12 @@ namespace Inv
 
     std::unique_ptr<CInvSpriteStorage> mSpriteStorage;
     //!< \brief Sprite storage object, used to manage and access sprites.
+
+    std::unique_ptr<CInvBackground> mBackgroundInsertCoin;
+    //!< \brief Reference to background object, used to draw the "insert coin" background
+
+    std::unique_ptr<CInvBackground> mBackgroundPlay;
+    //!< \brief Reference to background object, used to draw the game background
 
     const CInvSettings & mSettings;
     //!< \brief Reference to global settings object, used to access configuration parameters.

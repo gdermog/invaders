@@ -36,6 +36,7 @@ namespace Inv
     const CInvSettings & settings,
     CInvSettingsRuntime & settingsRuntime,
     const CInvSpriteStorage & spriteStorage,
+    const CInvBackground & background,
     CInvPrimitive & primitives,
     LPDIRECT3D9 pD3D,
     LPDIRECT3DDEVICE9 pd3dDevice,
@@ -52,6 +53,7 @@ namespace Inv
     mSettings( settings ),
     mSettingsRuntime( settingsRuntime ),
     mSpriteStorage( spriteStorage ),
+    mBackground( background ),
     mPrimitives( primitives ),
     mCollisionTest( settings, pd3dDevice ),
     mEnTTRegistry(),
@@ -435,6 +437,10 @@ namespace Inv
     mProcActorOutOfSceneCheck.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // All entities out of scene are marked as inactive and will be removed by garbage
                         // collector in next loop.
+
+    mBackground.Draw( mTickReferencePoint, actualTickPoint, mDiffTickPoint );
+                        // Background is drawn first, then all entities on it by procActorRender
+                        // processor.
 
     mProcActorRender.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint );
                         // All entities are rendered according to their graphics component and status
@@ -991,14 +997,14 @@ namespace Inv
   void CInvGameScene::CalculateQuickDeathTicks()
   {
     auto quickDeathTime =
-      mSettings.GetQuickDeathTime() - ( mSettingsRuntime.mAlienSpeedupFactor - 1.0f);
+      mSettings.GetQuickDeathTime() - 5.0f * ( mSettingsRuntime.mSceneLevelMultiplicator - 1.0f );
     if( quickDeathTime < 30.0f )
       quickDeathTime = 30.0f;
                         // Quick death time after player spawn or respawn is set in such way that
                         // it is shortened by alien speedup factor, but it is never less than
                         // half a minute.
 
-    mQuickDeathTicksLeft =
+     mQuickDeathTicksLeft =
       (uint32_t)( quickDeathTime * (uint32_t)mSettings.GetTickPerSecond() );
                         // Quick death time ticks is set.
   } // CInvGameScene::CalculateQuickDeathTicks

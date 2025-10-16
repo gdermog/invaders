@@ -21,6 +21,8 @@
 #include <graphics/CInvSpriteStorage.h>
 #include <graphics/CInvText.h>
 #include <graphics/CInvPrimitive.h>
+#include <graphics/CInvBackground.h>
+
 
 #include <engine/CInvGameScene.h>
 
@@ -39,6 +41,7 @@ namespace Inv
     CInvPlayItScreen(
       const CInvSettings & settings,
       const CInvSpriteStorage & spriteStorage,
+      const CInvBackground & background,
       CInvPrimitive & primitives,
       CInvSettingsRuntime &settingsRuntime,
       LPDIRECT3D9 pD3D,
@@ -84,6 +87,9 @@ namespace Inv
 
     const CInvSpriteStorage & mSpriteStorage;
     //!< \brief Reference to sprite storage object, used to access sprites.
+
+    const CInvBackground & mBackground;
+    //!< \brief Reference to background object, used to draw the game background
 
     CInvPrimitive & mPrimitives;
     //!< \brief Reference to primitive drawer, used to draw basic shapes on screen

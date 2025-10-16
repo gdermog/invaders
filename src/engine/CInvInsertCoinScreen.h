@@ -17,6 +17,7 @@
 
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvSpriteStorage.h>
+#include <graphics/CInvBackground.h>
 #include <graphics/CInvText.h>
 #include <graphics/CInvPrimitive.h>
 
@@ -39,6 +40,7 @@ namespace Inv
       CInvInsertCoinScreen(
         const CInvSettings & settings,
         const CInvSpriteStorage & spriteStorage,
+        const CInvBackground & background,
         CInvHiscoreList & hiscoreKeeper,
         CInvPrimitive & primitives,
         LPDIRECT3D9 pD3D,
@@ -193,12 +195,14 @@ namespace Inv
     const CInvSpriteStorage & mSpriteStorage;
     //!< \brief Reference to sprite storage object, used to access sprites.
 
+    const CInvBackground & mBackground;
+    //!< \brief Reference to background object, used to draw screen background.
+
     CInvHiscoreList & mHiscoreKeeper;
     //!< \brief Reference to high score list object, used to access and modify high scores.
+
     CInvPrimitive & mPrimitives;
     //!< \brief Reference to primitive rendering object, used to draw basic shapes on screen.
-
-
 
     std::string mCurrentCallsign;
     //!< \brief Current callsign being entered by player, modified by user input.

@@ -19,6 +19,7 @@
 #include <entity/registry.hpp>
 
 #include <graphics/CInvText.h>
+#include <graphics/CInvBackground.h>
 #include <graphics/CInvPrimitive.h>
 #include <graphics/CInvSpriteStorage.h>
 #include <graphics/CInvCollisionTest.h>
@@ -39,6 +40,7 @@ namespace Inv
       const CInvSettings & settings,
       CInvSettingsRuntime & settingsRuntime,
       const CInvSpriteStorage & spriteStorage,
+      const CInvBackground & background,
       CInvPrimitive & primitives,
       LPDIRECT3D9 pD3D,
       LPDIRECT3DDEVICE9 pd3dDevice,
@@ -92,6 +94,11 @@ namespace Inv
           \returns false in case of error. */
 
     void EngineOnHold( bool onHold );
+    /*!< \brief Puts the game engine on hold (true) or releases it from hold (false). When
+         the engine is on hold, all entities are frozen, player cannot control his ship,
+         aliens do not shoot etc. This is used during player entry sequence.
+
+         \param[in] onHold True to put the engine on hold, false to release it from hold. */
 
     void Reset( LARGE_INTEGER newTickRefPoint );
     /*!< \brief Resets the game state to initial conditions, ready for a new game.
@@ -154,6 +161,9 @@ namespace Inv
 
     const CInvSpriteStorage & mSpriteStorage;
     //!< \brief Reference to sprite storage object, used to access sprites.
+
+    const CInvBackground & mBackground;
+    //!< \brief Reference to background object, used to draw the game background
 
     CInvPrimitive & mPrimitives;
     //!< \brief Reference to primitive drawer, used to draw basic shapes on screen

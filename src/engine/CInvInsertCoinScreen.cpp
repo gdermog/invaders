@@ -40,6 +40,7 @@ namespace Inv
   CInvInsertCoinScreen::CInvInsertCoinScreen(
     const CInvSettings & settings,
     const CInvSpriteStorage & spriteStorage,
+    const CInvBackground & background,
     CInvHiscoreList & hiscoreKeeper,
     CInvPrimitive & primitives,
     LPDIRECT3D9 pD3D,
@@ -75,6 +76,7 @@ namespace Inv
     mTextCreator( {}, settings, pd3dDevice ),
     mHiscoreKeeper( hiscoreKeeper ),
     mSpriteStorage( spriteStorage ),
+    mBackground( background ),
     mCurrentCallsign(),
     mLastControlValue( 0 ),
     mPD3D( pD3D ),
@@ -178,6 +180,8 @@ namespace Inv
   {
 
     gameStart = false;
+
+    mBackground.Draw( mTickReferencePoint, actualTick, mDiffTick );
 
     mTextCreator.SetText( mWelcomeHeader );
     mTextCreator.Draw(

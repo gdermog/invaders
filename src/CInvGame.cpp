@@ -104,6 +104,9 @@ namespace Inv
     mPrimitives( nullptr ),
     mInsertCoinScreen( nullptr ),
     mPlayItScreen( nullptr ),
+    mSpriteStorage( nullptr ),
+    mBackgroundInsertCoin( nullptr ),
+    mBackgroundPlay( nullptr ),
     mSettings( settings ),
     mSettingsRuntime(),
     mWindowClass{},
@@ -186,6 +189,10 @@ namespace Inv
 
     mSpriteStorage = std::make_unique<CInvSpriteStorage>( mSettings, mPd3dDevice );
 
+    mBackgroundInsertCoin = std::make_unique<CInvBackground>( mSettings, mPd3dDevice );
+
+    mBackgroundPlay = std::make_unique<CInvBackground>( mSettings, mPd3dDevice );
+
     //------ Graphics initialization - sprites ----------------------------------------------------------
 
     mSpriteStorage->AddSprite( "PINK", "invaderPink" );
@@ -202,11 +209,19 @@ namespace Inv
     mSpriteStorage->AddSprite( "ROCKET", "rocket" );
     mSpriteStorage->AddSprite( "AMMO", "rocketAmmo" );
 
+    mBackgroundInsertCoin->AddBackgroundImage( "background/nebula.jpg" );
+    mBackgroundInsertCoin->SetRollCoefficient( 0.0f );
+                        // Static background
+
+    mBackgroundPlay->AddBackgroundImage( "background/staryline.jpg" );
+                        // Dynamic background, default rolling coefficient left
+
     //------ Main structures initialization ----------------------------------------------------------
 
     mInsertCoinScreen = std::make_unique<CInvInsertCoinScreen>(
       mSettings,
       *mSpriteStorage,
+      *mBackgroundInsertCoin,
       *mHiscoreKeeper,
       *mPrimitives,
       mPD3D,
@@ -217,6 +232,7 @@ namespace Inv
     mPlayItScreen = std::make_unique<CInvPlayItScreen>(
       mSettings,
       *mSpriteStorage,
+      *mBackgroundPlay,
       *mPrimitives,
       mSettingsRuntime,
       mPD3D,

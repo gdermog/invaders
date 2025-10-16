@@ -112,7 +112,7 @@ namespace Inv
     mAlienVelocity = 37.5f;
     mAlienRaidShootProbability = 0.075f;
     mAlienRaidVelocity = 55.0f;
-    mAlienDescendTime = 0.5f;
+    mAlienDescendTime = 0.3f;
     mAlienSpeedupFactor = 1.0f;
     mAlienRaidMaxTime = 4.0f;
     mAlienRaidMaxAnglePerSec = gPI;
