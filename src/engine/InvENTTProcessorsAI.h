@@ -32,6 +32,7 @@ namespace Inv
       CInvSettingsRuntime & settingsRuntime,
       CInvEntityFactory & entityFactory,
       uint32_t & aliensLeft,
+      uint32_t & alienBossesLeft,
       std::map<uint32_t, AlienBossDescriptor_t> & bossDescriptor );
 
 
@@ -44,6 +45,8 @@ namespace Inv
     CInvEntityFactory & mEntityFactory;
 
     uint32_t &mAliensLeft;
+
+    uint32_t & mAlienBossesLeft;
 
     std::map<uint32_t, AlienBossDescriptor_t> & mBossDescriptor;
 

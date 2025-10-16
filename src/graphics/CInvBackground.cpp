@@ -94,8 +94,8 @@ namespace Inv
     if( nullptr == mPd3dDevice || nullptr == mTexture )
       return;
 
-    auto dTick = ( actualTick.QuadPart - referenceTick.QuadPart);
-    float t = mRollCoef * ( 1.0 - (float)( dTick % mTextureSize.second ) / ((float)mTextureSize.second) );
+    auto dTick = (size_t)( mRollCoef * (float)( actualTick.QuadPart - referenceTick.QuadPart) );
+    float t = 2.0 * ( 1.0 - (float)( dTick % mTextureSize.second ) / ((float)mTextureSize.second) );
 
     mTea2[0] = { 0.0f,      0.0f,       mLvl, 1.0f, color, 0.0f,       t };
     mTea2[1] = { mVprWidth, 0.0f,       mLvl, 1.0f, color, mTxtrWidth, t };

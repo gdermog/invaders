@@ -111,6 +111,9 @@
     <ClCompile Include="src\graphics\CInvBackground.cpp">
       <Filter>Source Files\graphics</Filter>
     </ClCompile>
+    <ClCompile Include="src\CInvRandom.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\InvGlobals.h">
@@ -199,6 +202,9 @@
     </ClInclude>
     <ClInclude Include="src\graphics\CInvBackground.h">
       <Filter>Header Files\graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CInvRandom.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

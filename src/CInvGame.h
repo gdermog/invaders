@@ -16,7 +16,7 @@
 #include <InvGlobals.h>
 #include <CInvSettings.h>
 #include <CInvSettingsRuntime.h>
-
+#include <CInvRandom.h>
 
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvSpriteStorage.h>

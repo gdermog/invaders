@@ -12,6 +12,7 @@
 #include <engine/InvENTTComponents.h>
 
 #include <graphics/CInvSprite.h>
+#include <CInvRandom.h>
 #include <CInvSettings.h>
 #include <CInvLogger.h>
 #include <CInvSettingsRuntime.h>
@@ -29,11 +30,13 @@ namespace Inv
     CInvSettingsRuntime & settingsRuntime,
     CInvEntityFactory & entityFactory,
     uint32_t & aliensLeft,
+    uint32_t & alienBossesLeft,
     std::map<uint32_t, AlienBossDescriptor_t> & bossDescriptor ):
 
     procEnTTBase( refTick, settings, settingsRuntime ),
     mEntityFactory( entityFactory ),
     mAliensLeft( aliensLeft ),
+    mAlienBossesLeft( alienBossesLeft ),
     mBossDescriptor( bossDescriptor )
   {}
 
@@ -49,6 +52,9 @@ namespace Inv
     if( mIsSuspended )
       return;           // Processor is suspended, no action is performed
 
+    if( 0u == mAliensLeft )
+      return;           // No aliens are present in the scene, no special actors are spawned
+
     for( auto & bossIt : mBossDescriptor )
     {
       auto & boss = bossIt.second;
@@ -56,16 +62,15 @@ namespace Inv
       if( boss.mMaxSpawned <= boss.mIsSpawned )
         continue;       // Maximum number of this alien boss type is already present in the scene
 
-      auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-      if( probRoll < boss.mSpawnProbability * mSettingsRuntime.mSceneLevelMultiplicator )
+      if( InvRnd() < boss.mSpawnProbability * mSettingsRuntime.mSceneLevelMultiplicator )
       {                   // Alien boss (like flying saucer) is spawned on random event
-        bool fromLeft = ( ( rand() % 2 ) == 0 );
+        bool fromLeft = ( ( InvRndUInt32() % 2 ) == 0 );
         mEntityFactory.AddAlienBossEntity(
           boss, fromLeft, IsNegative( boss.mSpawnY ) ? playerYPos : boss.mSpawnY,
           fromLeft ? 1.0f : -1.0f, 0.0f, boss.mSize );
 
         ++boss.mIsSpawned;
-        ++mAliensLeft;  // One more alien of given type is present in the scene
+        ++mAlienBossesLeft;  // One more alien of given type is present in the scene
 
         LOG << "Boss alien of type " << boss.mSpriteId << " spawned, numbers are now "
             << boss.mIsSpawned << "/" << boss.mMaxSpawned;
@@ -107,8 +112,7 @@ namespace Inv
       if( !( status.isAnimating || status.isFiring ) )
       {                 // Previous status must be resolved before any other is set
 
-        auto probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-        if( probRoll < behave.animationProbability )
+        if( InvRnd() < behave.animationProbability )
         {
           status.isAnimating = true;
           gph.diffTick.QuadPart = 0ul;
@@ -119,8 +123,7 @@ namespace Inv
         } // if
         else
         {
-          probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
-          if( probRoll < ( status.isInRaid ? behave.raidShootProbability : behave.shootProbability ) )
+          if( InvRnd() < ( status.isInRaid ? behave.raidShootProbability : behave.shootProbability ) )
           {
             status.isFiring = true;
             gph.diffTick.QuadPart = 0ul;
@@ -144,7 +147,7 @@ namespace Inv
         if( 0u == quickDeathTicksLeft )
           probRoll = 0.0f;
         else
-          probRoll = static_cast<float>( rand() ) / static_cast<float>( RAND_MAX );
+          probRoll = InvRnd();
                         // On quick deat mode all aliens are raiding
 
         if( probRoll < prob )
@@ -334,7 +337,7 @@ namespace Inv
         float distanceToTarget = sqrt( deltaX * deltaX + deltaY * deltaY );
 
         if( 0u < quickDeathTicksLeft )
-        {               // On quick death mode all aliens gone for raind and never returns to formation
+        {               // On quick death mode all aliens gone for raid and never returns to formation
           if( pStat.isInRaid &&
             ( distanceToTarget < mSettingsRuntime.mRaidTgtDistance || 0u == pStat.raidTicksLeft ) )
           {               // Alien reached target distance in raid, returns to formation
@@ -366,7 +369,11 @@ namespace Inv
         if( UINT32_MAX == pStat.raidTicksLeft )
         {               // Raid just started, movement must be initiated
           pStat.raidTicksLeft =
-            (uint32_t)( mSettingsRuntime.mAlienRaidMaxTime * mSettings.GetTickPerSecond() );
+            (uint32_t)( mSettingsRuntime.mAlienRaidMaxTime * mSettings.GetTickPerSecond() /
+                        mSettingsRuntime.mAlienSpeedupFactor );
+                        // When alien speed is increased, raid time is decreased accordingly so that
+                        // raid distance remains approximately the same.
+
           pVel.vX = velocitySize * deltaX / distanceToTarget;
           pVel.vY = velocitySize * deltaY / distanceToTarget;
           return;

@@ -149,7 +149,7 @@ namespace Inv
     auto randSeed = mSettings.GetSeed();
     if( randSeed < 0 )
       randSeed = (int32_t)time( NULL );
-    srand( randSeed );
+    CInvRandom::GetInstance().SetSeed( (uint32_t)randSeed );
 
     mHiscoreKeeper = std::make_unique<CInvHiscoreList>( mSettings.GetHiscorePath() );
 

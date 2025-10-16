@@ -272,7 +272,11 @@ namespace Inv
       CInvSettingsRuntime & settingsRuntime,
       FnEventCallbackEithEntityId_t pruneCallback );
 
-    void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
+    void update(
+      entt::registry & reg,
+      LARGE_INTEGER actTick,
+      LARGE_INTEGER diffTick,
+      bool allowCallbacks = true );
 
     FnEventCallbackEithEntityId_t mPruneCallback;
 

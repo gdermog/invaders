@@ -360,18 +360,18 @@ namespace Inv
     if( mIsSuspended )
       return;           // Processor is suspended, no action is performed
 
-    auto viewDmg = reg.view<cpDamage, cpGraphics>();
-    viewDmg.each( [&]( entt::entity entity, const auto & dmg, const auto & gph )
+    auto viewDmg = reg.view<cpId, cpDamage, cpGraphics>();
+    viewDmg.each( [&]( entt::entity entity, const auto & id, const auto & dmg, const auto & gph )
     {
-        if( gph.isHidden )
-          return;       // Hidden entity does not deal damage
+        if( ! id.active || gph.isHidden)
+          return;       // Hidden or inactive entity does not deal damage
         mCanDamage.insert( entity );
     } );
 
     auto viewHealth = reg.view<cpId, cpHealth, cpGraphics>();
     viewHealth.each( [&]( entt::entity entity, const auto & id, const auto & hlt, const auto & gph)
     {
-        if( gph.isHidden )
+        if( ! id.active || gph.isHidden )
           return;       // Hidden entity cannot be hit
 
       auto [ bAlien, sAlien ] = reg.try_get<cpAlienBehave, cpAlienStatus>( entity );
@@ -504,7 +504,11 @@ namespace Inv
 
   //--------------------------------------------------------------------------------------------------
 
-  void procGarbageCollector::update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick )
+  void procGarbageCollector::update(
+    entt::registry & reg,
+    LARGE_INTEGER actTick,
+    LARGE_INTEGER diffTick,
+    bool allowCallbacks )
   {
     mEntities.clear();
 
@@ -517,7 +521,7 @@ namespace Inv
       if( !entId.active )
       {                 // Entity is marked as inactive and it will be remove from registry.
                         // If it should send notification on pruning, it is done now.
-        if( entId.noticeOnPruning && nullptr != mPruneCallback )
+        if( allowCallbacks && entId.noticeOnPruning && nullptr != mPruneCallback )
           mPruneCallback( entity, (uint32_t)entId.id );
         mEntities.push_back( entity );
       } // if

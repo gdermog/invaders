@@ -116,6 +116,7 @@ namespace Inv
     mVXGroup( 0.0f ),
     mVYGroup( 0.0f ),
     mAliensLeft( 0 ),
+    mAlienBossesLeft( 0 ),
 
     mAlienBosses
     {
@@ -147,7 +148,7 @@ namespace Inv
            -1.0f,           // mSpawnY - will be adjusted according to player position
            0.0f,            // mSpawnXLeft - will be recalculated in GenerateNewScene()
            0.0f,            // mSpawnXRight - will be recalculated in GenerateNewScene()
-           3.0f             // mSpeedCoef
+           2.0f             // mSpeedCoef
       }}
     },
 
@@ -158,7 +159,7 @@ namespace Inv
     mProcGarbageCollector     ( PROCCMN, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
     mProcActorStateSelector   ( PROCCMN, mIsInDangerousArea ),
     mProcEntitySpawner        ( PROCCMN, mEntityFactory ),
-    mProcSpecialActorSpawner  ( PROCCMN, mEntityFactory, mAliensLeft, mAlienBosses ),
+    mProcSpecialActorSpawner  ( PROCCMN, mEntityFactory, mAliensLeft, mAlienBossesLeft, mAlienBosses ),
     mProcActorMover           ( PROCCMN, mVXGroup, mVYGroup ),
     mProcAlienRaidDriver      ( PROCCMN ),
     mProcPlayerFireUpdater    ( PROCCMN, mEntityFactory, mPlayerAmmoLeft ),
@@ -204,8 +205,8 @@ namespace Inv
                         // be displayed during player entity entry into the scene.
 
     std::vector<std::pair<uint32_t, std::string>> alienRows =
-    {                   // Default alien setup. THis can be changed in future versions, generated randomly,
-                        // prescribed as series of defferent scenes and so on.
+    {                   // Default alien setup. This can be changed in future versions, generated randomly,
+                        // prescribed as series of different scenes and so on.
       { 10, "PINK" },
       {  9, "PINK" },
       { 10, "PINK" },
@@ -256,6 +257,7 @@ namespace Inv
     mVXGroup = 0.0f;
     mVYGroup = 0.0f;
     mAliensLeft = 0;    // No aliens on the scene yet and alien group is not moving
+    mAlienBossesLeft = 0;
 
     uint32_t rowIndex = 0;
     for( auto & ar : alienRows )
@@ -512,31 +514,22 @@ namespace Inv
     {                   // "Attention" text is displayed
       auto width = mTAttention->GetTextLength() * mPlayerEntryLetterSize;
       mTAttention->Draw(
-        mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
-        posY,
-        mPlayerEntryLetterSize,
-        mTickReferencePoint,
-        actTick, mDiffTickPoint );
+        mSceneTopLeftX + 0.5f * ( mSceneWidth - width ), posY,
+        mPlayerEntryLetterSize, mTickReferencePoint, actTick, mDiffTickPoint );
     } // if
     else if( mPlayerEntryTick.QuadPart < 2 * textInterval )
     {                   // "Ready" text is displayed
       auto width = mTReady->GetTextLength() * mPlayerEntryLetterSize;
       mTReady->Draw(
-        mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
-        posY,
-        mPlayerEntryLetterSize,
-        mTickReferencePoint,
-        actTick, mDiffTickPoint );
+        mSceneTopLeftX + 0.5f * ( mSceneWidth - width ), posY,
+        mPlayerEntryLetterSize, mTickReferencePoint, actTick, mDiffTickPoint );
     } // else if
     else if( mPlayerEntryTick.QuadPart < 3 * textInterval )
     {                   // "Go" text is displayed
       auto width = mTGo->GetTextLength() * mPlayerEntryLetterSize;
       mTGo->Draw(
-        mSceneTopLeftX + 0.5f * ( mSceneWidth - width ),
-        posY,
-        mPlayerEntryLetterSize,
-        mTickReferencePoint,
-        actTick, mDiffTickPoint );
+        mSceneTopLeftX + 0.5f * ( mSceneWidth - width ), posY,
+        mPlayerEntryLetterSize, mTickReferencePoint, actTick, mDiffTickPoint );
     } // else if
     else
     {                   // Player entity is spawned or respawned and made invulnerable for a while.
@@ -917,8 +910,8 @@ namespace Inv
          LOG << "Alien boss was pruned from game scene outside of visible area, no score added";
       } // else
 
-      if( 0u < mAliensLeft )
-        --mAliensLeft;
+      if( 0u < mAlienBossesLeft )
+        --mAlienBossesLeft;
 
       for( auto & bossIt : mAlienBosses )
       {
@@ -934,7 +927,7 @@ namespace Inv
 
     } // if
 
-    if( 0u == mAliensLeft )
+    if( 0u == mAliensLeft && 0u == mAlienBossesLeft )
       NewSwarm();       // All aliens are dead, new swarm must be generated.
 
   } // CInvGameScene::EntityJustPruned
@@ -943,6 +936,8 @@ namespace Inv
 
   void CInvGameScene::NewSwarm()
   {
+
+    CalculateQuickDeathTicks();
 
     mPlayerEntryInProgress = true;
     mPlayerEntryTick.QuadPart = 0;

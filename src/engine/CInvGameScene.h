@@ -129,7 +129,9 @@ namespace Inv
     bool EliminateEntity( entt::entity entity );
     /*!< \brief Eliminates given entity from the game scene, replacing it by appropriate explosion.
          if the eliminated entity is the player, starts sequence leading to respawn and reducing
-         number of lives. */
+         number of lives. This sequence is usually driven by explosion or destruction animation,
+         after which the EntityJustPruned() method is called automatically. In that moment,
+         eliminated entity finnaly cease to exist. */
 
     void EntityJustPruned( entt::entity entity, uint32_t nr );
     /*!< \brief Callback called by garbage collector when entity is actually pruned from the
@@ -360,6 +362,9 @@ namespace Inv
 
     uint32_t mAliensLeft;
     //!< \brief Number of aliens still alive in the scene.
+
+    uint32_t mAlienBossesLeft;
+    //!< \brief Number of alien bosses still alive in the scene.
 
     std::map<uint32_t, AlienBossDescriptor_t> mAlienBosses;
     //!< \brief Descriptors of boss aliens that can appear in the scene.
