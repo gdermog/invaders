@@ -18,17 +18,14 @@ Create a basic Space Invaders game. It must include the following basic function
 
 The game is implemented in C++ using the windows API and DirectX library for graphics and input
 handling. The code is organized into several classes responsible for specific functionalities,
-such as rendering, updating game state, and handling collisions.
-
-All game actors are constructed according to
-[Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system) architecture,
-to be more specific, using   [EnTT](https://github.com/skypjack/entt) library.
-
-See code comments for detailed explanations.
+such as rendering, updating game state, and handling collisions. All game actors are constructed
+according to [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system)
+architecture, to be more specific, using [EnTT](https://github.com/skypjack/entt) library. See
+code comments for detailed explanations.
 
 # In-game features
 
-![Space invaders title screen](screenshot1.png?raw=true "Space invaders title screen")
+![Space invaders title screen](screenshot2.png?raw=true "Space invaders title screen")
 
 - Player can move left, right, up and down using arrow keys and shoot upwards using space key
 - Monsters move left and right, and down when they hit the screen edge, leaving the player less space
@@ -39,6 +36,7 @@ See code comments for detailed explanations.
 - Alien bonus vessel appears randomly, giving extra points when destroyed
 - There is limited time to destroy all monsters in each level. When time runs out, sudden death mode starts:
   monsters speed up and relentlessly chase the player ship
+- With each next level, monsters become faster and shoot more often
 - Time to sudden death, score, ammo and player lives are displayed at the bottom of the screen
 - When player ship is destroyed, there is a brief invulnerability period indicated by blinking ship
 - When player is above all monsters, aliens gone to raids more often
@@ -60,9 +58,9 @@ and then run the executable. The game should open in a new window.
 
 There are still some tasks that need to be completed on the project, in particular:
 
-   - To suggest and implement some form of input/output testing (e.g. via some unit-test framework, possible
+   - To suggest and implement some form of testing (e.g. via some unit-test framework, possible
      MS Visual Studio / MSVC)
-   - To implement CI/CD pipelne for GitHub to automatize compile the project and unit tests and check for
+   - To implement CI/CD pipelne for GitHub to automatize compilation of the project and unit tests and check for
      possible errors
    - To fine-tune game parameters (e.g. monster speed, shooting frequency, etc.) to make the game more playable
 
