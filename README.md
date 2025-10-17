@@ -28,6 +28,7 @@ code comments for detailed explanations.
 ![Space invaders title screen](screenshot2.png?raw=true "Space invaders title screen")
 
 - Player can move left, right, up and down using arrow keys and shoot upwards using space key
+- Player ammo is limited and replenishes in constant pace over time
 - Monsters move left and right, and down when they hit the screen edge, leaving the player less space
   to maneuver (but there is always some space left, so it is possible to destroy them)
 - Monsters shoot downwards randomly
@@ -35,7 +36,7 @@ code comments for detailed explanations.
 - Monsters gone to raids (leaving formation and chasing player ship) randomly
 - Alien bonus vessel appears randomly, giving extra points when destroyed
 - There is limited time to destroy all monsters in each level. When time runs out, sudden death mode starts:
-  monsters speed up and relentlessly chase the player ship
+  all monsters goes to raid and relentlessly chase the player ship
 - With each next level, monsters become faster and shoot more often
 - Time to sudden death, score, ammo and player lives are displayed at the bottom of the screen
 - When player ship is destroyed, there is a brief invulnerability period indicated by blinking ship
@@ -76,3 +77,14 @@ And maybe sometime in the future:
 and, of course
 
    - Achieve status of a most played game on Steam :-) !
+
+# Acknowledgements
+
+   - Thanks to [LoudKEvin](https://freesound.org/people/LoudKevin/), [frankum](https://freesound.org/people/frankum/)
+     and other authors of free sound effects on [Freesound.org](https://freesound.org/) for selfless sharing of their
+     music and sound effects used in the game.
+   - Thanks to [chat GPT](https://chatgpt.com/) and [DeeVid AI](https://deevid.ai/) for the invaluable help in generating
+     the in-game graphics.
+   - Thaks to my sons for playtesting and valuable feedback!
+
+   ![Beta testing](betas.jpg?raw=true "Beta testing")
