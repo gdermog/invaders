@@ -103,6 +103,8 @@ namespace Inv
     //!< \brief Reference to runtime settings object, used to access and modify parameters
     //!  created and updated by game engine.
 
+    std::map<uint32_t, AlienBossDescriptor_t> mAlienBosses;
+
     CInvGameScene mGameScene;
     //!< \brief Game scene object, used to manage the game entities and logic.
 

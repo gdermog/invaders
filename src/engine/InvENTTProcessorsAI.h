@@ -31,6 +31,7 @@ namespace Inv
       const CInvSettings & settings,
       CInvSettingsRuntime & settingsRuntime,
       CInvEntityFactory & entityFactory,
+      const CInvSoundsStorage & soundStorage,
       uint32_t & aliensLeft,
       uint32_t & alienBossesLeft,
       std::map<uint32_t, AlienBossDescriptor_t> & bossDescriptor );
@@ -43,6 +44,8 @@ namespace Inv
       float playerYPos );
 
     CInvEntityFactory & mEntityFactory;
+
+    const CInvSoundsStorage & mSoundStorage;
 
     uint32_t &mAliensLeft;
 

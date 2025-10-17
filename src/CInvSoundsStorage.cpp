@@ -83,4 +83,26 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
+  void CInvSoundsStorage::PlaySoundLoop( const std::string & soundId ) const
+  {
+    auto findIt = mSoundMap.find( soundId );
+    if( findIt == mSoundMap.end() )
+      return;
+
+    mAudio.PlayLoop( *( findIt->second ), 1.0f, false );
+  } // CInvSoundsStorage::PlaySoundLoop
+
+  //----------------------------------------------------------------------------------------------
+
+  void CInvSoundsStorage::StopSound( const std::string & soundId ) const
+  {
+    auto findIt = mSoundMap.find( soundId );
+    if( findIt == mSoundMap.end() )
+      return;
+
+    mAudio.Stop( *( findIt->second ) );
+  } // CInvSoundsStorage::StopSound
+
+  //----------------------------------------------------------------------------------------------
+
 } // namespace Inv

@@ -383,11 +383,12 @@ namespace Inv
     return true;
   }
 
-  bool CInvAudio::PlayOneShot( const CInvSound & snd, float volume ) const
+  IXAudio2SourceVoice * CInvAudio::PlayOneShot( const CInvSound & snd, float volume ) const
   {
     IXAudio2SourceVoice * voice = nullptr;
     XAUDIO2_BUFFER buf{};
-    return CreateSourceAndSubmit( snd, mXA, &voice, buf, /*loop*/false, volume );
+    auto retVal = CreateSourceAndSubmit( snd, mXA, &voice, buf, /*loop*/false, volume );
+    return retVal ? voice : nullptr;
   }
 
   void CInvAudio::PlayLoop( CInvSound & snd, float volume, bool restart ) const

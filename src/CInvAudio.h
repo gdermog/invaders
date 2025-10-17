@@ -68,7 +68,7 @@ namespace Inv
     bool Load( const std::string & path, CInvSound & outSound, std::string * error = nullptr ) const;
 
     // Jednorázové přehrání (neblokující). Vytvoří dočasnou voice, po dohrání se sama zničí.
-    bool PlayOneShot( const CInvSound & snd, float volume = 1.0f ) const;
+    IXAudio2SourceVoice * PlayOneShot( const CInvSound & snd, float volume = 1.0f ) const;
 
     // Smyčka: vrací handle (IXAudio2SourceVoice*). Ukonči přes Stop(handle).
     void PlayLoop( CInvSound & snd, float volume = 1.0f, bool restart = false ) const;

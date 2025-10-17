@@ -38,6 +38,12 @@ namespace Inv
 
     void PlaySound( const std::string & soundId ) const;
 
+    void PlaySoundLoop( const std::string & soundId ) const;
+
+    void StopSound( const std::string & soundId ) const;
+
+    const CInvAudio & GetAudio() const { return mAudio; }
+
   private:
 
     const CInvSettings & mSettings;

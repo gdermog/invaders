@@ -29,12 +29,14 @@ namespace Inv
     const CInvSettings & settings,
     CInvSettingsRuntime & settingsRuntime,
     CInvEntityFactory & entityFactory,
+    const CInvSoundsStorage & soundStorage,
     uint32_t & aliensLeft,
     uint32_t & alienBossesLeft,
     std::map<uint32_t, AlienBossDescriptor_t> & bossDescriptor ):
 
     procEnTTBase( refTick, settings, settingsRuntime ),
     mEntityFactory( entityFactory ),
+    mSoundStorage( soundStorage ),
     mAliensLeft( aliensLeft ),
     mAlienBossesLeft( alienBossesLeft ),
     mBossDescriptor( bossDescriptor )
@@ -68,6 +70,11 @@ namespace Inv
         mEntityFactory.AddAlienBossEntity(
           boss, fromLeft, IsNegative( boss.mSpawnY ) ? playerYPos : boss.mSpawnY,
           fromLeft ? 1.0f : -1.0f, 0.0f, boss.mSize );
+
+        if( 0u == boss.mIsSpawned )
+          mSoundStorage.PlaySoundLoop( boss.mSpriteId + "LOOP" );
+                        // Loop sound is started to play only when first boss of
+                        // given type appears
 
         ++boss.mIsSpawned;
         ++mAlienBossesLeft;  // One more alien of given type is present in the scene

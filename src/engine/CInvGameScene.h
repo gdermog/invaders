@@ -44,6 +44,7 @@ namespace Inv
       const CInvSoundsStorage & soundStorage,
       const CInvBackground & background,
       CInvPrimitive & primitives,
+      std::map<uint32_t, AlienBossDescriptor_t> & alienBosses,
       LPDIRECT3D9 pD3D,
       LPDIRECT3DDEVICE9 pd3dDevice,
       LPDIRECT3DVERTEXBUFFER9 pVB,
@@ -371,8 +372,10 @@ namespace Inv
     uint32_t mAlienBossesLeft;
     //!< \brief Number of alien bosses still alive in the scene.
 
-    std::map<uint32_t, AlienBossDescriptor_t> mAlienBosses;
+    std::map<uint32_t, AlienBossDescriptor_t> & mAlienBosses;
     //!< \brief Descriptors of boss aliens that can appear in the scene.
+
+    uint32_t mLastPipBeeped;
 
     //------ EnTT processors --------------------------------------------------------------------------
 

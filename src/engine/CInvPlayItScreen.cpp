@@ -34,6 +34,41 @@ namespace Inv
     mBackground( background ),
     mPrimitives( primitives ),
     mSettingsRuntime( settingsRuntime ),
+
+    mAlienBosses
+    {
+      { 10u, {
+           10u,             // mTypeId;
+           "SAUCER",        // mSpriteId
+           false,           // mMirrorIfFromRight
+           1.5f,            // mAnimationLength
+           5000u,           // mPoints
+           0u,              // mIsSpawned
+           2u,              // mMaxSpawned
+           0.001f,          // mSpawnProbability
+           80.0f,           // mSize - will be recalculated in GenerateNewScene() according to scene size
+           40.0f,           // mSpawnY - will be recalculated in GenerateNewScene()
+           0.0f,            // mSpawnXLeft - will be recalculated in GenerateNewScene()
+           0.0f,            // mSpawnXRight - will be recalculated in GenerateNewScene()
+           1.0f             // mSpeedCoef
+      }},
+      { 20u, {
+           20u,             // mTypeId
+           "PACVADER",      // mSpriteId
+           true,            // mMirrorIfFromRight
+           0.5f,            // mAnimationLength
+           15000u,          // mPoints
+           0u,              // mIsSpawned
+           1u,              // mMaxSpawned
+           0.0002f,         // mSpawnProbability
+           80.0f,           // mSize - will be recalculated in GenerateNewScene() according to scene size
+           -1.0f,           // mSpawnY - will be adjusted according to player position
+           0.0f,            // mSpawnXLeft - will be recalculated in GenerateNewScene()
+           0.0f,            // mSpawnXRight - will be recalculated in GenerateNewScene()
+           2.0f             // mSpeedCoef
+      }}
+    },
+
     mGameScene(
       settings,
       settingsRuntime,
@@ -41,10 +76,12 @@ namespace Inv
       soundStorage,
       background,
       primitives,
+      mAlienBosses,
       pD3D,
       pd3dDevice,
       pVB,
       tickReferencePoint ),
+
     mPD3D( pD3D ),
     mPd3dDevice( pd3dDevice ),
     mPVB( pVB ),
@@ -81,6 +118,15 @@ namespace Inv
       if( newScoreToEnter < mSettings.GetMinScore() )
         newScoreToEnter = 0u;
                         // Did not qualify for hiscore entry
+
+      for( auto & bossIt : mAlienBosses )
+      {                 // If the game ends while there is a boss active,
+                        // its "running" sound must be stoped.
+        auto & boss = bossIt.second;
+        boss.mIsSpawned = 0u;
+        mSoundStorage.StopSound( boss.mSpriteId + "LOOP" );
+      } // for
+
       gameEnd = true;
     } // if
 

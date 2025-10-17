@@ -238,12 +238,19 @@ namespace Inv
       LOG << "Error loading '" << fnam << "' music: " << err;
 
     mSoundStorage = std::make_unique<CInvSoundsStorage>( mSettings, *mAudio );
-    mSoundStorage->AddSound( "PINKEXPL", "explosion1.wav" );
+    mSoundStorage->AddSound( "PINKEXPL", "explosionPink.wav" );
+    mSoundStorage->AddSound( "SAUCEREXPL", "explosionSaucer.wav" );
+    mSoundStorage->AddSound( "PACVADEREXPL", "explosionPacvader.wav" );
+    mSoundStorage->AddSound( "FIGHTEXPL", "explosionFighter.wav" );
+
     mSoundStorage->AddSound( "SPIT", "spit.wav" );
     mSoundStorage->AddSound( "ROCKET", "rocket-launch.wav" );
 
-    mSoundStorage->PlaySound( "PINKEXPL" );
-                        // Test sound play
+    mSoundStorage->AddSound( "SAUCERLOOP", "loopSaucer.wav" );
+    mSoundStorage->AddSound( "PACVADERLOOP", "loopPacvader.wav" );
+
+    mSoundStorage->AddSound( "PIP", "pip.wav" );
+    mSoundStorage->AddSound( "PIPL", "pipl.wav" );
 
     //------ Graphics initialization - custom --------------------------------------------------------
 

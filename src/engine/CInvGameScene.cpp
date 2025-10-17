@@ -39,6 +39,7 @@ namespace Inv
     const CInvSoundsStorage & soundStorage,
     const CInvBackground & background,
     CInvPrimitive & primitives,
+    std::map<uint32_t, AlienBossDescriptor_t> & alienBosses,
     LPDIRECT3D9 pD3D,
     LPDIRECT3DDEVICE9 pd3dDevice,
     LPDIRECT3DVERTEXBUFFER9 pVB,
@@ -119,40 +120,8 @@ namespace Inv
     mVYGroup( 0.0f ),
     mAliensLeft( 0 ),
     mAlienBossesLeft( 0 ),
-
-    mAlienBosses
-    {
-      { 10u, {
-           10u,             // mTypeId;
-           "SAUCER",        // mSpriteId
-           false,           // mMirrorIfFromRight
-           1.5f,            // mAnimationLength
-           5000u,           // mPoints
-           0u,              // mIsSpawned
-           2u,              // mMaxSpawned
-           0.001f,          // mSpawnProbability
-           80.0f,           // mSize - will be recalculated in GenerateNewScene() according to scene size
-           40.0f,           // mSpawnY - will be recalculated in GenerateNewScene()
-           0.0f,            // mSpawnXLeft - will be recalculated in GenerateNewScene()
-           0.0f,            // mSpawnXRight - will be recalculated in GenerateNewScene()
-           1.0f             // mSpeedCoef
-      }},
-      { 20u, {
-           20u,             // mTypeId
-           "PACVADER",      // mSpriteId
-           true,            // mMirrorIfFromRight
-           0.5f,            // mAnimationLength
-           15000u,          // mPoints
-           0u,              // mIsSpawned
-           1u,              // mMaxSpawned
-           0.0002f,         // mSpawnProbability
-           80.0f,           // mSize - will be recalculated in GenerateNewScene() according to scene size
-           -1.0f,           // mSpawnY - will be adjusted according to player position
-           0.0f,            // mSpawnXLeft - will be recalculated in GenerateNewScene()
-           0.0f,            // mSpawnXRight - will be recalculated in GenerateNewScene()
-           2.0f             // mSpeedCoef
-      }}
-    },
+    mAlienBosses( alienBosses ),
+    mLastPipBeeped( 0u ),
 
     //------ EnTT processors --------------------------------------------------------------------------
 
@@ -161,7 +130,7 @@ namespace Inv
     mProcGarbageCollector     ( PROCCMN, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
     mProcActorStateSelector   ( PROCCMN, mIsInDangerousArea ),
     mProcEntitySpawner        ( PROCCMN, mEntityFactory, mSoundStorage ),
-    mProcSpecialActorSpawner  ( PROCCMN, mEntityFactory, mAliensLeft, mAlienBossesLeft, mAlienBosses ),
+    mProcSpecialActorSpawner  ( PROCCMN, mEntityFactory, mSoundStorage, mAliensLeft, mAlienBossesLeft, mAlienBosses ),
     mProcActorMover           ( PROCCMN, mVXGroup, mVYGroup ),
     mProcAlienRaidDriver      ( PROCCMN ),
     mProcPlayerFireUpdater    ( PROCCMN, mEntityFactory, mSoundStorage, mPlayerAmmoLeft ),
@@ -707,6 +676,7 @@ namespace Inv
       auto xplVx = ( nullptr == pVel ? 0.0f : pVel->vX );
       auto xplVy = ( nullptr == pVel ? 0.0f : pVel->vY );
       mEntityFactory.AddExplosionEntity( "FIGHTEXPL", xplX, xplY, explosionSize, xplVx, xplVy );
+      mSoundStorage.PlaySound( "FIGHTEXPL" );
                         // Explosion is created at player position, moving with the player. Explosion entity
                         // is automatically pruned from game scene when its animation finishes.
 
@@ -814,6 +784,10 @@ namespace Inv
         auto xplVy = ( nullptr == pVel ? 0.0f : pVel->vY );
         mEntityFactory.AddExplosionEntity(
           findBoss->second.mSpriteId + "EXPL", xplX, xplY, explosionSize, xplVx, xplVy );
+        mSoundStorage.PlaySound( findBoss->second.mSpriteId + "EXPL" );
+                        // Boss boss explosion is accompanied by appropriate sound (running sound
+                        //  itself is stopped in EntityJustPruned() method).
+
       } // if
 
       if( nullptr != alienBossGph && nullptr != alienBossGph->dyingAnimationEffect )
@@ -921,6 +895,11 @@ namespace Inv
         auto & boss = bossIt.second;
         if( boss.mBossTypeId == nr && 0u < boss.mIsSpawned )
         {
+          if( boss.mIsSpawned < 2u )
+            mSoundStorage.StopSound( boss.mSpriteId + "LOOP" );
+                        // Removing last instance of this boss, his "running" sound
+                        // must be stopped.
+
           --boss.mIsSpawned;
           LOG << "Reducing number of " << boss.mSpriteId << " bosses to "
               << boss.mIsSpawned << "/" << boss.mMaxSpawned;
@@ -1002,9 +981,12 @@ namespace Inv
                         // it is shortened by alien speedup factor, but it is never less than
                         // half a minute.
 
-     mQuickDeathTicksLeft =
+    mLastPipBeeped = UINT32_MAX;
+
+    mQuickDeathTicksLeft =
       (uint32_t)( quickDeathTime * (uint32_t)mSettings.GetTickPerSecond() );
                         // Quick death time ticks is set.
+
   } // CInvGameScene::CalculateQuickDeathTicks
 
   //-------------------------------------------------------------------------------------------------
@@ -1043,6 +1025,14 @@ namespace Inv
     } // if
 
     uint32_t secsToQuickDeath = mQuickDeathTicksLeft / (uint32_t)mSettings.GetTickPerSecond();
+
+    if( secsToQuickDeath <= 5 && secsToQuickDeath < mLastPipBeeped )
+    {                   // During last 5 seconds before quick death, a "pip" sound
+                        // is played each second.
+      mSoundStorage.PlaySound( 0u < secsToQuickDeath ? "PIP" : "PIPL" );
+      mLastPipBeeped = secsToQuickDeath;
+    }
+
     mScoreLabelBuffer = FormatStr( "%2u ", secsToQuickDeath ) + mScoreText + std::to_string( mActualScore );
     mScoreLabel.SetText( mScoreLabelBuffer );
     mScoreLabel.Draw(
