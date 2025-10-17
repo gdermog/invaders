@@ -319,6 +319,17 @@ namespace Inv
 
   //****************************************************************************************************
 
+  std::wstring StringToWString( const std::string & str )
+  {
+    std::wstring wstr;
+    size_t size;
+    wstr.resize( str.length() );
+    mbstowcs_s( &size, &wstr[0], wstr.size() + 1, str.c_str(), str.size() );
+    return wstr;
+  }
+
+  //****************************************************************************************************
+
   std::string FormatScoreNumber( uint32_t inScore )
   {
     uint32_t ones = inScore % 1000;

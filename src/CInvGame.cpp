@@ -10,6 +10,7 @@
 #include <CInvGame.h>
 #include <CInvLogger.h>
 
+
 static const std::string lModLogId( "GAMELOOP" );
 
 //-----------------------------------------------------------------------------
@@ -107,6 +108,7 @@ namespace Inv
     mSpriteStorage( nullptr ),
     mBackgroundInsertCoin( nullptr ),
     mBackgroundPlay( nullptr ),
+    mAudio( nullptr ),
     mSettings( settings ),
     mSettingsRuntime(),
     mWindowClass{},
@@ -182,6 +184,38 @@ namespace Inv
     // Show the window
     ShowWindow( mHWnd, SW_SHOWDEFAULT );
     UpdateWindow( mHWnd );
+
+//
+// std::wstring err;
+// audio.LoadAudioAuto( L"e:\\DAISY\\DiskW\\Demos\\Invaders\\invaders\\resources\\sounds\\explosion1.wav", sShot, &err );
+// audio.LoadAudioAuto( L"e:\\DAISY\\DiskW\\Demos\\Invaders\\invaders\\resources\\sounds\\a_lil_beat.mp3", sLoop, &err );
+//
+// audio.PlayOneShot( sShot, 0.9f );
+// mAudioTest = audio.PlayLoop( sLoop, 0.6f );
+// // ...
+
+    //------ Audio initialization --------------------------------------------------------------------
+
+    std::string fnam;
+    std::string err;
+
+    mAudio = std::make_unique<CInvAudio>();
+    mInsertCoinMusic = std::make_unique<CInvSound>();
+    mPlayItMusic = std::make_unique<CInvSound>();
+
+    fnam = mSettings.GetImagePath() + "/sounds/a_lil_beat.mp3";
+    mAudio->Load( fnam, *mInsertCoinMusic, &err );
+    if( !err.empty() )
+      LOG << "Error loading '" << fnam << "' music: " << err;
+
+    mAudio->PlayLoop( *mInsertCoinMusic, 0.5f );
+                        // Music for "insert coin" screen starts playing immediately,
+                        // because texture loading may take some time.
+
+    fnam = mSettings.GetImagePath() + "/sounds/sounds_house.mp3";
+    mAudio->Load( fnam, *mPlayItMusic, &err );
+    if( !err.empty() )
+      LOG << "Error loading '" << fnam << "' music: " << err;
 
     //------ Graphics initialization - custom --------------------------------------------------------
 
@@ -335,6 +369,8 @@ namespace Inv
         {               // New game requested, initialization of hte game engine is necessary
           LOG << "Game start requested";
 
+          mAudio->Stop( *mInsertCoinMusic );
+          mAudio->PlayLoop( *mPlayItMusic, 0.5f );
           mPlayItScreen->Reset( mReferenceTick );
           gameInProgress = true;
           gameStartRequest = false;
@@ -353,6 +389,8 @@ namespace Inv
         if( gameEndRequest && gameInProgress )
         {
           LOG << "Game ended";
+          mAudio->Stop( *mPlayItMusic );
+          mAudio->PlayLoop( *mInsertCoinMusic, 0.5f );
           mInsertCoinScreen->Reset( mReferenceTick );
           gameInProgress = false;
           gameEndRequest = false;
@@ -415,6 +453,9 @@ namespace Inv
 
   bool CInvGame::Cleanup()
   {
+    mAudio->Stop( *mInsertCoinMusic );
+    mAudio->Stop( *mPlayItMusic );
+
     LOG;
     LOG << "Maximal loop time: " << mLoopElapsedMicrosecondsMax << " us";
     LOG << "Average loop time: " << mLoopElapsedMicrosecondsAvg << " us";

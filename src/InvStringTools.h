@@ -131,6 +131,12 @@ namespace Inv
        \param[in] glue      Glue string to be inserted between elements
        \return Joined string */
 
+  std::wstring StringToWString( const std::string & str );
+  /*!< \brief Converts a standard C++ string (std::string) to a wide-character string (std::wstring).
+
+       \param[in] str Input string to be converted
+       \return Converted wide-character string */
+
   std::string FormatScoreNumber( uint32_t inScore );
   /*!< \brief Formats given score number into a string with leading spaces, so that the resulting
        string is always 11 characters long. If the score is higher than 999999999, it is capped to

@@ -17,6 +17,7 @@
 #include <CInvSettings.h>
 #include <CInvSettingsRuntime.h>
 #include <CInvRandom.h>
+#include <CInvAudio.h>
 
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvSpriteStorage.h>
@@ -94,6 +95,15 @@ namespace Inv
 
     std::unique_ptr<CInvBackground> mBackgroundPlay;
     //!< \brief Reference to background object, used to draw the game background
+
+    std::unique_ptr<CInvAudio> mAudio;
+    //!< \brief Audio engine object, used to play sounds and music.
+
+    std::unique_ptr<CInvSound> mInsertCoinMusic;
+    //<! Sound object used to play "insert coin" screen music
+
+    std::unique_ptr<CInvSound> mPlayItMusic;
+    //<! Sound object used to play "play it" screen music
 
     const CInvSettings & mSettings;
     //!< \brief Reference to global settings object, used to access configuration parameters.
