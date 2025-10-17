@@ -25,6 +25,7 @@ namespace Inv
 
   class CInvGameScene;
 
+  /*! \brief Descriptor structure for alien boss entity types. */
   using AlienBossDescriptor_t = struct
   {
     uint32_t mBossTypeId;
@@ -107,6 +108,15 @@ namespace Inv
       bool fromLeft, float posY,
       float vX, float vY,
       float alienSizeX );
+    /*!< \brief Adds a new alien boss entity of given type at given position.
+
+         \param[in] bossType    Descriptor of the alien boss entity type to be created.
+         \param[in] fromLeft    \b true if the alien enters from left side, \b false if from right side.
+         \param[in] posY        Y position of the alien entity (of centre of object) [px]
+         \param[in] vX          X component of alien velocity [px/tick]
+         \param[in] vY          Y component of alien velocity [px/tick]
+         \param[in] alienSizeX  Width of the alien entity [px], height will be calculated according
+                                to sprite aspect ratio. */
 
     entt::entity AddPlayerEntity(
       const std::string & entityType,

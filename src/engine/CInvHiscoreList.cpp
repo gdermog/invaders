@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvHiscore.cpp
-//! Module contains class CInvHiscore, which implements ...
+//! Module contains class CInvHiscore, which implements implements hiscore list management.
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -46,14 +46,18 @@ namespace Inv
     } // if
 
     std::ifstream inFile;
-    inFile.open( mFileName, std::ifstream::in );
-    if( !inFile.is_open() )
+
+    if( ! autogenerate )
     {
-      LOG << "Cannot open hiscore file '" << mFileName << "'.";
-      autogenerate = true;
+      inFile.open( mFileName, std::ifstream::in );
+      if( !inFile.is_open() )
+      {
+        LOG << "Cannot open hiscore file '" << mFileName << "'.";
+        autogenerate = true;
+      } // if
     } // if
 
-    if( false == autogenerate )
+    if( ! autogenerate )
     {
       std::string inLine;
       size_t lastLineRead = 0;
@@ -110,7 +114,7 @@ namespace Inv
 
     } // if
 
-    if( true == autogenerate )
+    if( autogenerate )
     {
       mHiscoreList.clear();
       mHiscoreList.emplace_back( 1000000, "gemini" );

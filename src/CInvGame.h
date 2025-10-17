@@ -11,7 +11,6 @@
 #define H_CInvGame
 
 #include <d3d9.h>
-//#include <d3dx9.h>
 
 #include <InvGlobals.h>
 #include <CInvSettings.h>
@@ -139,12 +138,16 @@ namespace Inv
     //<! Color used to clear the screen each frame
 
     LONGLONG mLoopElapsedMicrosecondsMax;
+    //<! Maximum time taken by main loop iteration, in microseconds
 
     float mLoopElapsedMicrosecondsAvg;
+    //<! Average time taken by main loop iteration, in microseconds
 
     float mLoopWaitedMicrosecondsAvg;
+    //<! Average time spent waiting for next frame, in microseconds
 
     uint64_t mLoopElapsedMicrosecondsAvgCount;
+    //<! Counter of samples taken for average time calculation
 
     static const std::wstring mWindiwClassId;
     //<! Identifier of window class

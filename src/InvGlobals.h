@@ -25,6 +25,7 @@
 namespace Inv
 {
 
+  //! \brief Case insensitive string comparison functor for use in STL containers.
   struct cLess
   {
     bool operator()( const std::string & str1, const std::string & str2 ) const
@@ -99,12 +100,12 @@ namespace Inv
   constexpr double_t gDegPerRad = ( 180.0 / 3.141592653589793 );
   //!< Value of constant for conversion from radians to degrees
 
-  // A structure for our custom vertex type
+  //! A structure for our custom vertex type
   struct CUSTOMVERTEX
   {
-    FLOAT x, y, z, rhw; // The transformed position for the vertex
-    DWORD color;        // The vertex color
-    float u, v;
+    FLOAT x, y, z, rhw; //!< The transformed position for the vertex
+    DWORD color;        //!< The vertex color
+    float u, v;         //!< Texture coordinates
   };
 
   // Our custom FVF, which describes our custom vertex structure

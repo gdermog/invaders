@@ -86,7 +86,8 @@ namespace Inv
           number means faster Blink. Default is 1, which means image changes every tick. */
 
     bool mIgnoreDiffTick;
-
+    /*!< \brief If true, diffTick parameter passed to ApplyEffect() method is ignored
+         when calculating elapsed time. Default is false. */
 
     LARGE_INTEGER mTicksSpan;
     /*!< \brief Number of ticks in which the effect is active. */

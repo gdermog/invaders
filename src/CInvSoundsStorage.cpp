@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvSoundsStorage.cpp
-//! Module defines class CInvSoundsStorage, which represents text that can be drawn on screen.
+//! Module defines class CInvSoundsStorage, which represents storage of in-game sounds.
 //****************************************************************************************************
 //
 //****************************************************************************************************

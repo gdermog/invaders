@@ -20,40 +20,52 @@ namespace Inv
   struct cpId
   {
 
-    uint64_t id;        //!< Additional identifier
-    std::string typeId; //!< Type identifier (for logging and debugging purposes)
-    bool active;        //!< \b true if the entity is active. Inactive entity is not processed nor
-                        //!  displayed in game loop and it will be pruned in nearest possiblev time.
+    uint64_t id;
+    //!< Additional identifier
+
+    std::string typeId;
+    //!< Type identifier (for logging and debugging purposes)
+
+    bool active;
+    //!< \b true if the entity is active. Inactive entity is not processed nor
+    //!  displayed in game loop and it will be pruned in nearest possiblev time.
+
     bool noticeOnPruning;
-                        //!< \b true if the entity should send notification when it is pruned
+    //!< \b true if the entity should send notification when it is pruned
   };
 
   //****** component: position ***********************************************************************
 
   struct cpPosition
   {
-    float X;            //!< X position (of centre of object) [px]
-    float Y;            //!< Y position (of centre of object) [px]
-    float Z;            //!< Z position (of centre of object) [px], usually constant as
-    //!  the game is 2D
+    float X;
+    //!< X position (of centre of object) [px]
+    float Y;
+    //!< Y position (of centre of object) [px]
+    float Z;
+    //!< Z position (of centre of object) [px], usually constant as the game is 2D
   };
 
   //****** component: velocity ***********************************************************************
 
   struct cpVelocity
   {
-    float vX;           //!< X translation velocity (of centre of object) [px/tick]
-    float vY;           //!< Y translation velocity (of centre of object) [px/tick]
-    float vZ;           //!< Z translation velocity (of centre of object) [px/tick], usually
-    //!  zero as the game is 2D
+    float vX;
+    //!< X translation velocity (of centre of object) [px/tick]
+    float vY;
+    //!< Y translation velocity (of centre of object) [px/tick]
+    float vZ;
+    //!< Z translation velocity (of centre of object) [px/tick], usually zero as the game is 2D
   };
 
   //****** component: geometry ***********************************************************************
 
   struct cpGeometry
   {
-    float width;        //!< Width of object [px]
-    float height;       //!< Height of object [px]
+    float width;
+    //!< Width of object [px]
+    float height;
+    //!< Height of object [px]
   };
 
   //****** component: ai behavior ********************************************************************
@@ -62,20 +74,24 @@ namespace Inv
   struct cpAlienBehave
   {
     float animationProbability;
-                        //!< Probability of basic animation
+    //!< Probability of basic animation
 
     float shootProbability;
-                        //!< Probability of shooting in each game tick
+    //!< Probability of shooting in each game tick
 
     float raidProbability;
-                        //!< Probability of entering raid mode in each game tick
+    //!< Probability of entering raid mode in each game tick
 
     float raidShootProbability;
+    //!< Probability of shooting while in raid mode in each game tick
 
     float startingX;
+    //<! Starting X position in formation (of centre of alien object) [px]
     float startingY;
+    //<! Starting Y position in formation (of centre of alien object) [px]
 
-    uint32_t scoreToAdd;//!< Score added to player when this alien is destroyed
+    uint32_t scoreToAdd;
+    //!< Score added to player when this alien is destroyed
   };
 
   //****** component: alien status *******************************************************************
@@ -84,27 +100,33 @@ namespace Inv
   struct cpAlienStatus
   {
 
-    bool isAnimating;   //!< \b true if the alien shoul play its own basic animation.
+    bool isAnimating;
+    //!< \b true if the alien shoul play its own basic animation.
 
-    bool isFiring;      //!< \b true if the alien is in firing state, false otherwise.
+    bool isFiring;
+    //!< \b true if the alien is in firing state, false otherwise.
 
     bool isShootRequested;
-                        //!< \b true if the alien requested to shoot in current tick.
+    //!< \b true if the alien requested to shoot in current tick.
 
-    bool isDying;       //!< \b true if the alien is in dying state, false otherwise.
+    bool isDying;
+    //!< \b true if the alien is in dying state, false otherwise.
 
-    bool isInRaid;      //!< \b true if the alien is in raid state, false otherwise.
+    bool isInRaid;
+    //!< \b true if the alien is in raid state, false otherwise.
 
     bool isReturningToFormation;
-                        //!< \b true if the alien is returning to formation after raid,
-                        //!<  false otherwise.
+    //!< \b true if the alien is returning to formation after raid,
+    //!<  false otherwise.
 
     uint32_t raidTicksLeft;
-                        //!< Number of ticks left in raid mode. When it reaches zero,
-                        //!< alien returns to formation.
+    //!< Number of ticks left in raid mode. When it reaches zero,
+    //!< alien returns to formation.
 
-    float formationX;   //!< X position in formation (of centre of alien object) [px]
-    float formationY;   //!< Y position in formation (of centre of alien object) [px]
+    float formationX;
+    //!< X position in formation (of centre of alien object) [px]
+    float formationY;
+    //!< Y position in formation (of centre of alien object) [px]
   };
 
   //****** component: alien boss status ***************************************************************
@@ -112,12 +134,14 @@ namespace Inv
 /*! \brief This component determines the status of the boss alien computer-controlled element. */
   struct cpAlienBossStatus
   {
-    bool isFiring;      //!< \b true if the alien is in firing state, false otherwise.
+    bool isFiring;
+    //!< \b true if the alien is in firing state, false otherwise.
 
     bool isShootRequested;
-                        //!< \b true if the alien requested to shoot in current tick.
+    //!< \b true if the alien requested to shoot in current tick.
 
-    bool isDying;       //!< \b true if the alien is in dying state, false otherwise.
+    bool isDying;
+    //!< \b true if the alien is in dying state, false otherwise.
   };
 
   //****** component: player behavior ****************************************************************
@@ -125,7 +149,8 @@ namespace Inv
   /*! \brief This component determines the actual behavior of the player-controlled element. */
   struct cpPlayBehave
   {
-    int dummy;          //!< Placeholder, currently no behavior is defined.
+    int dummy;
+    //!< Placeholder, currently no behavior is defined.
   };
 
   //****** component: player status ******************************************************************
@@ -134,11 +159,13 @@ namespace Inv
   struct cpPlayStatus
   {
 
-    bool isInvulnerable;//!< \b true if the player is in invulnerable state, false otherwise.
-                        //!  Invulnerability may be granted for short time after respawn or by
-                        //!  picking up special power-up.
+    bool isInvulnerable;
+    //!< \b true if the player is in invulnerable state, false otherwise.
+    //!  Invulnerability may be granted for short time after respawn or by
+    //!  picking up special power-up.
 
-    bool isDying;       //!< \b true if the player is in dying state, false otherwise.
+    bool isDying;
+    //!< \b true if the player is in dying state, false otherwise.
   };
 
   //****** component: entity health ******************************************************************
@@ -146,7 +173,8 @@ namespace Inv
   /*! \brief This component determines that the entity can be destroyed. */
   struct cpHealth
   {
-    uint32_t hitPoints; //!< Current hit points of the entity. When it reaches zero,
+    uint32_t hitPoints;
+    //!< Current hit points of the entity. When it reaches zero,
     //!  the entity is destroyed. Usually 1, but can be higher for
     //!  more resilient entities.
 
@@ -165,11 +193,14 @@ namespace Inv
     uint32_t damagePoints;
     //!< Damage points dealt to other entity when a collision occurs.
 
-    bool dangerToPlayer;//!< \b true if the entity can deal damage to player, false otherwise.
+    bool dangerToPlayer;
+    //!< \b true if the entity can deal damage to player, false otherwise.
 
-    bool dangerToAliens;//!< \b true if the entity can deal damage to aliens (other than player),
+    bool dangerToAliens;
+    //!< \b true if the entity can deal damage to aliens (other than player),
 
-    bool removeOnHit;   //!< \b true if the entity is removed from game when it hits another
+    bool removeOnHit;
+    //!< \b true if the entity is removed from game when it hits another
     //!  entity, false otherwise. Only special ammo may have this set to
     //!  true (some form of piercing ammo)
   };
@@ -203,7 +234,8 @@ namespace Inv
     LARGE_INTEGER diffTick;
     //!< Animation driver
 
-    bool isHidden;      //!< \b true if the entity is temporarily hidden (not rendered and not interacting)
+    bool isHidden;
+    //!< \b true if the entity is temporarily hidden (not rendered and not interacting)
 
   };
 

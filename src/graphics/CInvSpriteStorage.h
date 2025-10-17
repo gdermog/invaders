@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvSpriteStorage.h
-//! Module declares class CInvSpriteStorage, which...
+//! Module declares class CInvSpriteStorage, which represent a storage of sprites used in the game.
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -21,7 +21,10 @@
 namespace Inv
 {
 
-  /*! \brief The class represents ...*/
+  /*! \brief The class represent a storage of sprites used in the game. CInvSpriteStorage manages
+      a collection of CInvSprite objects, allowing for easy addition and retrieval of sprites by
+      their unique IDs. It handles the loading of sprite images from specified file paths and
+      ensures that each sprite is properly initialized for use in the game. */
   class CInvSpriteStorage
   {
     public:
@@ -48,8 +51,7 @@ namespace Inv
                                   missing number. Example: "alien1" will load
                                   images "sprites/alien1/001.png", "sprites/alien1/002.png", ... */
 
-    std::unique_ptr<CInvSprite> GetSprite(
-      const std::string & spriteId ) const;
+    std::unique_ptr<CInvSprite> GetSprite( const std::string & spriteId ) const;
     /*!< \brief Returns copy of sprite with given ID, or nullptr if no such sprite exists.
 
          \param[in] spriteId ID of the sprite to be retrieved.

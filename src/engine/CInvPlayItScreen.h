@@ -104,6 +104,7 @@ namespace Inv
     //!  created and updated by game engine.
 
     std::map<uint32_t, AlienBossDescriptor_t> mAlienBosses;
+    //!< \brief Map of alien boss descriptors, used as templates to create alien bosses in the game.
 
     CInvGameScene mGameScene;
     //!< \brief Game scene object, used to manage the game entities and logic.

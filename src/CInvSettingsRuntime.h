@@ -69,6 +69,7 @@ namespace Inv
     //!< Speed of aliens in pixels per second
 
     float mAlienRaidShootProbability;
+    //!< Probability of shooting in each game tick when in raid mode
 
     float mAlienRaidVelocity;
     //!< Speed of aliens during raid in pixels per second

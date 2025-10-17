@@ -88,7 +88,8 @@ namespace Inv
       mSettingsRuntime.mAlienShootProbability * mSettingsRuntime.mSceneLevelMultiplicator,
       mSettingsRuntime.mAlienRaidProbability * mSettingsRuntime.mSceneLevelMultiplicator,
       mSettingsRuntime.mAlienRaidShootProbability * mSettingsRuntime.mSceneLevelMultiplicator,
-      posX, posY, 100u );     // component: ai behavior /*??? SCORE ???*/
+      posX, posY, 100u );
+                        // component: ai behavior !!! SCORE is hardcoded, it should be refactored later !!!
 
     mEnTTRegistry.emplace<cpAlienStatus>
     (                   // component: alien status
@@ -206,7 +207,7 @@ namespace Inv
       mSettingsRuntime.mAlienRaidShootProbability * mSettingsRuntime.mSceneLevelMultiplicator,
       0.0f, 0.0f, fromLeft ? bossType.mSpawnXLeft : bossType.mSpawnXRight, posY,
       bossType.mScorePoints );
-                        // component: ai behavior /*??? SCORE ???*/
+                        // component: ai behavior
 
     mEnTTRegistry.emplace<cpAlienBossStatus>( boss, false, false, false );
                         // component: alien status (not animating, not firing, shoot not requested, not dying )
@@ -235,8 +236,8 @@ namespace Inv
     shrinkAnimationEffect->AddEventCallback(
       BIND_MEMBER_EVENT_CALLBACK_ON( &mGameScene, CInvGameScene::CallbackUnsetActive, boss ) );
     entitySprite->AddEffect( shrinkAnimationEffect );
-                        // Shrink animation effect starts suspended (dying effect, not needed for now), it will
-                        //  be activated on external event.
+                        // Shrink animation effect starts suspended (dying effect, not needed for now),
+                        // it will be activated on external event.
 
     if( !fromLeft && bossType.mMirrorIfFromRight )
     {

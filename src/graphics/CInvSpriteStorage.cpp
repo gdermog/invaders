@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvSpriteStorage.cpp
-//! Module defines class CInvSpriteStorage, which represents text that can be drawn on screen.
+//! Module defines class CInvSpriteStorage, which represent a storage of sprites used in the game.
 //****************************************************************************************************
 //
 //****************************************************************************************************

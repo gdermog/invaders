@@ -1,4 +1,4 @@
-# SimFire
+# Space invaders
 
 Exercise (c++ demo project): space invaders
 
@@ -41,11 +41,11 @@ code comments for detailed explanations.
 - Time to sudden death, score, ammo and player lives are displayed at the bottom of the screen
 - When player ship is destroyed, there is a brief invulnerability period indicated by blinking ship
 - When player is above all monsters, aliens gone to raids more often
-- Special crossower guest appears time to time, chasing player ship from sides of the screen
+- Special crossover guest appears time to time, chasing player ship from sides of the screen
 
 # Compiling and running Invaders
 
-SimFire ​​is a standard project for MS Visual Studio and MSVC. It contains both a solution file and a project.
+Invaders ​​is a standard project for MS Visual Studio and MSVC. It contains both a solution file and a project.
 It  assumes the C++20 language standard. Library [EnTT](https://github.com/skypjack/entt) is included in
 the project.
 
@@ -63,7 +63,9 @@ There are still some tasks that need to be completed on the project, in particul
      MS Visual Studio / MSVC)
    - To implement CI/CD pipelne for GitHub to automatize compilation of the project and unit tests and check for
      possible errors
-   - To fine-tune game parameters (e.g. monster speed, shooting frequency, etc.) to make the game more playable
+   - To fine-tune game parameters (e.g. monster speed, shooting frequency, etc.) to make the game more playable.
+     This includes "publishing" of initial values of internal parameters from CInvSettingsRuntime to invaders.ini,
+     and reloading them with each game start (this allows easier fine-tuning without recompilation).
 
 And maybe sometime in the future:
 
@@ -80,11 +82,12 @@ and, of course
 
 # Acknowledgements
 
-   - Thanks to [LoudKEvin](https://freesound.org/people/LoudKevin/), [frankum](https://freesound.org/people/frankum/)
+   - Thanks to [LoudKevin](https://freesound.org/people/LoudKevin/), [frankum](https://freesound.org/people/frankum/)
      and other authors of free sound effects on [Freesound.org](https://freesound.org/) for selfless sharing of their
-     music and sound effects used in the game.
+     music and sounds used in the game.
    - Thanks to [chat GPT](https://chatgpt.com/) and [DeeVid AI](https://deevid.ai/) for the invaluable help in generating
      the in-game graphics.
+   - Tanks to [unkonwn author on pngegg.com](https://www.pngegg.com/en/png-ncgfd) for special guest graphic.
    - Thaks to my sons for playtesting and valuable feedback!
 
    ![Beta testing](betas.jpg?raw=true "Beta testing")

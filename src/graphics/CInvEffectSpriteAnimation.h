@@ -69,8 +69,6 @@ namespace Inv
           \param[in] firstImage Index of first image to be used in animation
           \param[in] lastImage  Index of last image to be used in animation */
 
-
-
     void AddEventCallback( FnEventCallback_t callback );
     /*!< \brief Adds an event callback that will be called when animation reaches last image
          (only if mIsContinuous is false).

@@ -21,7 +21,6 @@ static const std::string lModLogId( "GAMELOOP" );
 std::wstring gLoadingPleaseWait = L"Loading, please wait";
 
 static bool lKeyDown[256];
-//static int lKeyHit[256];
 static int lMouseButton;
 
 LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
@@ -32,13 +31,11 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
     SetCapture( hWnd );
     lMouseButton |= 1;
     lKeyDown[VK_LBUTTON] = true;
-    //   lKeyHit[VK_LBUTTON]++;
     break;
 
   case WM_RBUTTONDOWN:
     SetCapture( hWnd );
     lKeyDown[VK_RBUTTON] = true;
-    //   lKeyHit[VK_RBUTTON]++;
     lMouseButton |= 2;
     break;
 
@@ -46,7 +43,6 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
     SetCapture( hWnd );
     lMouseButton |= 4;
     lKeyDown[VK_MBUTTON] = true;
-    //   lKeyHit[VK_MBUTTON]++;
     break;
 
   case WM_LBUTTONUP:
@@ -203,14 +199,12 @@ namespace Inv
     if( !SUCCEEDED( InitD3D() ) )
       return false;
 
-    // Create the vertex buffer
     if( !SUCCEEDED( InitVB() ) )
-      return false;
+      return false;     // Create the vertex buffer
 
     //SetWindowPos(hWnd,NULL,0,0,1024,768,SWP_NOZORDER|SWP_NOACTIVATE|SWP_NOMOVE|SWP_ASYNCWINDOWPOS);
     SetCursor( LoadCursor( NULL, IDC_ARROW ) );
 
-    // Show the window
     ShowWindow( mHWnd, SW_SHOWDEFAULT );
     UpdateWindow( mHWnd );
 
@@ -304,7 +298,6 @@ namespace Inv
       mPVB,
       mReferenceTick );
 
-
     return true;
 
   } // CInvGame::Initialize
@@ -371,12 +364,11 @@ namespace Inv
 
       ProcessInput( controlState, controlValue );
 
-      // Clear the backbuffer to a background color
       mPd3dDevice->Clear( 0, nullptr,
         D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER | D3DCLEAR_STENCIL,
         mClearColor, 1.0f,  0 );
+                        // Clear the backbuffer to a background color
 
-      // Begin the scene
       if( SUCCEEDED( mPd3dDevice->BeginScene() ) )
       {
 
@@ -426,7 +418,6 @@ namespace Inv
           gameEndRequest = false;
         } // if
 
-        // End the scene
         mPd3dDevice->EndScene();
 
       } // if
@@ -499,11 +490,9 @@ namespace Inv
 
   HRESULT CInvGame::InitD3D()
   {
-    // Create the D3D object.
     if( nullptr == ( mPD3D = Direct3DCreate9( D3D_SDK_VERSION ) ) )
       return E_FAIL;
 
-    // Set up the structure used to create the D3DDevice
     D3DPRESENT_PARAMETERS d3dpp;
     ZeroMemory( &d3dpp, sizeof( d3dpp ) );
     d3dpp.Windowed = !mSettings.GetFullScreen();
@@ -513,23 +502,22 @@ namespace Inv
     d3dpp.BackBufferWidth = 800;
     d3dpp.BackBufferHeight = 600;
     d3dpp.FullScreen_RefreshRateInHz = mSettings.GetFullScreen() ? 60 : 0;
-    d3dpp.EnableAutoDepthStencil = TRUE;                   // <-- Auto depth/stencil
+    d3dpp.EnableAutoDepthStencil = TRUE;
     d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 
-    // Create the D3DDevice
     if( FAILED( mPD3D->CreateDevice( D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, mHWnd,
                 D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &mPd3dDevice ) ) )
       return E_FAIL;
 
-    // Device state would normally be set here
     mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, true );
     mPd3dDevice->SetRenderState( D3DRS_SRCBLEND, D3DBLEND_SRCALPHA );
     mPd3dDevice->SetRenderState( D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA );
 
-    //mPd3dDevice->SetRenderState( D3DRS_ZENABLE, D3DZB_TRUE );        // zapne z-buffer
-    mPd3dDevice->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );          // povolí zápis do Z bufferu
-    //mPd3dDevice->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );     // typ porovnání (LESS, LEQUAL, ...)
-
+    //mPd3dDevice->SetRenderState( D3DRS_ZENABLE, D3DZB_TRUE );
+    mPd3dDevice->SetRenderState( D3DRS_ZWRITEENABLE, FALSE );
+    //mPd3dDevice->SetRenderState( D3DRS_ZFUNC, D3DCMP_LESSEQUAL );
+                        // Z-buffering disabled, sprites level management is done manually by
+                        // drawing order.
 
     mPd3dDevice->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
     mPd3dDevice->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
@@ -547,6 +535,7 @@ namespace Inv
     mPd3dDevice->SetFVF( D3DFVF_CUSTOMVERTEX );
 
     return S_OK;
+
   } // CInvGame::InitD3D
 
   //-------------------------------------------------------------------------------------------------

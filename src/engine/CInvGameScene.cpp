@@ -202,7 +202,8 @@ namespace Inv
                         // and white space at the sides of the scene.
 
     for( auto & abIt : mAlienBosses )
-    {                   // Reset the number of spawned bosses to zero
+    {                   // Reset the number of spawned bosses to zero and calculats theri size and spawn
+                        // positions according to the scene size
       auto & ab = abIt.second;
 
       auto bossSprite = mSpriteStorage.GetSprite( ab.mSpriteId );
@@ -259,7 +260,7 @@ namespace Inv
     } // for
 
     if( nullptr != mLiveSprite )
-    {
+    {                   // Calculate sizes and positions of lives icons in status line
       auto baseSize = mLiveSprite->GetImageSize( 0 );
       auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
       mOneLiveIconHeight = mStatusLineHeight * 0.9f;
@@ -268,7 +269,7 @@ namespace Inv
     } // if
 
     if( nullptr != mAmmoSprite )
-    {
+    {                   // Calculate sizes and positions of ammo icons in status line
       auto baseSize = mAmmoSprite->GetImageSize( 0 );
       auto aspectRatio = (float)baseSize.second / (float)baseSize.first;
       mAmmoIconHeight = mStatusLineHeight * 0.9f;
@@ -279,6 +280,7 @@ namespace Inv
     } // if
 
     mScoreLabelTextSize = mStatusLineHeight * 0.6f;
+                        // Score label text size is set to 60% of status line height
 
     return true;
 
@@ -445,7 +447,7 @@ namespace Inv
 
     if( !mPlayerEntryInProgress && 0u < mQuickDeathTicksLeft )
       --mQuickDeathTicksLeft;
-                        // Quick death period after player spawn or respawn is counted down
+                        // Sudden death period after player spawn or respawn is counted down
 
     return true;
 
@@ -467,8 +469,9 @@ namespace Inv
                         // Attention-ready-go text is drawn in the middle of the area below aliens
 
     if( 0 == mPlayerEntryTick.QuadPart )
-    {
-      CalculateQuickDeathTicks();
+    {                   // Player entry sequence is starting now
+
+      CalculateSuddenDeathTicks();
 
       EngineOnHold( true );
                         // During player entry sequence, aliens are not moving and player cannot
@@ -578,7 +581,7 @@ namespace Inv
     mTickLeftToReload = mReloadingTicks;
                         // Player weapon reloading time is set according to settings.
 
-    CalculateQuickDeathTicks();
+    CalculateSuddenDeathTicks();
 
     mPlayerEntryInProgress = true;
     mPlayerEntryTick.QuadPart = 0;
@@ -656,7 +659,8 @@ namespace Inv
         return true;    // Player ship still has some health points and continues to fight.
                         // Remark: this has nothing to do with number of player lives (ships),
                         // number of hitpoints defines how many hits the single ship can take
-                        // before it is destroyed.
+                        // before it is destroyed. For now, this mechanics is not used as all
+                        // entities are created with single hitpoint only.
 
       playStatus->isDying = true;
                         // Welcome to the scrapyard, pal ...
@@ -707,7 +711,8 @@ namespace Inv
                         // Alien looses one health point.
 
       if( 0 < alienHealth->hitPoints )
-        return true;    // Alien still has some health points and continues to fight.
+        return true;    // Alien still has some health points and continues to fight. For now, this
+                        // mechanics is not used as all entities are created with single hitpoint only.
 
       alienStatus->isDying = true;
                         // Welcome to the graveard, bastard ...
@@ -761,7 +766,7 @@ namespace Inv
         return true;    // Alien still has some health points and continues to fight.
 
       alienBossStatus->isDying = true;
-                        // Welcome to the graveard, bastard ...
+                        // Aaaaaand ... stardust!
 
       auto [pPos, pVel, pGeo] = mEnTTRegistry.try_get<cpPosition, cpVelocity, cpGeometry>( entity );
 
@@ -838,7 +843,7 @@ namespace Inv
       if( aId->active )
       {
         LOG << "Trying to prune active alien!";
-        return;         // Player entity is still active, this is probably a bug.
+        return;         // Alien entity is still active, this is probably a bug.
       } // if
 
       auto deltaScore = aBehave->scoreToAdd;
@@ -854,6 +859,7 @@ namespace Inv
 
       if( 0u < mAliensLeft )
       --mAliensLeft;
+
     } // if
 
     auto [aBossId, aBossBehave, aBossStatus, aBossPos, aBossGeo] =
@@ -863,7 +869,7 @@ namespace Inv
       if( aBossId->active )
       {
         LOG << "Trying to prune active alien boss!";
-        return;         // Player entity is still active, this is probably a bug.
+        return;         // Boss entity is still active, this is probably a bug.
       } // if
 
       if( nullptr == aBossPos || nullptr == aBossGeo )
@@ -919,7 +925,7 @@ namespace Inv
   void CInvGameScene::NewSwarm()
   {
 
-    CalculateQuickDeathTicks();
+    CalculateSuddenDeathTicks();
 
     mPlayerEntryInProgress = true;
     mPlayerEntryTick.QuadPart = 0;
@@ -971,23 +977,24 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
-  void CInvGameScene::CalculateQuickDeathTicks()
+  void CInvGameScene::CalculateSuddenDeathTicks()
   {
     auto quickDeathTime =
       mSettings.GetQuickDeathTime() - 5.0f * ( mSettingsRuntime.mSceneLevelMultiplicator - 1.0f );
     if( quickDeathTime < 30.0f )
       quickDeathTime = 30.0f;
-                        // Quick death time after player spawn or respawn is set in such way that
+                        // Sudden death time after player spawn or respawn is set in such way that
                         // it is shortened by alien speedup factor, but it is never less than
                         // half a minute.
 
     mLastPipBeeped = UINT32_MAX;
+                        // Sudden death sound warning is resetted
 
     mQuickDeathTicksLeft =
       (uint32_t)( quickDeathTime * (uint32_t)mSettings.GetTickPerSecond() );
-                        // Quick death time ticks is set.
+                        // Sudden death time ticks is set.
 
-  } // CInvGameScene::CalculateQuickDeathTicks
+  } // CInvGameScene::CalculateSuddenDeathTicks
 
   //-------------------------------------------------------------------------------------------------
 
@@ -1027,18 +1034,17 @@ namespace Inv
     uint32_t secsToQuickDeath = mQuickDeathTicksLeft / (uint32_t)mSettings.GetTickPerSecond();
 
     if( secsToQuickDeath <= 5 && secsToQuickDeath < mLastPipBeeped )
-    {                   // During last 5 seconds before sudden death, a "pip" sound
-                        // is played each second.
+    {                   // During last 5 seconds before sudden death, a "pip" is played each second.
       mSoundStorage.PlaySound( 0u < secsToQuickDeath ? "PIP" : "PIPL" );
       mLastPipBeeped = secsToQuickDeath;
-    }
+    } // if
 
     mScoreLabelBuffer = FormatStr( "%2u ", secsToQuickDeath ) + mScoreText + std::to_string( mActualScore );
     mScoreLabel.SetText( mScoreLabelBuffer );
     mScoreLabel.Draw(
       mStatusLineTopLeftX, mStatusLineTopLeftY + 0.2f * mStatusLineHeight,
       mScoreLabelTextSize, mTickReferencePoint, actualTickPoint, mDiffTickPoint );
-                        // Actual score is drawn in the left part of the status line.
+                        // Sudden death timer and actual score is drawn in the left part of the status line.
 
     return true;
 

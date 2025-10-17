@@ -71,7 +71,7 @@ namespace Inv
 
     float normalizedX = (float)( x - boundRect.left ) / (float)( boundRect.right - boundRect.left );
     float normalizedY = (float)( y - boundRect.top ) / (float)( boundRect.bottom - boundRect.top );
-                        // Normalize the x and y coordinates relative to the rectangle
+                        // Normalize the x and y coordinates relative to the bounding rectangle
 
     float uTop = vertices[0].u + ( vertices[1].u - vertices[0].u ) * normalizedX;
     float uBottom = vertices[2].u + ( vertices[3].u - vertices[2].u ) * normalizedX;

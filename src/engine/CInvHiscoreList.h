@@ -1,6 +1,6 @@
 //****************************************************************************************************
 //! \file CInvHiscore.h
-//! Module contains class CInvHiscore, which implements ...
+//! Module contains class CInvHiscore, which implements hiscore list management.
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -14,7 +14,8 @@
 
 namespace Inv
 {
-
+  /*! \brief The class implements hiscore list management, including loading/saving from/to file
+      and adding new hiscore entries. */
   class CInvHiscoreList
   {
     public:

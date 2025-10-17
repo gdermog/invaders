@@ -19,7 +19,6 @@
 namespace Inv
 {
 
-
   /*! \brief Class represents a 2D sprite that can be drawn on screen. The sprite can hold multiple
       images, which can be switched to create simple animations. The sprite can have multiple effects
       applied to it, which can modify its properties such as position, size, rotation, etc. The class
@@ -170,6 +169,7 @@ namespace Inv
   private:
 
     float mLvl;
+    //<! \brief Level of depth in which the sprite is drawn.
 
     const CInvSettings & mSettings;
     //<! Reference to settings object, to access global settings

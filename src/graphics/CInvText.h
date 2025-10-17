@@ -11,7 +11,6 @@
 #define H_CInvText
 
 #include <d3d9.h>
-//#include <d3dx9.h>
 
 #include <InvGlobals.h>
 #include <CInvSettings.h>
@@ -41,11 +40,15 @@ namespace Inv
     ~CInvText();
 
     void SetText( const std::string & txt ) { mText = txt; mLocalLetterMap.clear(); }
+    /*!< \brief Sets the text to be drawn.
+
+         \param[in] txt Text to be set */
 
     const std::string & GetText() const { return mText; }
+    /*!< \brief Returns the text to be drawn. */
 
     size_t GetTextLength() const { return mText.length(); }
-
+    /*!< \brief Returns length of the text to be drawn. */
 
     void Draw(
       float xTopLeft,
@@ -103,6 +106,7 @@ namespace Inv
   protected:
 
     std::string mText;
+    //!< Text to be drawn
 
     std::map<uint32_t, std::vector<std::shared_ptr<CInvEffect>>> mEffects;
     //!< Map of effects applied to the text, indexed by effect priority
@@ -110,6 +114,8 @@ namespace Inv
   private:
 
     void RefillLocalLetterMap() const;
+    /*!< \brief Refills the local letter map with sprites for each character in the text,
+         loading images as needed. Local map is used in the case of effect applied. */
 
     const CInvSettings & mSettings;
     //!< Reference to settings object, all parameters are taken from here

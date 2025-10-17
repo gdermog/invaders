@@ -19,7 +19,6 @@
 namespace Inv
 {
 
-
   /*! \brief Class represents a 2D CollisionTest that tests whether two sprites are in collision.*/
   class CInvCollisionTest
   {
@@ -45,7 +44,7 @@ namespace Inv
 
     bool CheckPixelPerfectCollision( const CInvSprite & sprite1, const CInvSprite & sprite2 ) const;
     /*!< \brief Tests whether two sprites are in pixel-perfect collision, i.e. whether any non-transparent
-               pixel of the first sprite overlaps with any non-transparent pixel of the second sprite.
+         pixel of the first sprite overlaps with any non-transparent pixel of the second sprite.
 
          \param[in] sprite1   First sprite to be tested
          \param[in] sprite2   Second sprite to be tested
@@ -85,7 +84,7 @@ namespace Inv
     LPDIRECT3DDEVICE9 mPd3dDevice;
     //!< Direct3D device, used to create textures (CollisionTest images)
 
-  };
+  }; // class CInvCollisionTest
 
 } // namespace Inv
 

@@ -37,8 +37,7 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
-  CInvBackground::~CInvBackground()
-  {}
+  CInvBackground::~CInvBackground() = default;
 
   //----------------------------------------------------------------------------------------------
 
@@ -96,6 +95,7 @@ namespace Inv
 
     auto dTick = (size_t)( mRollCoef * (float)( actualTick.QuadPart - referenceTick.QuadPart) );
     float t = 2.0 * ( 1.0 - (float)( dTick % mTextureSize.second ) / ((float)mTextureSize.second) );
+                        // Calculate vertical texture coordinate offset for rolling effect
 
     mTea2[0] = { 0.0f,      0.0f,       mLvl, 1.0f, color, 0.0f,       t };
     mTea2[1] = { mVprWidth, 0.0f,       mLvl, 1.0f, color, mTxtrWidth, t };
@@ -110,6 +110,7 @@ namespace Inv
     mPd3dDevice->SetSamplerState( 0, D3DSAMP_ADDRESSV, D3DTADDRESS_MIRROR );
     mPd3dDevice->SetSamplerState( 0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
     mPd3dDevice->SetSamplerState( 0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR );
+                        // Texture is displayed in "mirror" mode vertically, so it is seamless when rolling
 
     mPd3dDevice->DrawPrimitiveUP( D3DPT_TRIANGLESTRIP, 2, mTea2, sizeof( CUSTOMVERTEX ) );
 

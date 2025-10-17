@@ -1,10 +1,11 @@
 //****************************************************************************************************
-//! \file CInvConfig.cpp                                                                        *
-//! Module contains definitions of CInvConfig class, declared in CInvConfig.h, which ...    *
+//! \file CInvConfig.cpp
+//! Module contains definition of CInvConfig class, which handles application configuration
+//! parsing.
 //****************************************************************************************************
-//*                                                                                                  *
+//
 //****************************************************************************************************
-// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz                                                      *
+// 3. 10. 2025, V. Pospíšil, gdermog@seznam.cz
 //****************************************************************************************************
 
 #include <iomanip>

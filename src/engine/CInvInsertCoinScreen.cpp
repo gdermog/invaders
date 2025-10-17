@@ -133,7 +133,7 @@ namespace Inv
       ( (float)mSettings.GetWidth() - CInvHiscoreList::mMaxHiscoreNameLen * mCallsignLetterSize ) * 0.5f;
     mCallsignTopLeftY = mEnterCallsignTopLeftY + mQualifiedLetterSize * 4.5f;
 
-    mTitleSprite = mSpriteStorage.GetSprite(  "PINK" );
+    mTitleSprite = mSpriteStorage.GetSprite( "PINK" );
     if( nullptr == mTitleSprite )
       LOG << "Title sprite not found in storage.";
     else
@@ -164,10 +164,7 @@ namespace Inv
 
   //-------------------------------------------------------------------------------------------------
 
-
-  CInvInsertCoinScreen::~CInvInsertCoinScreen()
-  {
-  } // CInvInsertCoinScreen::~CInvInsertCoinScreen
+  CInvInsertCoinScreen::~CInvInsertCoinScreen() = default;
 
   //-------------------------------------------------------------------------------------------------
 

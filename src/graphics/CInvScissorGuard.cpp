@@ -1,6 +1,7 @@
 //****************************************************************************************************
 //! \file CInvScissorGuard.cpp
-//! Module contains class CInvScissorGuard, which implements ...
+//! Module contains class CInvScissorGuard, which implements DX9 device scissor rectangle application
+//! and restoration in form of scope guard.
 //****************************************************************************************************
 //
 //****************************************************************************************************

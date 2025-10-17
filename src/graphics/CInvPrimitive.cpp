@@ -23,8 +23,7 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
-  CInvPrimitive::~CInvPrimitive()
-  {}
+  CInvPrimitive::~CInvPrimitive() = default;
 
   //----------------------------------------------------------------------------------------------
 
@@ -45,13 +44,12 @@ namespace Inv
     if( nullptr == mPd3dDevice )
       return;
 
-    // Half-pixel correction
     if( pixelPerfect )
-    {
+    {                   // Half-pixel correction
       const float half = -0.5f;
       x1 += half; y1 += half;
       x2 += half; y2 += half;
-    }
+    } // if
 
     LineVertex verts[] =
     {
@@ -59,7 +57,6 @@ namespace Inv
       { x2, y2, 0.5f, 1.0f, color },
     };
 
-    // We save and restore VS/PS and FVF (safe path)
     IDirect3DVertexShader9 * prevVS = nullptr;
     IDirect3DPixelShader9 * prevPS = nullptr;
     DWORD prevFVF = 0;
@@ -67,8 +64,8 @@ namespace Inv
     DWORD prevLighting = 0;
     DWORD prevScissor = 0;
     DWORD prevAlpha = 0;
+                        // We save and restore VS/PS and FVF (safe path)
 
-    // Get current state
     mPd3dDevice->GetVertexShader( &prevVS );
     mPd3dDevice->GetPixelShader( &prevPS );
     mPd3dDevice->GetFVF( &prevFVF );
@@ -76,8 +73,8 @@ namespace Inv
     mPd3dDevice->GetRenderState( D3DRS_LIGHTING, &prevLighting );
     mPd3dDevice->GetRenderState( D3DRS_SCISSORTESTENABLE, &prevScissor );
     mPd3dDevice->GetRenderState( D3DRS_ALPHABLENDENABLE, &prevAlpha );
+                        // Get current state
 
-    // Switch to fixed-function, turn off depth and lighting and scissor (for overlay)
     mPd3dDevice->SetVertexShader( NULL );
     mPd3dDevice->SetPixelShader( NULL );
     mPd3dDevice->SetFVF( LineVertex::FVF );
@@ -85,23 +82,23 @@ namespace Inv
     mPd3dDevice->SetRenderState( D3DRS_LIGHTING, FALSE );
     mPd3dDevice->SetRenderState( D3DRS_SCISSORTESTENABLE, FALSE );
     mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+                        // Switch to fixed-function, turn off depth and lighting and scissor (for overlay)
 
-    // Important: DrawPrimitiveUP expects a number of primitives (here 1 LINELIST)
     mPd3dDevice->DrawPrimitiveUP( D3DPT_LINELIST, 1, verts, sizeof( LineVertex ) );
+                        // Important: DrawPrimitiveUP expects a number of primitives (here 1 LINELIST)
 
-    // Restoring states
     mPd3dDevice->SetFVF( prevFVF );
     mPd3dDevice->SetRenderState( D3DRS_ZENABLE, prevZEnable );
     mPd3dDevice->SetRenderState( D3DRS_LIGHTING, prevLighting );
     mPd3dDevice->SetRenderState( D3DRS_SCISSORTESTENABLE, prevScissor );
     mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, prevAlpha );
+                        // Restoring states
 
-    // Restore previous shaders (must have been set before Release)
     if( prevVS ) { mPd3dDevice->SetVertexShader( prevVS ); prevVS->Release(); }
     else mPd3dDevice->SetVertexShader( NULL );
-
     if( prevPS ) { mPd3dDevice->SetPixelShader( prevPS ); prevPS->Release(); }
     else mPd3dDevice->SetPixelShader( NULL );
+                        // Restore previous shaders (must have been set before Release)
 
   } // CInvPrimitive::DrawLine
 
@@ -116,9 +113,8 @@ namespace Inv
     if( nullptr == mPd3dDevice )
       return;
 
-    // Half-pixel correction
     if( pixelPerfect )
-    {
+    {                   // Half-pixel correction
       const float half = -0.5f;
       x1 += half; y1 += half;
       x2 += half; y2 += half;
@@ -133,16 +129,14 @@ namespace Inv
       { x1, y1, 0.5f, 1.0f, color}, // top left corner (close)
     };
 
-    // We save and restore VS/PS and FVF (safe path))
     IDirect3DVertexShader9 * prevVS = nullptr;
     IDirect3DPixelShader9 * prevPS = nullptr;
     DWORD prevFVF = 0;
     DWORD prevZEnable = 0;
     DWORD prevLighting = 0;
     DWORD prevScissor = 0;
-    DWORD prevAlpha = 0;
+    DWORD prevAlpha = 0;// We save and restore VS/PS and FVF (safe path)
 
-    // Get current state (ignorujeme chyby, ale logneme je)
     mPd3dDevice->GetVertexShader( &prevVS );
     mPd3dDevice->GetPixelShader( &prevPS );
     mPd3dDevice->GetFVF( &prevFVF );
@@ -150,8 +144,8 @@ namespace Inv
     mPd3dDevice->GetRenderState( D3DRS_LIGHTING, &prevLighting );
     mPd3dDevice->GetRenderState( D3DRS_SCISSORTESTENABLE, &prevScissor );
     mPd3dDevice->GetRenderState( D3DRS_ALPHABLENDENABLE, &prevAlpha );
+                        // Get current state
 
-    // Switch to fixed-function, turn off depth and lighting and scissor (for overlay)
     mPd3dDevice->SetVertexShader( NULL );
     mPd3dDevice->SetPixelShader( NULL );
     mPd3dDevice->SetFVF( LineVertex::FVF );
@@ -159,26 +153,24 @@ namespace Inv
     mPd3dDevice->SetRenderState( D3DRS_LIGHTING, FALSE );
     mPd3dDevice->SetRenderState( D3DRS_SCISSORTESTENABLE, FALSE );
     mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, FALSE );
+                        // Switch to fixed-function, turn off depth and lighting and scissor
 
-    // Important: DrawPrimitiveUP expects a number of primitives (here 4 segments)
     mPd3dDevice->DrawPrimitiveUP( D3DPT_LINESTRIP, 4, verts, sizeof( LineVertex ) );
+                        // DrawPrimitiveUP expects a number of primitives (here 4 segments)
 
-    // Restoring states
     mPd3dDevice->SetFVF( prevFVF );
     mPd3dDevice->SetRenderState( D3DRS_ZENABLE, prevZEnable );
     mPd3dDevice->SetRenderState( D3DRS_LIGHTING, prevLighting );
     mPd3dDevice->SetRenderState( D3DRS_SCISSORTESTENABLE, prevScissor );
     mPd3dDevice->SetRenderState( D3DRS_ALPHABLENDENABLE, prevAlpha );
+                        // Restoring states
 
-    // Restore previous shaders (must have been set before Release)
     if( prevVS ) { mPd3dDevice->SetVertexShader( prevVS ); prevVS->Release(); }
     else mPd3dDevice->SetVertexShader( NULL );
-
     if( prevPS ) { mPd3dDevice->SetPixelShader( prevPS ); prevPS->Release(); }
     else mPd3dDevice->SetPixelShader( NULL );
+                        // Restore previous shaders (must have been set before Release)
 
   } // CInvPrimitive::DrawSquare
-
-
 
 } // namespace Inv

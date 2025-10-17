@@ -20,8 +20,10 @@ namespace Inv
 {
 
   using FnEventCallback_t = std::function<void( uint32_t )>;
+  //!< Type definition for event callback without entity id
 
   using FnEventCallbackEithEntityId_t = std::function<void( entt::entity, uint32_t )>;
+  //!< Type definition for event callback with entity id
 
 #define BIND_MEMBER_EVENT_CALLBACK( ref, fnName )  std::bind( &fnName, (ref), std::placeholders::_1, std::placeholders::_2 )
   //!< Macro to simplify binding of member function as event callback
@@ -121,10 +123,13 @@ namespace Inv
       ControlValue_t controlValue );
 
     CInvEntityFactory & mEntityFactory;
+    //<! \brief Reference to entity factory, used to create new missile entities
 
     const CInvSoundsStorage & mSoundStorage;
+    //<! \brief Reference to sound storage, used to play shooting sound
 
     uint32_t & mAmmoLeft;
+    //<! \brief Reference to variable containing amount of ammo left for the player ship
 
     bool mShootCommenced;
     //!< \brief True if shoot command was given in the last update. If the player holds fire button,
@@ -196,7 +201,9 @@ namespace Inv
     void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
 
     float & mVXGroup;
+    //!< \brief Reference to current velocity of alien formation in X axis
     float & mVYGroup;
+    //!< \brief Reference to current velocity of alien formation in Y axis
 
     bool mFormationFreeze;
     //!< \brief If true, aliens in formation do not move. It is used when player is respawned.
@@ -221,15 +228,19 @@ namespace Inv
     void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
 
     CInvCollisionTest & mCTest;
+    //<! \brief Reference to collision test object, used to detect collisions between sprites
 
     std::set<entt::entity> mCanDamage;
+    //!< List of entities that can deal damage, working variable|
 
     std::set<entt::entity> mCanBeDamagedAlien;
+    //!< List of alien entities that can be , working variable|
     std::set<entt::entity> mCanBeDamagedPlayer;
+    //!< List of player entities that can be damaged, working variable|
 
     std::vector<std::pair<entt::entity, entt::entity>> mCollidedPairs;
-                        //!< List of pairs of entities that collided in the last update. First is dangerous
-                        //!  entity, second is entity that can be damaged.
+    //!< List of pairs of entities that collided in the last update. First is dangerous
+    //!  entity, second is entity that can be damaged.
 
   }; // procCollisionDetector
 
@@ -257,12 +268,14 @@ namespace Inv
 
     void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
 
-    LARGE_INTEGER mRefTick;
-
     float mSceneTopLeftX;
+    //<! \brief X coordinate of top left corner of the game scene in pixels.
     float mSceneTopLeftY;
+    //<! \brief Y coordinate of top left corner of the game scene in pixels.
     float mSceneBottomRightX;
+    //<! \brief X coordinate of bottom right corner of the game scene in pixels.
     float mSceneBottomRightY;
+    //<! \brief Y coordinate of bottom right corner of the game scene in pixels.
 
   }; // procActorOutOfSceneCheck
 
@@ -285,8 +298,10 @@ namespace Inv
       bool allowCallbacks = true );
 
     FnEventCallbackEithEntityId_t mPruneCallback;
+    //<! \brief Callback called when entity is pruned
 
     std::vector<entt::entity> mEntities;
+    //<! \brief Working vector containing entities to be removed from registry, working variable
 
   }; // procGarbageCollector
 
@@ -312,6 +327,7 @@ namespace Inv
     };
 
     std::map<float, std::vector<SpriteInfo_t>> mZAxisSorting;
+    //<! \brief Working structure for sorting sprites according to Z axis level
 
   }; // procActorRender
 
@@ -332,6 +348,7 @@ namespace Inv
       LARGE_INTEGER diffTick );
 
     bool & mIsInDangerousArea;
+    //<! \brief Reference to variable indicating whether the player is in dangerous area
 
   }; // procPlayerSpeedUpdater
 

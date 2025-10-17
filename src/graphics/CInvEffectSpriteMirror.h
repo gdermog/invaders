@@ -1,6 +1,7 @@
 //****************************************************************************************************
 //! \Mirror CInvEffectSpriteMirror.h
-//! Module contains class CInvEffectSpriteMirror, which declares effect that ...
+//! Module contains class CInvEffectSpriteMirror, which declares effect that displays sprite mirrored
+//! along vertical axis.
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -20,7 +21,7 @@
 namespace Inv
 {
 
-  /*! \brief Effect that ...*/
+  /*! \brief Effect that displays sprite mirrored along vertical axis. */
   class CInvEffectSpriteMirror: public CInvEffect
   {
     public:
@@ -48,9 +49,6 @@ namespace Inv
         \param[in] diffTick      An artificially introduced correction to the current tick,
                                  used when one effect is applied to multiple objects and the
                                  results are required to differ somewhat from each other. */
-
-
-  protected:
 
 
   };

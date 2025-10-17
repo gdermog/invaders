@@ -32,7 +32,8 @@
 
 namespace Inv
 {
-  /*! \brief ... */
+  /*! \brief The class implements the main game scene, containing all entities
+      and processing the game logic. */
   class CInvGameScene
   {
   public:
@@ -63,7 +64,7 @@ namespace Inv
     bool SpawnPlayer();
     /*!< \brief Spawns the player entity at the bottom center of the scene. The player entity
          is created in "invulnerable" state. This cannot be done by procEntitySpawner, because
-         there coud be a lot of "noise" around spawning the player ship (as decreasing of lives
+         there is a lot of "noise" around spawning the player ship (as decreasing of lives
          counter and others), so this special function is implemented. */
 
     bool GameOver() const { return 0u == mPlayerLivesLeft; }
@@ -145,7 +146,7 @@ namespace Inv
     /*!< \brief Generates new alien swarm, increases level counter and speedup factor. It is called
          when all aliens are destroyed. */
 
-    void CalculateQuickDeathTicks();
+    void CalculateSuddenDeathTicks();
 
     //------ Timing parameters --------------------------------------------------------------------------
 
@@ -323,7 +324,7 @@ namespace Inv
     //!< \brief Flag indicating that player entity is entering the scene (after spawn or respawn).
 
     LARGE_INTEGER mPlayerEntryTick;
-    //!< \brief Ticking when player entity started entering the scene.
+    //!< \brief Ticking when player entity started entering the scene. This value increases during the sequence.
 
     uint32_t mActualScore;
     //<! \brief Actual score of the player in the current game.
@@ -376,6 +377,7 @@ namespace Inv
     //!< \brief Descriptors of boss aliens that can appear in the scene.
 
     uint32_t mLastPipBeeped;
+    //!< \brief Last number of seconds to sudden death when "pip" sound was played.
 
     //------ EnTT processors --------------------------------------------------------------------------
 

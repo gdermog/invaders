@@ -56,8 +56,8 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
-  CInvText::~CInvText()
-  {}
+  CInvText::~CInvText() = default;
+
   //----------------------------------------------------------------------------------------------
 
   void CInvText::AddEffect( std::shared_ptr<CInvEffect> effect )
@@ -214,8 +214,8 @@ namespace Inv
         } // for
         mLocalLetterMap[lttr] = std::move( localSprite );
       } // for
-    }
+    } // if
 
-  }
+  } // CInvText::RefillLocalLetterMap
 
 } // namespace Inv

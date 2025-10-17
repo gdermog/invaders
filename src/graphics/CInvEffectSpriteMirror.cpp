@@ -1,7 +1,7 @@
 //****************************************************************************************************
 //! \file CInvEffectSpriteMirror.cpp
-//! Module contains class CInvEffectSpriteMirror, which defines effect that Mirrors sprite by given
-//! offset in X and Y direction.
+//! Module contains class CInvEffectSpriteMirror, which defines effect that displays sprite mirrored
+//! along vertical axis.
 //****************************************************************************************************
 //
 //****************************************************************************************************
@@ -29,8 +29,7 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
-  CInvEffectSpriteMirror::~CInvEffectSpriteMirror()
-  {}
+  CInvEffectSpriteMirror::~CInvEffectSpriteMirror() = default;
 
   //----------------------------------------------------------------------------------------------
 

@@ -18,7 +18,6 @@
 namespace Inv
 {
 
-
   /*! \brief Class represents a 2D Background that can be drawn on screen. The Background can hold multiple
       images, which can be switched to create simple animations. The Background can have multiple effects
       applied to it, which can modify its properties such as position, size, rotation, etc. The class
@@ -62,6 +61,7 @@ namespace Inv
          \return Pair of width and height in pixels */
 
     IDirect3DTexture9 * GetTexture() const { return mTexture; }
+    /*!< \brief Returns pointer to Direct3D texture used as background image. */
 
     void SetRollCoefficient( float coef ) { mRollCoef = coef; }
     /*!< \brief Sets roll coefficient of background. Higher coefficient means faster rolling,

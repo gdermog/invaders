@@ -38,34 +38,34 @@ namespace Inv
     mAlienBosses
     {
       { 10u, {
-           10u,             // mTypeId;
-           "SAUCER",        // mSpriteId
-           false,           // mMirrorIfFromRight
-           1.5f,            // mAnimationLength
-           5000u,           // mPoints
-           0u,              // mIsSpawned
-           2u,              // mMaxSpawned
-           0.001f,          // mSpawnProbability
-           80.0f,           // mSize - will be recalculated in GenerateNewScene() according to scene size
-           40.0f,           // mSpawnY - will be recalculated in GenerateNewScene()
-           0.0f,            // mSpawnXLeft - will be recalculated in GenerateNewScene()
-           0.0f,            // mSpawnXRight - will be recalculated in GenerateNewScene()
-           1.0f             // mSpeedCoef
+           10u,         // mTypeId;
+           "SAUCER",    // mSpriteId
+           false,       // mMirrorIfFromRight
+           1.5f,        // mAnimationLength
+           5000u,       // mPoints
+           0u,          // mIsSpawned
+           2u,          // mMaxSpawned
+           0.001f,      // mSpawnProbability
+           80.0f,       // mSize - will be recalculated in GenerateNewScene() according to scene size
+           40.0f,       // mSpawnY - will be recalculated in GenerateNewScene()
+           0.0f,        // mSpawnXLeft - will be recalculated in GenerateNewScene()
+           0.0f,        // mSpawnXRight - will be recalculated in GenerateNewScene()
+           1.0f         // mSpeedCoef
       }},
       { 20u, {
-           20u,             // mTypeId
-           "PACVADER",      // mSpriteId
-           true,            // mMirrorIfFromRight
-           0.5f,            // mAnimationLength
-           15000u,          // mPoints
-           0u,              // mIsSpawned
-           1u,              // mMaxSpawned
-           0.0002f,         // mSpawnProbability
-           80.0f,           // mSize - will be recalculated in GenerateNewScene() according to scene size
-           -1.0f,           // mSpawnY - will be adjusted according to player position
-           0.0f,            // mSpawnXLeft - will be recalculated in GenerateNewScene()
-           0.0f,            // mSpawnXRight - will be recalculated in GenerateNewScene()
-           2.0f             // mSpeedCoef
+           20u,         // mTypeId
+           "PACVADER",  // mSpriteId
+           true,        // mMirrorIfFromRight
+           0.5f,        // mAnimationLength
+           15000u,      // mPoints
+           0u,          // mIsSpawned
+           1u,          // mMaxSpawned
+           0.0002f,     // mSpawnProbability
+           80.0f,       // mSize - will be recalculated in GenerateNewScene() according to scene size
+           -1.0f,       // mSpawnY - will be adjusted according to player position
+           0.0f,        // mSpawnXLeft - will be recalculated in GenerateNewScene()
+           0.0f,        // mSpawnXRight - will be recalculated in GenerateNewScene()
+           2.0f         // mSpeedCoef
       }}
     },
 

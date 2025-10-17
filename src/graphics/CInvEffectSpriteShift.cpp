@@ -31,8 +31,7 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
-  CInvEffectSpriteShift::~CInvEffectSpriteShift()
-  {}
+  CInvEffectSpriteShift::~CInvEffectSpriteShift() = default;
 
   //----------------------------------------------------------------------------------------------
 

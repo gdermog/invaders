@@ -37,8 +37,7 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
-  CInvEffectSpriteAnimation::~CInvEffectSpriteAnimation()
-  {}
+  CInvEffectSpriteAnimation::~CInvEffectSpriteAnimation() = default;
 
   //----------------------------------------------------------------------------------------------
 
@@ -71,7 +70,7 @@ namespace Inv
 
     if( ! mEventCallbacks.empty() )
     {
-      auto cbIt = mEventCallbacks.find( sprite->mImageIndex );
+      auto cbIt = mEventCallbacks.find( (uint32_t)sprite->mImageIndex );
       if( cbIt != mEventCallbacks.end() && false == cbIt->second.first )
       {                 // If the animation reached an important image with registered callback,
                         // calls it

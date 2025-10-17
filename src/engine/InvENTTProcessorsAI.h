@@ -45,14 +45,19 @@ namespace Inv
       uint32_t quickDeathTicksLeft );
 
     CInvEntityFactory & mEntityFactory;
+    //<! \brief Reference to entity factory, used to create new special actor entities
 
     const CInvSoundsStorage & mSoundStorage;
+    //<! \brief Reference to sound storage, used to play boss running sounds
 
     uint32_t &mAliensLeft;
+    //<! \brief Reference to variable containing number of aliens left in the scene
 
     uint32_t & mAlienBossesLeft;
+    //<! \brief Reference to variable containing number of alien bosses left in the scene
 
     std::map<uint32_t, AlienBossDescriptor_t> & mBossDescriptor;
+    //<! \brief Reference to map of alien boss descriptors, used to determine spawning parameters
 
   }; // procActorStateSelector
 
@@ -75,6 +80,7 @@ namespace Inv
       uint32_t quickDeathTicksLeft );
 
     bool & mIsInDangerousArea;
+    //<! \brief Reference to variable indicating whether the player is in dangerous area
 
   }; // procActorStateSelector
 
@@ -109,12 +115,17 @@ namespace Inv
       float bottomGuardedArea );
 
     float & mVXGroup;
+    //!< \brief Reference to current velocity of alien formation in X axis
     float & mVYGroup;
+    //!< \brief Reference to current velocity of alien formation in Y axis
 
     uint32_t mYGroupTranslationCounter;
+    //!< \brief Counter of ticks left for downward translation of alien formation
 
     bool mTranslatingDown;
+    //!< \brief Flag indicating whether alien formation is presently translating downwards
     float mNextVXGroup;
+    //!< \brief Next horizontal velocity of alien formation after downward translation is finished
 
     float mSceneTopLeftX;
     //!< \brief X coordinate of top left corner of the game scene in pixels.

@@ -12,11 +12,9 @@
 #define H_CInvPrimitive
 
 #include <d3d9.h>
-//#include <d3dx9.h>
 
 #include <InvGlobals.h>
 #include <CInvSettings.h>
-
 
 namespace Inv
 {

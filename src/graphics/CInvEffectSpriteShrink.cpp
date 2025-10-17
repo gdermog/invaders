@@ -34,8 +34,7 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
-  CInvEffectSpriteShrink::~CInvEffectSpriteShrink()
-  {}
+  CInvEffectSpriteShrink::~CInvEffectSpriteShrink() = default;
 
   //----------------------------------------------------------------------------------------------
 

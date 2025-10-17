@@ -30,8 +30,7 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
-  CInvEffectSpriteShiftRotate::~CInvEffectSpriteShiftRotate()
-  {}
+  CInvEffectSpriteShiftRotate::~CInvEffectSpriteShiftRotate() = default;
 
   //----------------------------------------------------------------------------------------------
 
@@ -50,7 +49,7 @@ namespace Inv
     auto angleIdx =
       ( actualTick.QuadPart - referenceTick.QuadPart + diffTick.QuadPart ) % mPace;
 
-    float angleRad = g2PI * ( (float)angleIdx ) / ( (float)mPace );
+    float angleRad = ((float)g2PI) * ( (float)angleIdx ) / ( (float)mPace );
 
     float c = cosf( angleRad );
     float s = sinf( angleRad );

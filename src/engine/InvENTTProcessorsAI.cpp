@@ -393,7 +393,7 @@ namespace Inv
 
         float phi = atan2( pVel.vX * deltaY - pVel.vY * deltaX, pVel.vX * deltaX + pVel.vY * deltaY );
                         // Oriented angle between current velocity vector and vector to target is
-                        // calculated according to definition of scalar and pseudoskálární product
+                        // calculated according to definition of scalar and pseudoscalar product
                         // of two vectors.
 
         if( phi < -maxAlienTurningAngle )
@@ -404,13 +404,14 @@ namespace Inv
 
         float cosPhi = cos( phi );
         float sinPhi = sin( phi );
-                        // Cosine and sine of limited angle change is calculated
+                        // Cosine and sine of limited angle change is calculated to be
+                        // used in rotation matrix
 
         float newVX = cosPhi * pVel.vX - sinPhi * pVel.vY;
         float newVY = sinPhi * pVel.vX + cosPhi * pVel.vY;
         pVel.vX = newVX;
         pVel.vY = newVY;// New velocity vector is calculated by rotation of old vector
-                        // by limited angle change
+                        // by limited angle change (multiplication by rotation matrix)
 
         if( 0u < pStat.raidTicksLeft )
           --pStat.raidTicksLeft;

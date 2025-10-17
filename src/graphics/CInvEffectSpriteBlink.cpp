@@ -35,8 +35,7 @@ namespace Inv
 
   //----------------------------------------------------------------------------------------------
 
-  CInvEffectSpriteBlink::~CInvEffectSpriteBlink()
-  {}
+  CInvEffectSpriteBlink::~CInvEffectSpriteBlink() = default;
 
   //----------------------------------------------------------------------------------------------
 
@@ -53,7 +52,6 @@ namespace Inv
       return true;
 
     auto * sprite = static_cast<Inv::CInvSprite *>( obj );
-
 
     LONGLONG idx = actualTick.QuadPart - referenceTick.QuadPart;
     if( ! mIgnoreDiffTick )

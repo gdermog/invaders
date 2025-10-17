@@ -47,10 +47,10 @@ namespace Inv
        \return FOURCC code */
   static constexpr uint32_t FOURCCc( char a, char b, char c, char d )
   {
-    return (uint32_t)(uint8_t)a
-      | ( (uint32_t)(uint8_t)b << 8 )
-      | ( (uint32_t)(uint8_t)c << 16 )
-      | ( (uint32_t)(uint8_t)d << 24 );
+    return     (uint32_t)(uint8_t)a
+           | ( (uint32_t)(uint8_t)b <<  8 )
+           | ( (uint32_t)(uint8_t)c << 16 )
+           | ( (uint32_t)(uint8_t)d << 24 );
   } // FOURCCc
 
   //------------------------------------------------------------------------------------------------
@@ -66,7 +66,7 @@ namespace Inv
     if( snd.isExtensible && !snd.wfraw.empty() )
       return reinterpret_cast<const WAVEFORMATEX *>( snd.wfraw.data() );
     return &snd.wfex;
-  }
+  } // GetWaveFormatPtr
 
 /****** Voice callback ******************************************************************************/
 
@@ -77,8 +77,8 @@ namespace Inv
     {
       v->Stop( 0 );
       v->DestroyVoice();
-    }
-  }
+    } // if
+  } // VoiceCallback::OnBufferEnd
 
 /****** CInvAudio implementation ********************************************************************/
 
