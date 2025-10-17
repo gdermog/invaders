@@ -49,13 +49,17 @@ namespace Inv
     entt::registry & reg,
     LARGE_INTEGER actTick,
     LARGE_INTEGER diffTick,
-    float playerYPos )
+    float playerYPos,
+    uint32_t quickDeathTicksLeft )
   {
     if( mIsSuspended )
       return;           // Processor is suspended, no action is performed
 
     if( 0u == mAliensLeft )
       return;           // No aliens are present in the scene, no special actors are spawned
+
+    if( 0u == quickDeathTicksLeft )
+      return;           // On sudden death mode no special actors are spawned
 
     for( auto & bossIt : mBossDescriptor )
     {
@@ -281,7 +285,7 @@ namespace Inv
 
   } // procAlienBoundsGuard::update
 
-    //****** processor: setting of actors to specific states *******************************************
+    //****** processor: driver for alien raids *******************************************************
 
   procAlienRaidDriver::procAlienRaidDriver(
     LARGE_INTEGER refTick,
@@ -290,7 +294,6 @@ namespace Inv
 
     procEnTTBase( refTick, settings, settingsRuntime )
   {}
-
 
   //--------------------------------------------------------------------------------------------------
 
@@ -313,7 +316,7 @@ namespace Inv
 
     auto viewP = reg.view<cpPlayBehave, cpPlayStatus, cpPosition, cpGraphics>();
     viewP.each( [&]( cpPlayBehave & pBehave, cpPlayStatus & pStat, cpPosition & pPos, cpGraphics & pGph )
-    {
+      {                 // Getting actual player position
         isPlayerDead = pStat.isDying;
         actPlayerX = pPos.X;
         actPlayerY = pPos.Y;
@@ -325,10 +328,11 @@ namespace Inv
         if( !( pStat.isInRaid || pStat.isReturningToFormation ) || pStat.isDying )
           return;       // Alien is not in raid or is dying, it does not concern this processor
 
-        if( isPlayerDead || 0u == pStat.raidTicksLeft )
-        {               // Player is dead or time is up => alien returns to formation
+        if( isPlayerDead )
+        {               // Player is dead => alien returns to formation
           pStat.isInRaid = false;
           pStat.isReturningToFormation = true;
+          pStat.raidTicksLeft = 0u;
         } // if
 
         float xTgt = pStat.isReturningToFormation ? pStat.formationX : actPlayerX;
@@ -344,10 +348,11 @@ namespace Inv
         float distanceToTarget = sqrt( deltaX * deltaX + deltaY * deltaY );
 
         if( 0u < quickDeathTicksLeft )
-        {               // On quick death mode all aliens gone for raid and never returns to formation
+        {               // On sudden death mode all aliens gone for raid and never returns to formation
+                        // until player ship is destroyed (which is addressed in the beginning of this lambda)
           if( pStat.isInRaid &&
             ( distanceToTarget < mSettingsRuntime.mRaidTgtDistance || 0u == pStat.raidTicksLeft ) )
-          {               // Alien reached target distance in raid, returns to formation
+          {             // Alien reached target distance in raid, returns to formation
             pStat.isInRaid = false;
             pStat.isReturningToFormation = true;
             pStat.raidTicksLeft = 0u;
@@ -355,8 +360,8 @@ namespace Inv
         } // if
 
         if( pStat.isReturningToFormation && distanceToTarget < mSettingsRuntime.mReturnTgtDistance )
-        {               // Alien reached target distance when returning to formation,
-                        // it is back in formation
+        {               // Alien reached target distance when returning, it is considered to be
+                        // back in formation
           pStat.isInRaid = false;
           pStat.isReturningToFormation = false;
           pStat.raidTicksLeft = 0u;
@@ -412,8 +417,6 @@ namespace Inv
                         // One tick in raid mode is consumed
 
     });
-
-
 
   } // procAlienRaidDriver::update
 

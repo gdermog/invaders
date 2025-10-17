@@ -41,7 +41,8 @@ namespace Inv
       entt::registry & reg,
       LARGE_INTEGER actTick,
       LARGE_INTEGER diffTick,
-      float playerYPos );
+      float playerYPos,
+      uint32_t quickDeathTicksLeft );
 
     CInvEntityFactory & mEntityFactory;
 

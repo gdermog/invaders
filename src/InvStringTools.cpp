@@ -326,7 +326,21 @@ namespace Inv
     wstr.resize( str.length() );
     mbstowcs_s( &size, &wstr[0], wstr.size() + 1, str.c_str(), str.size() );
     return wstr;
-  }
+  } // StringToWString
+
+  //****************************************************************************************************
+
+  bool EndsWithICase( const std::string & s, const char * suf )
+  {
+    size_t n = s.size(), m = strlen( suf );
+    if( m > n ) return false;
+    for( size_t i = 0; i < m; ++i ) {
+      char a = (char)towlower( s[n - m + i] );
+      char b = (char)towlower( suf[i] );
+      if( a != b ) return false;
+    }
+    return true;
+  } // EndsWithICase
 
   //****************************************************************************************************
 

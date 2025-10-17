@@ -137,6 +137,13 @@ namespace Inv
        \param[in] str Input string to be converted
        \return Converted wide-character string */
 
+  bool EndsWithICase( const std::string & s, const char * suf );
+  /*!< \brief Case insensitive check whether the string ends with the given suffix.
+
+       \param[in] s    Input string
+       \param[in] suf  Suffix to be checked
+       \return <b>true</b> if the string ends with the given suffix, <b>false</b> otherwise */
+
   std::string FormatScoreNumber( uint32_t inScore );
   /*!< \brief Formats given score number into a string with leading spaces, so that the resulting
        string is always 11 characters long. If the score is higher than 999999999, it is capped to

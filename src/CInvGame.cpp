@@ -217,25 +217,19 @@ namespace Inv
     //------ Audio initialization --------------------------------------------------------------------
 
     std::string fnam;
-    std::string err;
 
     mAudio = std::make_unique<CInvAudio>();
     mInsertCoinMusic = std::make_unique<CInvSound>();
     mPlayItMusic = std::make_unique<CInvSound>();
 
     fnam = mSettings.GetImagePath() + "/sounds/a_lil_beat.mp3";
-    mAudio->Load( fnam, *mInsertCoinMusic, &err );
-    if( !err.empty() )
-      LOG << "Error loading '" << fnam << "' music: " << err;
-
+    mAudio->Load( fnam, *mInsertCoinMusic );
     mAudio->PlayLoop( *mInsertCoinMusic, 0.5f );
                         // Music for "insert coin" screen starts playing immediately,
                         // because texture loading may take some time.
 
     fnam = mSettings.GetImagePath() + "/sounds/sounds_house.mp3";
-    mAudio->Load( fnam, *mPlayItMusic, &err );
-    if( !err.empty() )
-      LOG << "Error loading '" << fnam << "' music: " << err;
+    mAudio->Load( fnam, *mPlayItMusic );
 
     mSoundStorage = std::make_unique<CInvSoundsStorage>( mSettings, *mAudio );
     mSoundStorage->AddSound( "PINKEXPL", "explosionPink.wav" );

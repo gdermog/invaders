@@ -114,7 +114,7 @@ namespace Inv
     mAlienRaidVelocity = 55.0f;
     mAlienDescendTime = 0.3f;
     mAlienSpeedupFactor = 1.0f;
-    mAlienRaidMaxTime = 4.0f;
+    mAlienRaidMaxTime = 5.0f;
     mAlienRaidMaxAnglePerSec = gPI;
     mRaidTgtDistance = 10.0f;
     mReturnTgtDistance = 10.0f;

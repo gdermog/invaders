@@ -379,7 +379,7 @@ namespace Inv
                         // New entities are spawned according to spawn requests stored in the
                         // registry by other processors (as missiles, for example).
 
-    mProcSpecialActorSpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, mPlayerActY );
+    mProcSpecialActorSpawner.update( mEnTTRegistry, actualTickPoint, mDiffTickPoint, mPlayerActY, mQuickDeathTicksLeft );
                         // Special entities (as alien boss) are spawned according to special
                         // spawn requests stored in the registry by other processors.
 
@@ -1027,7 +1027,7 @@ namespace Inv
     uint32_t secsToQuickDeath = mQuickDeathTicksLeft / (uint32_t)mSettings.GetTickPerSecond();
 
     if( secsToQuickDeath <= 5 && secsToQuickDeath < mLastPipBeeped )
-    {                   // During last 5 seconds before quick death, a "pip" sound
+    {                   // During last 5 seconds before sudden death, a "pip" sound
                         // is played each second.
       mSoundStorage.PlaySound( 0u < secsToQuickDeath ? "PIP" : "PIPL" );
       mLastPipBeeped = secsToQuickDeath;

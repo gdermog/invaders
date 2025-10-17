@@ -95,7 +95,7 @@ namespace Inv
     //!< \brief Returns internal parameter, used to increase game difficulty with each level
 
     float GetQuickDeathTime() const { return mQuickDeathTime; }
-    //!< \brief Returns time (in seconds) for quick death mode
+    //!< \brief Returns time (in seconds) for sudden death mode
 
     uint32_t GetInitialLives() const { return mInitialLives; }
     //!< \brief Returns number of player lives (ships) at the beginning of the game
@@ -149,7 +149,7 @@ namespace Inv
     //!< Internal parameter, used to increase game difficulty with each level
 
     float mQuickDeathTime;
-    //!< Time (in seconds) for quick death mode
+    //!< Time (in seconds) for sudden death mode
 
     uint32_t mInitialLives;
     //!< \brief Number of player lives (ships) at the beginning of the game

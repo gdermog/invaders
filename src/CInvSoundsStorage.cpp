@@ -48,9 +48,7 @@ namespace Inv
     std::string fnam = mSettings.GetImagePath() + "/sounds/" + soundRelPath;
 
     auto newSound = std::make_shared<CInvSound>();
-    mAudio.Load( fnam, *newSound, &err );
-    if( !err.empty() )
-      LOG << "Error loading '" << fnam << "' sound: " << err;
+    mAudio.Load( fnam, *newSound );
 
     mSoundMap[soundId] = newSound;
     return newSound;

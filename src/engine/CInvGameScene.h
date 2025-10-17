@@ -356,7 +356,7 @@ namespace Inv
     //<! \brief Flag indicating whether player is in dangerous area (above all aliens)
 
     uint32_t mQuickDeathTicksLeft;
-    //<! \brief Number of ticks left to initiate quick death mode
+    //<! \brief Number of ticks left to initiate sudden death mode
 
     //------ Alien global state -----------------------------------------------------------------------
 
