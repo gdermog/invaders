@@ -87,7 +87,7 @@ and, of course
      music and sounds used in the game.
    - Thanks to [chat GPT](https://chatgpt.com/) and [DeeVid AI](https://deevid.ai/) for the invaluable help in generating
      the in-game graphics.
-   - Tanks to [unkonwn author on pngegg.com](https://www.pngegg.com/en/png-ncgfd) for special guest graphic.
-   - Thaks to my sons for playtesting and valuable feedback!
+   - Thanks to [unkonwn author on pngegg.com](https://www.pngegg.com/en/png-ncgfd) for special guest graphic.
+   - Thanks to my sons for playtesting and valuable feedback!
 
    ![Beta testing](betas.jpg?raw=true "Beta testing")
