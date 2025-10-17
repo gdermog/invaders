@@ -36,6 +36,7 @@ namespace Inv
     const CInvSettings & settings,
     CInvSettingsRuntime & settingsRuntime,
     const CInvSpriteStorage & spriteStorage,
+    const CInvSoundsStorage & soundStorage,
     const CInvBackground & background,
     CInvPrimitive & primitives,
     LPDIRECT3D9 pD3D,
@@ -53,6 +54,7 @@ namespace Inv
     mSettings( settings ),
     mSettingsRuntime( settingsRuntime ),
     mSpriteStorage( spriteStorage ),
+    mSoundStorage( soundStorage ),
     mBackground( background ),
     mPrimitives( primitives ),
     mCollisionTest( settings, pd3dDevice ),
@@ -158,11 +160,11 @@ namespace Inv
 
     mProcGarbageCollector     ( PROCCMN, BIND_MEMBER_EVENT_CALLBACK( this, CInvGameScene::EntityJustPruned ) ),
     mProcActorStateSelector   ( PROCCMN, mIsInDangerousArea ),
-    mProcEntitySpawner        ( PROCCMN, mEntityFactory ),
+    mProcEntitySpawner        ( PROCCMN, mEntityFactory, mSoundStorage ),
     mProcSpecialActorSpawner  ( PROCCMN, mEntityFactory, mAliensLeft, mAlienBossesLeft, mAlienBosses ),
     mProcActorMover           ( PROCCMN, mVXGroup, mVYGroup ),
     mProcAlienRaidDriver      ( PROCCMN ),
-    mProcPlayerFireUpdater    ( PROCCMN, mEntityFactory, mPlayerAmmoLeft ),
+    mProcPlayerFireUpdater    ( PROCCMN, mEntityFactory, mSoundStorage, mPlayerAmmoLeft ),
     mProcPlayerSpeedUpdater   ( PROCCMN ),
     mProcPlayerBoundsGuard    ( PROCCMN, 0.0f, 0.0f, (float)settings.GetWidth(), (float)settings.GetHeight(), mPlayerActX, mPlayerActY ),
     mProcPlayerInDanger       ( PROCCMN, mIsInDangerousArea ),
@@ -755,6 +757,7 @@ namespace Inv
       auto xplVx = ( nullptr == pVel ? 0.0f : pVel->vX );
       auto xplVy = ( nullptr == pVel ? 0.0f : pVel->vY );
       mEntityFactory.AddExplosionEntity( "PINKEXPL", xplX, xplY, explosionSize, xplVx, xplVy );
+      mSoundStorage.PlaySound( "PINKEXPL" );
                         // Explosion is created at alien position, moving with the invader. Explosion entity
                         // is automatically pruned from game scene when its animation finishes.
 
@@ -799,7 +802,7 @@ namespace Inv
         pVel->vZ = 0.0f;
       }  // if
 
-      auto findBoss = mAlienBosses.find( alienBossId->id );
+      auto findBoss = mAlienBosses.find( (uint32_t)alienBossId->id );
       if( findBoss != mAlienBosses.end() )
       {                 // Explosion is created at alien position, moving with the invader.
                         // Explosion entity is automatically pruned from game scene when its

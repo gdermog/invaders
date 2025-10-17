@@ -17,6 +17,7 @@
     <ClCompile Include="src\CInvLogger.cpp" />
     <ClCompile Include="src\CInvRandom.cpp" />
     <ClCompile Include="src\CInvSettingsRuntime.cpp" />
+    <ClCompile Include="src\CInvSoundsStorage.cpp" />
     <ClCompile Include="src\engine\CInvEntityFactory.cpp" />
     <ClCompile Include="src\engine\CInvGameScene.cpp" />
     <ClCompile Include="src\engine\CInvHiscoreList.cpp" />
@@ -49,6 +50,7 @@
     <ClInclude Include="src\CInvLogger.h" />
     <ClInclude Include="src\CInvRandom.h" />
     <ClInclude Include="src\CInvSettingsRuntime.h" />
+    <ClInclude Include="src\CInvSoundsStorage.h" />
     <ClInclude Include="src\engine\CInvEntityFactory.h" />
     <ClInclude Include="src\engine\CInvGameScene.h" />
     <ClInclude Include="src\engine\CInvHiscoreList.h" />

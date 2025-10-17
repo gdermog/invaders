@@ -18,6 +18,8 @@ static const std::string lModLogId( "GAMELOOP" );
 // Desc: The window's message handler
 //-----------------------------------------------------------------------------
 
+std::wstring gLoadingPleaseWait = L"Loading, please wait";
+
 static bool lKeyDown[256];
 //static int lKeyHit[256];
 static int lMouseButton;
@@ -30,13 +32,13 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
     SetCapture( hWnd );
     lMouseButton |= 1;
     lKeyDown[VK_LBUTTON] = true;
- //   lKeyHit[VK_LBUTTON]++;
+    //   lKeyHit[VK_LBUTTON]++;
     break;
 
   case WM_RBUTTONDOWN:
     SetCapture( hWnd );
     lKeyDown[VK_RBUTTON] = true;
- //   lKeyHit[VK_RBUTTON]++;
+    //   lKeyHit[VK_RBUTTON]++;
     lMouseButton |= 2;
     break;
 
@@ -44,7 +46,7 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
     SetCapture( hWnd );
     lMouseButton |= 4;
     lKeyDown[VK_MBUTTON] = true;
- //   lKeyHit[VK_MBUTTON]++;
+    //   lKeyHit[VK_MBUTTON]++;
     break;
 
   case WM_LBUTTONUP:
@@ -68,7 +70,6 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
   case WM_KEYDOWN:
   case WM_SYSKEYDOWN:
     lKeyDown[wParam & 255] = true;
-//    lKeyHit[wParam & 255]++;
     return 0;
 
   case WM_KEYUP:
@@ -92,8 +93,35 @@ LRESULT WINAPI MsgProc( HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam )
 
     }
     break;
+
+  case WM_PAINT:
+  {
+    PAINTSTRUCT ps{};
+    HDC hdc = BeginPaint( hWnd, &ps );
+
+    HFONT hFont = CreateFontW(
+      28, 0, 0, 0, FW_SEMIBOLD, FALSE, FALSE, FALSE,
+      DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY,
+      DEFAULT_PITCH | FF_DONTCARE, L"Segoe UI" );
+    HFONT hOld = (HFONT)SelectObject( hdc, hFont );
+
+    SetBkMode( hdc, TRANSPARENT );
+    SetTextColor( hdc, RGB( 40, 40, 40 ) );
+
+    RECT rc; GetClientRect( hWnd, &rc );
+    DrawTextW( hdc, gLoadingPleaseWait.c_str(), -1, &rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER );
+
+    SelectObject( hdc, hOld );
+    DeleteObject( hFont );
+
+    EndPaint( hWnd, &ps );
+    break;
   }
+
+  } // Switch
+
   return DefWindowProc( hWnd, msg, wParam, lParam );
+
 } // MsgProc
 
 //****** CInvGame implementation ****************************************************************
@@ -109,6 +137,7 @@ namespace Inv
     mBackgroundInsertCoin( nullptr ),
     mBackgroundPlay( nullptr ),
     mAudio( nullptr ),
+    mSoundStorage( nullptr ),
     mSettings( settings ),
     mSettingsRuntime(),
     mWindowClass{},
@@ -185,15 +214,6 @@ namespace Inv
     ShowWindow( mHWnd, SW_SHOWDEFAULT );
     UpdateWindow( mHWnd );
 
-//
-// std::wstring err;
-// audio.LoadAudioAuto( L"e:\\DAISY\\DiskW\\Demos\\Invaders\\invaders\\resources\\sounds\\explosion1.wav", sShot, &err );
-// audio.LoadAudioAuto( L"e:\\DAISY\\DiskW\\Demos\\Invaders\\invaders\\resources\\sounds\\a_lil_beat.mp3", sLoop, &err );
-//
-// audio.PlayOneShot( sShot, 0.9f );
-// mAudioTest = audio.PlayLoop( sLoop, 0.6f );
-// // ...
-
     //------ Audio initialization --------------------------------------------------------------------
 
     std::string fnam;
@@ -216,6 +236,14 @@ namespace Inv
     mAudio->Load( fnam, *mPlayItMusic, &err );
     if( !err.empty() )
       LOG << "Error loading '" << fnam << "' music: " << err;
+
+    mSoundStorage = std::make_unique<CInvSoundsStorage>( mSettings, *mAudio );
+    mSoundStorage->AddSound( "PINKEXPL", "explosion1.wav" );
+    mSoundStorage->AddSound( "SPIT", "spit.wav" );
+    mSoundStorage->AddSound( "ROCKET", "rocket-launch.wav" );
+
+    mSoundStorage->PlaySound( "PINKEXPL" );
+                        // Test sound play
 
     //------ Graphics initialization - custom --------------------------------------------------------
 
@@ -266,6 +294,7 @@ namespace Inv
     mPlayItScreen = std::make_unique<CInvPlayItScreen>(
       mSettings,
       *mSpriteStorage,
+      *mSoundStorage,
       *mBackgroundPlay,
       *mPrimitives,
       mSettingsRuntime,

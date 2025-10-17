@@ -15,6 +15,7 @@
 
 #include <CInvSettings.h>
 #include <CInvSettingsRuntime.h>
+#include <CInvSoundsStorage.h>
 
 #include <entity/registry.hpp>
 
@@ -40,6 +41,7 @@ namespace Inv
       const CInvSettings & settings,
       CInvSettingsRuntime & settingsRuntime,
       const CInvSpriteStorage & spriteStorage,
+      const CInvSoundsStorage & soundStorage,
       const CInvBackground & background,
       CInvPrimitive & primitives,
       LPDIRECT3D9 pD3D,
@@ -163,6 +165,9 @@ namespace Inv
 
     const CInvSpriteStorage & mSpriteStorage;
     //!< \brief Reference to sprite storage object, used to access sprites.
+
+    const CInvSoundsStorage & mSoundStorage;
+    //!< \brief Sound storage object, used to manage and access sound effects.
 
     const CInvBackground & mBackground;
     //!< \brief Reference to background object, used to draw the game background

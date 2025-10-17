@@ -18,6 +18,7 @@
 #include <CInvSettingsRuntime.h>
 #include <CInvRandom.h>
 #include <CInvAudio.h>
+#include <CInvSoundsStorage.h>
 
 #include <graphics/CInvSprite.h>
 #include <graphics/CInvSpriteStorage.h>
@@ -98,6 +99,9 @@ namespace Inv
 
     std::unique_ptr<CInvAudio> mAudio;
     //!< \brief Audio engine object, used to play sounds and music.
+
+    std::unique_ptr<CInvSoundsStorage> mSoundStorage;
+    //!< \brief Sound storage object, used to manage and access sound effects.
 
     std::unique_ptr<CInvSound> mInsertCoinMusic;
     //<! Sound object used to play "insert coin" screen music

@@ -39,7 +39,7 @@ namespace Inv
   }
 
   // ====== VoiceCallback ======
-  void CInvAudio::VoiceCallback::OnBufferEnd( void * pContext )
+  void VoiceCallback::OnBufferEnd( void * pContext )
   {
     // Pro one-shot přehrání si v pContext předáme ukazatel na voice
     if( auto * v = reinterpret_cast<IXAudio2SourceVoice *>( pContext ) )
@@ -85,7 +85,7 @@ namespace Inv
     // --- COM init (nutné pro XAudio2/MMDevice & Media Foundation) ---
     HRESULT hrCI = CoInitializeEx( nullptr, COINIT_MULTITHREADED );
     if( SUCCEEDED( hrCI ) || hrCI == S_FALSE ) {
-      m_comInit = true;
+      mComInit = true;
     }
     else if( hrCI == RPC_E_CHANGED_MODE ) {
       // COM už běží v jiném modelu; pokračujeme (doporučeno ale držet MTA v entry-pointu).
@@ -99,27 +99,27 @@ namespace Inv
     if( FAILED( hr ) ) throw std::runtime_error( "MFStartup failed" );
 
     // --- XAudio2 ---
-    if( FAILED( XAudio2Create( &m_xa, 0, XAUDIO2_DEFAULT_PROCESSOR ) ) )
+    if( FAILED( XAudio2Create( &mXA, 0, XAUDIO2_DEFAULT_PROCESSOR ) ) )
       throw std::runtime_error( "XAudio2Create failed" );
 
-    if( FAILED( m_xa->CreateMasteringVoice( &m_master ) ) )
+    if( FAILED( mXA->CreateMasteringVoice( &mMaster ) ) )
       throw std::runtime_error( "CreateMasteringVoice failed" );
   }
 
   CInvAudio::~CInvAudio()
   {
-    if( m_master ) { m_master->DestroyVoice(); m_master = nullptr; }
-    if( m_xa ) { m_xa->Release();          m_xa = nullptr; }
+    if( mMaster ) { mMaster->DestroyVoice(); mMaster = nullptr; }
+    if( mXA ) { mXA->Release();          mXA = nullptr; }
     MFShutdown();
 
-    if( m_comInit ) {
+    if( mComInit ) {
       CoUninitialize();
-      m_comInit = false;
+      mComInit = false;
     }
   }
 
   // ====== WAV loader (RIFF WAVE; PCM / IEEE float / WAVEFORMATEXTENSIBLE) ======
-  bool CInvAudio::LoadWav( const std::string & path, CInvSound & outSound, std::string * error )
+  bool CInvAudio::LoadWav( const std::string & path, CInvSound & outSound, std::string * error ) const
   {
     outSound = CInvSound{};
 
@@ -245,7 +245,7 @@ namespace Inv
   }
 
   // ====== Media Foundation loader (MP3/AAC/WMA/...) → PCM ======
-  bool CInvAudio::LoadViaMediaFoundation( const std::string & path, CInvSound & outSound, std::string * error )
+  bool CInvAudio::LoadViaMediaFoundation( const std::string & path, CInvSound & outSound, std::string * error ) const
   {
     outSound = CInvSound{};
 
@@ -318,7 +318,7 @@ namespace Inv
     return true;
   }
 
-  bool CInvAudio::Load( const std::string & path, CInvSound & outSound, std::string * error )
+  bool CInvAudio::Load( const std::string & path, CInvSound & outSound, std::string * error ) const
   {
     if( ends_with_icase( path, ".wav" ) )
       return LoadWav( path, outSound, error );
@@ -331,6 +331,8 @@ namespace Inv
     return ba ? ( bytes / ba ) : 0;
   }
 
+  VoiceCallback CInvAudio::mVoiceCallback;
+
   // ====== Vytvoření voice, submit bufferu, spuštění ======
   bool CInvAudio::CreateSourceAndSubmit(
     const CInvSound & snd,
@@ -338,15 +340,14 @@ namespace Inv
     IXAudio2SourceVoice ** outVoice,
     XAUDIO2_BUFFER & outBuf,
     bool loop,
-    float volume,
-    IXAudio2VoiceCallback * cb )
+    float volume )
   {
     if( !xa ) return false;
 
     const WAVEFORMATEX * pwf = GetWaveFormatPtr( snd );
     if( FAILED( xa->CreateSourceVoice( outVoice, pwf,
       0, XAUDIO2_DEFAULT_FREQ_RATIO,
-      cb, nullptr, nullptr ) ) )
+      &mVoiceCallback, nullptr, nullptr ) ) )
       return false;
 
     std::memset( &outBuf, 0, sizeof( outBuf ) );
@@ -382,14 +383,14 @@ namespace Inv
     return true;
   }
 
-  bool CInvAudio::PlayOneShot( const CInvSound & snd, float volume )
+  bool CInvAudio::PlayOneShot( const CInvSound & snd, float volume ) const
   {
     IXAudio2SourceVoice * voice = nullptr;
     XAUDIO2_BUFFER buf{};
-    return CreateSourceAndSubmit( snd, m_xa, &voice, buf, /*loop*/false, volume, &m_callback );
+    return CreateSourceAndSubmit( snd, mXA, &voice, buf, /*loop*/false, volume );
   }
 
-  void CInvAudio::PlayLoop( CInvSound & snd, float volume, bool restart )
+  void CInvAudio::PlayLoop( CInvSound & snd, float volume, bool restart ) const
   {
     if( snd.actPlaying != nullptr )
     {
@@ -400,11 +401,11 @@ namespace Inv
     }
 
     XAUDIO2_BUFFER buf{};
-    if( !CreateSourceAndSubmit( snd, m_xa, &snd.actPlaying, buf, /*loop*/true, volume, &m_callback ) )
+    if( !CreateSourceAndSubmit( snd, mXA, &snd.actPlaying, buf, /*loop*/true, volume ) )
       snd.actPlaying = nullptr;
   }
 
-  void CInvAudio::Stop( CInvSound & snd )
+  void CInvAudio::Stop( CInvSound & snd ) const
   {
     if( nullptr == snd.actPlaying ) return;
     snd.actPlaying->Stop( 0 );

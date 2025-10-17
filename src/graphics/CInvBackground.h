@@ -70,18 +70,26 @@ namespace Inv
   private:
 
     float mVprWidth;
+    //<! \brief Width of the viewport (game window) in pixels.
 
     float mVprHeight;
+    //<! \brief Height of the viewport (game window) in pixels.
 
     float mTxtrWidth;
+    //<! \brief Relative width of the background part of the background texture.
 
     float mTxtrHeight;
+    //<! \brief Relative height of the background part of the background texture.
 
     float mLvl;
+    //<! \brief Level of depth in which the background texture is drawn.
 
     float mRollCoef;
+    //<! \brief Roll coefficient of background. Higher coefficient means faster rolling.
 
     mutable CUSTOMVERTEX mTea2[4];
+    //!< Vertex array (square space area corresponding to the game window) used to draw
+    //!< the background texture.
 
     const CInvSettings & mSettings;
     //<! Reference to settings object, to access global settings
@@ -93,7 +101,7 @@ namespace Inv
     //!< List of textures (images) that make up the Background
 
     std::pair<size_t, size_t> mTextureSize;
-    //!< List of sizes of individual images, in pixels
+    //!< Width an height of background image in pixels
 
   };
 

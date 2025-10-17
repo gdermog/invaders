@@ -47,10 +47,12 @@ namespace Inv
     LARGE_INTEGER refTick,
     const CInvSettings & settings,
     CInvSettingsRuntime & settingsRuntime,
-    CInvEntityFactory & entityFactory ):
+    CInvEntityFactory & entityFactory,
+    const CInvSoundsStorage & soundStorage ):
 
     procEnTTBase( refTick, settings, settingsRuntime ),
-    mEntityFactory( entityFactory )
+    mEntityFactory( entityFactory ),
+    mSoundStorage( soundStorage )
   {}
 
   //--------------------------------------------------------------------------------------------------
@@ -80,6 +82,7 @@ namespace Inv
           0.5f * ( xTopLeft + xBottomRight ),
           yBottomRight - 0.15f * ySize,
           0.33f * xSize );
+        mSoundStorage.PlaySound( "SPIT" );
 
         stat.isShootRequested = false;
                         // Shoot request is processed
@@ -145,10 +148,12 @@ namespace Inv
     const CInvSettings & settings,
     CInvSettingsRuntime & settingsRuntime,
     CInvEntityFactory & entityFactory,
+    const CInvSoundsStorage & soundStorage,
     uint32_t & ammoLeft ):
 
     procEnTTBase( refTick, settings, settingsRuntime ),
     mEntityFactory( entityFactory ),
+    mSoundStorage( soundStorage ),
     mAmmoLeft( ammoLeft ),
     mShootCommenced( false )
   {}
@@ -195,6 +200,7 @@ namespace Inv
               yBottomRight - 0.75f * ySize,
               0.1f * xSize,
               0.0f, -1.0f );
+            mSoundStorage.PlaySound( "ROCKET" );
         } );
 
         mAmmoLeft--;

@@ -13,7 +13,7 @@
 #include <entity/registry.hpp>
 
 #include <InvGlobals.h>
-
+#include <CInvSoundsStorage.h>
 #include <engine/InvENTTComponents.h>
 
 namespace Inv
@@ -68,11 +68,14 @@ namespace Inv
       LARGE_INTEGER refTick,
       const CInvSettings & settings,
       CInvSettingsRuntime & settingsRuntime,
-      CInvEntityFactory & entityFactory );
+      CInvEntityFactory & entityFactory,
+      const CInvSoundsStorage & soundStorage );
 
     void update( entt::registry & reg, LARGE_INTEGER actTick, LARGE_INTEGER diffTick );
 
     CInvEntityFactory & mEntityFactory;
+
+    const CInvSoundsStorage & mSoundStorage;
 
   }; // procEntitySpawner
 
@@ -107,6 +110,7 @@ namespace Inv
       const CInvSettings & settings,
       CInvSettingsRuntime & settingsRuntime,
       CInvEntityFactory & entityFactory,
+      const CInvSoundsStorage & soundStorage,
       uint32_t & ammoLeft );
 
     void update(
@@ -117,6 +121,8 @@ namespace Inv
       ControlValue_t controlValue );
 
     CInvEntityFactory & mEntityFactory;
+
+    const CInvSoundsStorage & mSoundStorage;
 
     uint32_t & mAmmoLeft;
 

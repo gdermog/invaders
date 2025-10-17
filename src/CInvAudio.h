@@ -1,5 +1,5 @@
 #pragma once
-// Minimalistick˝ XAudio2 wrapper pro DX9 projekt (C++17, MSVC/VS2022).
+// Minimalistick√Ω XAudio2 wrapper pro DX9 projekt (C++17, MSVC/VS2022).
 // Funkce: LoadWav(), LoadViaMediaFoundation(), LoadAudioAuto(), PlayOneShot(), PlayLoop(), Stop().
 
 #include <cstdint>
@@ -12,29 +12,40 @@ namespace Inv
 {
 
   // -----------------------------
-  // Datov· struktura s naËten˝m zvukem
+  // Datov√° struktura s naƒçten√Ωm zvukem
   // -----------------------------
   struct CInvSound
   {
-    // Surov· interleavovan· PCM data
+    // Surov√° interleavovan√° PCM data
     std::vector<uint8_t> data;
 
-    // Z·kladnÌ WAVEFORMATEX pro rychl˝ p¯Ìstup (frekvence, kan·lyÖ)
+    // Z√°kladn√≠ WAVEFORMATEX pro rychl√Ω p≈ô√≠stup (frekvence, kan√°ly‚Ä¶)
     WAVEFORMATEX         wfex{};
 
-    // KompletnÌ payload 'fmt ' chunku (kv˘li WAVEFORMATEXTENSIBLE, ale ukl·d·me vûdy)
+    // Kompletn√≠ payload 'fmt ' chunku (kv≈Øli WAVEFORMATEXTENSIBLE, ale ukl√°d√°me v≈ædy)
     std::vector<uint8_t> wfraw;
 
-    // true, pokud form·t byl WAVE_FORMAT_EXTENSIBLE
+    // true, pokud form√°t byl WAVE_FORMAT_EXTENSIBLE
     bool                 isExtensible = false;
 
     IXAudio2SourceVoice * actPlaying = nullptr;
   };
 
 
+  // --- Voice callback: autodestrukce one-shot voice po dohr√°n√≠ bufferu ---
+  struct VoiceCallback: public IXAudio2VoiceCallback
+  {
+    void STDMETHODCALLTYPE OnStreamEnd() override {}
+    void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() override {}
+    void STDMETHODCALLTYPE OnVoiceProcessingPassStart( UINT32 ) override {}
+    void STDMETHODCALLTYPE OnBufferStart( void * ) override {}
+    void STDMETHODCALLTYPE OnLoopEnd( void * ) override {}
+    void STDMETHODCALLTYPE OnVoiceError( void *, HRESULT ) override {}
+    void STDMETHODCALLTYPE OnBufferEnd( void * pContext ) override; // zniƒç√≠ voice p≈ôedanou v pContext
+  };
 
   // -----------------------------
-  // Audio engine (XAudio2 + MF dekodÈry)
+  // Audio engine (XAudio2 + MF dekod√©ry)
   // -----------------------------
   class CInvAudio
   {
@@ -48,55 +59,44 @@ namespace Inv
     CInvAudio & operator=( CInvAudio && ) = default;
 
     // WAV loader (RIFF WAVE; podporuje 16B PCM 'fmt ', WAVEFORMATEX i WAVEFORMATEXTENSIBLE)
-    bool LoadWav( const std::string & path, CInvSound & outSound, std::string * error = nullptr );
+    bool LoadWav( const std::string & path, CInvSound & outSound, std::string * error = nullptr ) const;
 
-    // Loader p¯es Media Foundation (MP3/AAC/WMA/Ö -> PCM)
-    bool LoadViaMediaFoundation( const std::string & path, CInvSound & outSound, std::string * error = nullptr );
+    // Loader p≈ôes Media Foundation (MP3/AAC/WMA/‚Ä¶ -> PCM)
+    bool LoadViaMediaFoundation( const std::string & path, CInvSound & outSound, std::string * error = nullptr ) const;
 
-    // Pohodln· ob·lka: pokud je .wav, pouûije LoadWav, jinak Media Foundation
-    bool Load( const std::string & path, CInvSound & outSound, std::string * error = nullptr );
+    // Pohodln√° ob√°lka: pokud je .wav, pou≈æije LoadWav, jinak Media Foundation
+    bool Load( const std::string & path, CInvSound & outSound, std::string * error = nullptr ) const;
 
-    // Jednor·zovÈ p¯ehr·nÌ (neblokujÌcÌ). Vytvo¯Ì doËasnou voice, po dohr·nÌ se sama zniËÌ.
-    bool PlayOneShot( const CInvSound & snd, float volume = 1.0f );
+    // Jednor√°zov√© p≈ôehr√°n√≠ (neblokuj√≠c√≠). Vytvo≈ô√≠ doƒçasnou voice, po dohr√°n√≠ se sama zniƒç√≠.
+    bool PlayOneShot( const CInvSound & snd, float volume = 1.0f ) const;
 
-    // SmyËka: vracÌ handle (IXAudio2SourceVoice*). UkonËi p¯es Stop(handle).
-    void PlayLoop( CInvSound & snd, float volume = 1.0f, bool restart = false );
+    // Smyƒçka: vrac√≠ handle (IXAudio2SourceVoice*). Ukonƒçi p≈ôes Stop(handle).
+    void PlayLoop( CInvSound & snd, float volume = 1.0f, bool restart = false ) const;
 
-    // ZastavÌ a zlikviduje voice vr·cenou z PlayLoop
-    void Stop( CInvSound & snd );
+    // Zastav√≠ a zlikviduje voice vr√°cenou z PlayLoop
+    void Stop( CInvSound & snd ) const;
 
   private:
 
-    // Pom˘cka: p¯evod bajt˘ na poËet "sample-frames" (1 frame = vzorek vöech kan·l˘)
+    // Pom≈Øcka: p≈ôevod bajt≈Ø na poƒçet "sample-frames" (1 frame = vzorek v≈°ech kan√°l≈Ø)
     static uint32_t BytesToSamples( uint32_t bytes, const WAVEFORMATEX & wf );
 
-    // --- InternÌ helper: vytvo¯Ì SourceVoice, nasype buffer, spustÌ p¯ehr·v·nÌ ---
+    static VoiceCallback mVoiceCallback;
+
+    // --- Intern√≠ helper: vytvo≈ô√≠ SourceVoice, nasype buffer, spust√≠ p≈ôehr√°v√°n√≠ ---
     static bool CreateSourceAndSubmit(
       const CInvSound & snd,
       IXAudio2 * xa,
       IXAudio2SourceVoice ** outVoice,
       XAUDIO2_BUFFER & outBuf,
       bool loop,
-      float volume,
-      IXAudio2VoiceCallback * cb
+      float volume
     );
 
     // --- Stav enginu ---
-    bool                    m_comInit = false;            // jestli jsme v tomto vl·knÏ volali CoInitializeEx
-    IXAudio2 * m_xa = nullptr;          // XAudio2 engine
-    IXAudio2MasteringVoice * m_master = nullptr;          // v˝stupnÌ mastering voice
-
-    // --- Voice callback: autodestrukce one-shot voice po dohr·nÌ bufferu ---
-    struct VoiceCallback: public IXAudio2VoiceCallback
-    {
-      void STDMETHODCALLTYPE OnStreamEnd() override {}
-      void STDMETHODCALLTYPE OnVoiceProcessingPassEnd() override {}
-      void STDMETHODCALLTYPE OnVoiceProcessingPassStart( UINT32 ) override {}
-      void STDMETHODCALLTYPE OnBufferStart( void * ) override {}
-      void STDMETHODCALLTYPE OnLoopEnd( void * ) override {}
-      void STDMETHODCALLTYPE OnVoiceError( void *, HRESULT ) override {}
-      void STDMETHODCALLTYPE OnBufferEnd( void * pContext ) override; // zniËÌ voice p¯edanou v pContext
-    } m_callback;
+    bool                    mComInit = false;            // jestli jsme v tomto vl√°knƒõ volali CoInitializeEx
+    IXAudio2 * mXA = nullptr;          // XAudio2 engine
+    IXAudio2MasteringVoice * mMaster = nullptr;          // v√Ωstupn√≠ mastering voice
 
 
   };
