@@ -69,6 +69,7 @@ There are still some tasks that need to be completed on the project, in particul
 
 And maybe sometime in the future:
 
+   - Implement a true message driven game management system to make expanding game content easier and more natural.
    - Add more varieties of monsters with different behaviors and appearances
    - Add power-ups that the player can collect to gain temporary advantages
    - Add more variable levels with different layouts and challenges
